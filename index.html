@@ -25,7 +25,6 @@
       border-radius: 14px;
       padding: 16px;
       cursor: pointer;
-      transition: 0.2s;
     }
     .class-card.selected { border-color: #7c3aed; background: #221a35; }
     .class-card h3 { font-size: 18px; margin-bottom: 6px; color: #c4b5fd; }
@@ -51,9 +50,8 @@
       border-radius: 12px;
       font-size: 17px;
       font-weight: 600;
-      cursor: pointer;
     }
-    .btn:disabled { background: #3f3f46; cursor: not-allowed; }
+    .btn:disabled { background: #3f3f46; }
     .message {
       text-align: center;
       margin-top: 20px;
@@ -93,12 +91,10 @@
     tg.ready();
     tg.expand();
 
-    // === ВСТАВЬ СВОИ ДАННЫЕ ИЗ SUPABASE ===
     const SUPABASE_URL = 'https://optytvvqevlzmzqlcgah.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_NrlPlzEcCy0SM9G5MXHvXQ_XDvs2RJM';
-    // ======================================
+    const SUPABASE_KEY = 'sb_publishable_Nr1PlzEcCy0SM9G5MXHvXQ_XDvs2RJM';
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let selectedClass = null;
 
@@ -109,7 +105,9 @@
     };
 
     function selectClass(className, element) {
-      document.querySelectorAll('.class-card').forEach(card => card.classList.remove('selected'));
+      document.querySelectorAll('.class-card').forEach(card => {
+        card.classList.remove('selected');
+      });
       element.classList.add('selected');
       selectedClass = className;
       checkForm();
@@ -117,10 +115,54 @@
 
     function checkForm() {
       const name = document.getElementById('nameInput').value.trim();
-      document.getElementById('createBtn').disabled = !(selectedClass && name.length >= 2);
+      const btn = document.getElementById('createBtn');
+      btn.disabled = !(selectedClass && name.length >= 2);
     }
 
     document.getElementById('nameInput').addEventListener('input', checkForm);
 
     async function createCharacter() {
-      const name = document.getElementById
+      const name = document.getElementById('nameInput').value.trim();
+      if (!selectedClass || name.length < 2) return;
+
+      const btn = document.getElementById('createBtn');
+      btn.disabled = true;
+      btn.textContent = 'Создание...';
+
+      const stats = classStats[selectedClass];
+      const telegramId = tg.initDataUnsafe?.user?.id || null;
+
+      const { data, error } = await supabaseClient
+        .from('characters1')
+        .insert([{
+          telegram_id: telegramId,
+          name: name,
+          class: selectedClass,
+          level: 1,
+          exp: 0,
+          hp: stats.hp,
+          attack: stats.attack,
+          defense: stats.defense,
+          speed: stats.speed,
+          crit_chance: stats.crit_chance,
+          crit_damage: stats.crit_damage,
+          gold: 100
+        }]);
+
+      const messageEl = document.getElementById('message');
+      messageEl.style.display = 'block';
+
+      if (error) {
+        messageEl.className = 'message error';
+        messageEl.textContent = 'Ошибка: ' + error.message;
+        btn.disabled = false;
+        btn.textContent = 'Создать персонажа';
+      } else {
+        messageEl.className = 'message success';
+        messageEl.textContent = 'Охотник ' + name + ' успешно создан!';
+        btn.textContent = 'Создано';
+      }
+    }
+  </script>
+</body>
+</html>
