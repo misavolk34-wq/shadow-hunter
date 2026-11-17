@@ -16,44 +16,146 @@
       background: #0f0f13;
       color: #e0e0e0;
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
       padding: 20px;
-      text-align: center;
+      padding-top: 40px;
     }
     h1 {
-      font-size: 28px;
-      margin-bottom: 12px;
+      text-align: center;
+      font-size: 26px;
       color: #a78bfa;
+      margin-bottom: 8px;
     }
-    p {
-      font-size: 16px;
-      opacity: 0.8;
+    .subtitle {
+      text-align: center;
+      opacity: 0.7;
+      margin-bottom: 30px;
+      font-size: 15px;
+    }
+    .classes {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
       margin-bottom: 30px;
     }
+    .class-card {
+      background: #1a1a24;
+      border: 2px solid #2a2a3a;
+      border-radius: 14px;
+      padding: 16px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .class-card.selected {
+      border-color: #7c3aed;
+      background: #221a35;
+    }
+    .class-card h3 {
+      font-size: 18px;
+      margin-bottom: 6px;
+      color: #c4b5fd;
+    }
+    .class-card p {
+      font-size: 13px;
+      opacity: 0.75;
+      line-height: 1.4;
+    }
+    input {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 2px solid #2a2a3a;
+      background: #1a1a24;
+      color: white;
+      font-size: 16px;
+      margin-bottom: 20px;
+      outline: none;
+    }
+    input:focus {
+      border-color: #7c3aed;
+    }
     .btn {
+      width: 100%;
       background: #7c3aed;
       color: white;
       border: none;
-      padding: 14px 28px;
+      padding: 16px;
       border-radius: 12px;
-      font-size: 16px;
+      font-size: 17px;
       font-weight: 600;
       cursor: pointer;
+    }
+    .btn:disabled {
+      background: #3f3f46;
+      cursor: not-allowed;
     }
   </style>
 </head>
 <body>
   <h1>Shadow Hunter</h1>
-  <p>Тёмные врата ждут...<br>Игра в разработке</p>
-  <button class="btn" onclick="alert('Скоро здесь будет создание персонажа')">Начать</button>
+  <p class="subtitle">Создай своего охотника</p>
+
+  <div class="classes">
+    <div class="class-card" onclick="selectClass('warrior', this)">
+      <h3>Воин</h3>
+      <p>Высокое здоровье и защита. Идеален для ближнего боя.</p>
+    </div>
+    <div class="class-card" onclick="selectClass('assassin', this)">
+      <h3>Убийца</h3>
+      <p>Высокий урон и шанс критического удара. Быстрый и смертоносный.</p>
+    </div>
+    <div class="class-card" onclick="selectClass('mage', this)">
+      <h3>Маг</h3>
+      <p>Мощные заклинания, но хрупкий. Силён на расстоянии.</p>
+    </div>
+  </div>
+
+  <input type="text" id="nameInput" placeholder="Введи имя охотника" maxlength="16">
+
+  <button class="btn" id="createBtn" onclick="createCharacter()" disabled>Создать персонажа</button>
 
   <script>
     const tg = window.Telegram.WebApp;
     tg.ready();
     tg.expand();
+
+    let selectedClass = null;
+
+    function selectClass(className, element) {
+      // Убираем выделение со всех
+      document.querySelectorAll('.class-card').forEach(card => {
+        card.classList.remove('selected');
+      });
+      
+      // Выделяем выбранный
+      element.classList.add('selected');
+      selectedClass = className;
+      
+      checkForm();
+    }
+
+    function checkForm() {
+      const name = document.getElementById('nameInput').value.trim();
+      const btn = document.getElementById('createBtn');
+      
+      if (selectedClass && name.length >= 2) {
+        btn.disabled = false;
+      } else {
+        btn.disabled = true;
+      }
+    }
+
+    document.getElementById('nameInput').addEventListener('input', checkForm);
+
+    function createCharacter() {
+      const name = document.getElementById('nameInput').value.trim();
+      
+      if (!selectedClass || name.length < 2) return;
+
+      // Пока просто показываем, что создали
+      alert(`Охотник создан!\n\nИмя: ${name}\nКласс: ${selectedClass}`);
+      
+      // Позже здесь будет сохранение в базу
+    }
   </script>
 </body>
 </html>
