@@ -1,472 +1,377 @@
-require("dotenv").config();
-
-const express = require("express");
-const crypto = require("crypto");
-const path = require("path");
-const { createClient } = require("@supabase/supabase-js");
-
-const app = express();
-const PORT = process.env.PORT || 3000;
-const BOT_TOKEN = process.env.BOT_TOKEN;
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-if (!BOT_TOKEN) throw new Error("В .env не задан BOT_TOKEN");
-if (!SUPABASE_URL) throw new Error("В .env не задан SUPABASE_URL");
-if (!SUPABASE_KEY) throw new Error("В .env не задан SUPABASE_SERVICE_ROLE_KEY");
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
-  auth: {
-    persistSession: false,
-    autoRefreshToken: false
-  }
-});
-
-app.use(express.json({ limit: "30kb" }));
-app.use(express.static(path.join(__dirname, "public")));
-
-const classes = {
-  mage:    { name: "Маг",      icon: "🔮", hp: 85,  atk: 17, def: 3 },
-  fighter: { name: "Боец",    icon: "⚔️", hp: 115, atk: 13, def: 7 },
-  archer:  { name: "Стрелок", icon: "🏹", hp: 95,  atk: 15, def: 5 },
-  tank:    { name: "Танк",    icon: "🛡️", hp: 145, atk: 10, def: 11 }
-};
-
-const enemyNames = [
-  ["Теневой волк", "🐺"],
-  ["Падший рыцарь", "💀"],
-  ["Пожиратель маны", "👹"],
-  ["Костяной страж", "🦇"],
-  ["Демон врат", "👾"]
-];
-
-function emptyGame() {
-  return {
-    classId: null,
-    level: 1,
-    xp: 0,
-    gold: 100,
-    maxFloor: 1,
-    floor: 1,
-    hp: 100,
-    inventory: [],
-    equipped: { weapon: null, armor: null, relic: null },
-    enemy: null,
-    lastAction: 0
-  };
-}
-
-function verifyTelegramData(initData) {
-  if (!initData) return null;
-
-  const params = new URLSearchParams(initData);
-  const receivedHash = params.get("hash");
-  const authDate = Number(params.get("auth_date"));
-
-  if (!receivedHash || !authDate) return null;
-
-  // Не принимаем данные Telegram старше суток.
-  if (Date.now() / 1000 - authDate > 86400) return null;
-
-  const entries = [...params.entries()]
-    .filter(([key]) => key !== "hash")
-    .sort(([a], [b]) => a.localeCompare(b));
-
-  const dataCheckString = entries
-    .map(([key, value]) => `${key}=${value}`)
-    .join("\n");
-
-  const secretKey = crypto
-    .createHmac("sha256", "WebAppData")
-    .update(BOT_TOKEN)
-    .digest();
-
-  const calculatedHash = crypto
-    .createHmac("sha256", secretKey)
-    .update(dataCheckString)
-    .digest("hex");
-
-  const expected = Buffer.from(calculatedHash, "hex");
-  const received = Buffer.from(receivedHash, "hex");
-
-  if (expected.length !== received.length) return null;
-  if (!crypto.timingSafeEqual(expected, received)) return null;
-
-  try {
-    return JSON.parse(params.get("user") || "null");
-  } catch {
-    return null;
-  }
-}
-
-function getStats(game) {
-  const c = classes[game.classId] || classes.fighter;
-
-  const result = {
-    maxHp: c.hp + (game.level - 1) * 14,
-    atk: c.atk + (game.level - 1) * 3,
-    def: c.def + Math.floor((game.level - 1) * 1.2)
-  };
-
-  for (const slot of ["weapon", "armor", "relic"]) {
-    const item = game.inventory.find(
-      entry => entry.id === game.equipped[slot]
-    );
-
-    if (!item) continue;
-
-    result.maxHp += item.hp || 0;
-    result.atk += item.atk || 0;
-    result.def += item.def || 0;
-  }
-
-  return result;
-}
-
-function xpNeeded(level) {
-  return 80 + level * 42;
-}
-
-function rollItem(floor) {
-  const roll = Math.random() * 100;
-  let rarity;
-
-  if (roll < 4) {
-    rarity = { key: "mythic", name: "Мифический", mult: 3.7 };
-  } else if (roll < 17) {
-    rarity = { key: "gold", name: "Золотой", mult: 2.5 };
-  } else if (roll < 42) {
-    rarity = { key: "legendary", name: "Легендарный", mult: 1.7 };
-  } else {
-    rarity = { key: "common", name: "Обычный", mult: 1 };
-  }
-
-  const slot = ["weapon", "armor", "relic"][
-    Math.floor(Math.random() * 3)
-  ];
-  const power = Math.max(
-    1,
-    Math.floor((2 + floor * 0.8) * rarity.mult)
-  );
-
-  const slotNames = {
-    weapon: "клинок",
-    armor: "доспех",
-    relic: "артефакт"
-  };
-
-  const prefixes = ["Забытый", "Теневой", "Портальный", "Древний"];
-
-  return {
-    id: crypto.randomUUID(),
-    name: `${prefixes[Math.floor(Math.random() * prefixes.length)]} ${slotNames[slot]}`,
-    slot,
-    rarity: rarity.key,
-    rarityName: rarity.name,
-    atk: slot === "weapon" ? power : 0,
-    def: slot === "armor" ? Math.max(1, Math.floor(power * 0.65)) : 0,
-    hp: slot === "relic" ? power * 5 : 0
-  };
-}
-
-async function fetchPlayer(telegramId) {
-  const { data, error } = await supabase
-    .from("players")
-    .select("*")
-    .eq("telegram_id", telegramId)
-    .maybeSingle();
-
-  if (error) throw error;
-  return data;
-}
-
-async function savePlayer(telegramId, name, game) {
-  const { error } = await supabase
-    .from("players")
-    .upsert({
-      telegram_id: telegramId,
-      name,
-      level: game.level,
-      xp: game.xp,
-      game,
-      updated_at: Date.now()
-    }, {
-      onConflict: "telegram_id"
-    });
-
-  if (error) throw error;
-}
-
-async function auth(req, res, next) {
-  try {
-    const telegramUser = verifyTelegramData(
-      req.get("x-telegram-init-data")
-    );
-
-    if (!telegramUser?.id) {
-      return res.status(401).json({
-        error: "Открой игру через Telegram."
-      });
-    }
-
-    const telegramId = String(telegramUser.id);
-    const name = String(
-      telegramUser.first_name ||
-      telegramUser.username ||
-      "Охотник"
-    ).slice(0, 40);
-
-    let player = await fetchPlayer(telegramId);
-
-    if (!player) {
-      const game = emptyGame();
-      await savePlayer(telegramId, name, game);
-      player = await fetchPlayer(telegramId);
-    } else if (player.name !== name) {
-      await supabase
-        .from("players")
-        .update({ name })
-        .eq("telegram_id", telegramId);
-
-      player.name = name;
-    }
-
-    req.player = player;
-    req.telegramId = telegramId;
-    req.game = player.game || emptyGame();
-
-    next();
-  } catch (error) {
-    console.error("Ошибка авторизации/Supabase:", error.message);
-    res.status(500).json({ error: "Не удалось загрузить сохранение." });
-  }
-}
-
-app.use("/api", auth);
-
-app.get("/api/state", (req, res) => {
-  res.json({
-    name: req.player.name,
-    game: req.game,
-    stats: req.game.classId ? getStats(req.game) : null
-  });
-});
-
-app.post("/api/class", async (req, res) => {
-  try {
-    const game = req.game;
-    const classId = req.body?.classId;
-
-    if (!classes[classId]) {
-      return res.status(400).json({ error: "Неизвестный класс." });
-    }
-
-    if (game.classId) {
-      return res.status(400).json({ error: "Класс уже выбран." });
-    }
-
-    game.classId = classId;
-    game.hp = getStats(game).maxHp;
-
-    await savePlayer(req.telegramId, req.player.name, game);
-    res.json({ ok: true });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Не удалось сохранить класс." });
-  }
-});
-
-app.post("/api/start", async (req, res) => {
-  try {
-    const game = req.game;
-
-    if (!game.classId) {
-      return res.status(400).json({ error: "Сначала выбери класс." });
-    }
-
-    if (game.enemy && game.enemy.hp > 0) {
-      return res.json({ ok: true, enemy: game.enemy });
-    }
-
-    const floor = Number(req.body?.floor || game.maxFloor);
-
-    if (!Number.isInteger(floor) || floor < 1 || floor > game.maxFloor) {
-      return res.status(400).json({ error: "Этот этаж ещё закрыт." });
-    }
-
-    game.floor = floor;
-
-    const [name, icon] =
-      enemyNames[Math.floor(Math.random() * enemyNames.length)];
-
-    const boss = floor % 5 === 0;
-    const maxHp = Math.floor((45 + floor * 22) * (boss ? 2.4 : 1));
-
-    game.enemy = {
-      floor,
-      name: boss ? `Босс: ${name}` : name,
-      icon: boss ? "🐉" : icon,
-      maxHp,
-      hp: maxHp,
-      atk: Math.floor(7 + floor * 2.3)
-    };
-
-    await savePlayer(req.telegramId, req.player.name, game);
-    res.json({ ok: true, enemy: game.enemy });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Не удалось открыть врата." });
-  }
-});
-
-app.post("/api/attack", async (req, res) => {
-  try {
-    const game = req.game;
-    const enemy = game.enemy;
-
-    if (!game.classId || !enemy || enemy.hp <= 0) {
-      return res.status(400).json({ error: "Сначала войди во врата." });
-    }
-
-    if (Date.now() - (game.lastAction || 0) < 450) {
-      return res.status(429).json({ error: "Подожди мгновение." });
-    }
-
-    game.lastAction = Date.now();
-
-    const stats = getStats(game);
-    const special = Boolean(req.body?.special);
-    const damage = Math.max(
-      1,
-      Math.floor(
-        stats.atk *
-        (special ? 1.9 : 1) *
-        (0.85 + Math.random() * 0.3)
-      )
-    );
-
-    enemy.hp = Math.max(0, enemy.hp - damage);
-    let message = `Ты нанёс ${damage} урона.`;
-
-    if (enemy.hp <= 0) {
-      const floor = enemy.floor;
-      const reward = 12 + floor * 7;
-
-      game.gold += reward;
-      game.xp += 35 + floor * 13;
-      game.enemy = null;
-
-      if (floor >= game.maxFloor && game.maxFloor < 30) {
-        game.maxFloor++;
-      }
-
-      let loot = null;
-
-      if (Math.random() < 0.78) {
-        loot = rollItem(floor);
-        game.inventory.unshift(loot);
-      }
-
-      if (Math.random() < 0.24) {
-        game.potions = (game.potions || 0) + 1;
-      }
-
-      let leveledUp = false;
-
-      while (game.xp >= xpNeeded(game.level)) {
-        game.xp -= xpNeeded(game.level);
-        game.level++;
-        game.hp = getStats(game).maxHp;
-        leveledUp = true;
-      }
-
-      message = `Победа! +${reward} золота и опыт.`;
-
-      if (loot) {
-        message += ` Найден предмет: ${loot.name} (${loot.rarityName}).`;
-      }
-
-      if (leveledUp) {
-        message += ` Новый уровень: ${game.level}!`;
-      }
-    } else {
-      const incoming = Math.max(
-        1,
-        enemy.atk - stats.def + Math.floor(Math.random() * 4)
-      );
-
-      game.hp -= incoming;
-
-      if (game.hp <= 0) {
-        game.hp = Math.max(1, Math.floor(stats.maxHp * 0.55));
-        game.gold = Math.max(0, game.gold - Math.floor(game.gold * 0.05));
-        game.enemy = null;
-        message += " Охотник пал, потеряв 5% золота.";
-      } else {
-        message += ` Враг ответил на ${incoming} урона.`;
-      }
-    }
-
-    await savePlayer(req.telegramId, req.player.name, game);
-
-    res.json({
-      ok: true,
-      message,
-      game,
-      stats: getStats(game)
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Не удалось провести бой." });
-  }
-});
-
-app.post("/api/equip", async (req, res) => {
-  try {
-    const game = req.game;
-    const item = game.inventory.find(
-      entry => entry.id === req.body?.id
-    );
-
-    if (!item) {
-      return res.status(404).json({ error: "Предмет не найден." });
-    }
-
-    game.equipped[item.slot] =
-      game.equipped[item.slot] === item.id ? null : item.id;
-
-    game.hp = Math.min(game.hp, getStats(game).maxHp);
-
-    await savePlayer(req.telegramId, req.player.name, game);
-
-    res.json({
-      ok: true,
-      game,
-      stats: getStats(game)
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Не удалось надеть предмет." });
-  }
-});
-
-app.get("/api/leaderboard", async (req, res) => {
-  try {
-    const { data, error } = await supabase
-      .from("players")
-      .select("name, level, xp")
-      .order("level", { ascending: false })
-      .order("xp", { ascending: false })
-      .limit(20);
-
-    if (error) throw error;
-    res.json(data || []);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Не удалось загрузить рейтинг." });
-  }
-});
-
-app.listen(PORT, () => {
-  console.log(`Игра запущена на порту ${PORT}`);
-});
+```html
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Solo Leveling: Пробуждение Системы</title>
+    
+    <!-- Подключение официального скрипта Telegram WebApp -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <!-- Подключение Tailwind CSS для быстрой и адаптивной верстки -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Шрифты для атмосферы Системы -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        system: ['Orbitron', 'sans-serif'],
+                    },
+                    colors: {
+                        sys: {
+                            bg: '#06080f',
+                            panel: 'rgba(13, 19, 38, 0.85)',
+                            border: '#1e3a8a',
+                            cyan: '#00f0ff',
+                            purple: '#9d4edd',
+                            shadow: '#5a189a',
+                            gold: '#ffb703'
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 3.5s ease-in-out infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        glow: {
+                            '0%': { boxShadow: '0 0 10px rgba(0, 240, 255, 0.3), inset 0 0 10px rgba(0, 240, 255, 0.1)' },
+                            '100%': { boxShadow: '0 0 25px rgba(157, 78, 221, 0.6), inset 0 0 15px rgba(0, 240, 255, 0.3)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Базовые настройки и запрет выделения для мобильного UX */
+        * {
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #06080f;
+            color: #e2e8f0;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(90, 24, 154, 0.25) 0%, transparent 60%),
+                radial-gradient(circle at 80% 80%, rgba(0, 240, 255, 0.12) 0%, transparent 50%);
+        }
+
+        /* Кастомный скроллбар */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(6, 8, 15, 0.8);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3b82f6;
+            border-radius: 4px;
+        }
+
+        /* Стеклянные панели Системы */
+        .system-window {
+            background: linear-gradient(180deg, rgba(13, 22, 48, 0.92) 0%, rgba(7, 11, 24, 0.96) 100%);
+            border: 1px solid rgba(0, 240, 255, 0.45);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.15), inset 0 0 20px rgba(0, 140, 255, 0.1);
+            backdrop-filter: blur(12px);
+        }
+
+        .system-window-purple {
+            background: linear-gradient(180deg, rgba(28, 12, 48, 0.92) 0%, rgba(12, 7, 24, 0.96) 100%);
+            border: 1px solid rgba(157, 78, 221, 0.6);
+            box-shadow: 0 0 25px rgba(157, 78, 221, 0.25), inset 0 0 20px rgba(157, 78, 221, 0.15);
+            backdrop-filter: blur(12px);
+        }
+
+        /* Неоновый текст */
+        .text-neon-cyan {
+            text-shadow: 0 0 8px rgba(0, 240, 255, 0.8), 0 0 18px rgba(0, 240, 255, 0.4);
+        }
+        .text-neon-purple {
+            text-shadow: 0 0 8px rgba(157, 78, 221, 0.9), 0 0 20px rgba(157, 78, 221, 0.5);
+        }
+        .text-neon-gold {
+            text-shadow: 0 0 8px rgba(255, 183, 3, 0.8), 0 0 18px rgba(255, 183, 3, 0.4);
+        }
+
+        /* Анимации боя */
+        @keyframes hitShake {
+            0%, 100% { transform: translate(0, 0) scale(1); filter: brightness(1); }
+            25% { transform: translate(-8px, 4px) scale(0.96); filter: brightness(2) drop-shadow(0 0 15px #ff0055); }
+            50% { transform: translate(8px, -4px) scale(1.02); }
+            75% { transform: translate(-4px, -2px); }
+        }
+        .animate-hit {
+            animation: hitShake 0.3s ease-out;
+        }
+
+        @keyframes floatDamage {
+            0% { opacity: 1; transform: translateY(0) scale(0.8); }
+            20% { transform: translateY(-15px) scale(1.2); }
+            100% { opacity: 0; transform: translateY(-65px) scale(0.95); }
+        }
+        .damage-popup {
+            position: absolute;
+            pointer-events: none;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            animation: floatDamage 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            z-index: 40;
+        }
+
+        @keyframes slashEffect {
+            0% { opacity: 0; transform: scale(0.4) rotate(-35deg); }
+            40% { opacity: 1; transform: scale(1.1) rotate(0deg); }
+            100% { opacity: 0; transform: scale(1.3) rotate(15deg); }
+        }
+        .slash-vfx {
+            animation: slashEffect 0.35s ease-out forwards;
+        }
+
+        /* Цвета редкости предметов */
+        .rarity-common { border-color: #64748b; color: #cbd5e1; background: rgba(100, 116, 139, 0.12); }
+        .rarity-uncommon { border-color: #22c55e; color: #4ade80; background: rgba(34, 197, 94, 0.12); }
+        .rarity-rare { border-color: #3b82f6; color: #60a5fa; background: rgba(59, 130, 246, 0.15); box-shadow: 0 0 10px rgba(59, 130, 246, 0.2); }
+        .rarity-epic { border-color: #a855f7; color: #c084fc; background: rgba(168, 85, 247, 0.18); box-shadow: 0 0 14px rgba(168, 85, 247, 0.3); }
+        .rarity-legendary { 
+            border-color: #f59e0b; 
+            color: #fbbf24; 
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.22), rgba(168, 85, 247, 0.2)); 
+            box-shadow: 0 0 18px rgba(245, 158, 11, 0.45);
+        }
+
+        /* Теневые частицы на стартовом экране */
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: riseUp linear infinite;
+        }
+        @keyframes riseUp {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            20% { opacity: 0.8; }
+            80% { opacity: 0.6; }
+            100% { transform: translateY(-10vh) scale(1.2); opacity: 0; }
+        }
+
+        /* Скрытие неактивных вкладок */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.25s ease-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between pb-20">
+
+    <!-- =====================================================================
+         1. ЭКРАН ЗАПУСКА (SPLASH SCREEN С СОН ДЖИН-ВУ И ОКНОМ СИСТЕМЫ)
+         ===================================================================== -->
+    <div id="splash-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center p-5 bg-[#04060c] overflow-hidden transition-opacity duration-700">
+        <!-- Контейнер для теневых частиц -->
+        <div id="particles-container" class="absolute inset-0 overflow-hidden pointer-events-none"></div>
+
+        <!-- Фоновое свечение Монарха Теней -->
+        <div class="absolute w-80 h-80 rounded-full bg-purple-700/20 blur-[90px] pointer-events-none"></div>
+        <div class="absolute w-64 h-64 rounded-full bg-cyan-500/15 blur-[70px] top-1/4 pointer-events-none"></div>
+
+        <!-- Анимированный SVG-арт Сон Джин-Ву со светящимися глазами и аурой теней -->
+        <div class="relative z-10 mb-4 animate-float">
+            <svg width="170" height="190" viewBox="0 0 200 220" fill="none" xmlns="http://www.w3.org/2000/svg" class="drop-shadow-[0_0_25px_rgba(157,78,221,0.75)]">
+                <!-- Аура теней вокруг силуэта -->
+                <path d="M100 15C65 15 35 45 30 85C25 125 15 160 5 195C35 185 55 205 100 205C145 205 165 185 195 195C185 160 175 125 170 85C165 45 135 15 100 15Z" fill="url(#shadowAura)" opacity="0.75"/>
+                
+                <!-- Воротник темного плаща Монарха Теней -->
+                <path d="M42 155L68 125L100 142L132 125L158 155L175 210H25L42 155Z" fill="#090b16" stroke="#7c3aed" stroke-width="2"/>
+                <path d="M68 125L100 165L132 125" stroke="#00f0ff" stroke-width="1.5" opacity="0.8"/>
+
+                <!-- Лицо и шея -->
+                <path d="M84 115H116V140L100 152L84 140V115Z" fill="#13172b"/>
+                <path d="M68 72C68 50 82 38 100 38C118 38 132 50 132 72C132 96 118 118 100 124C82 118 68 96 68 72Z" fill="#161b33" stroke="#4c1d95" stroke-width="1.5"/>
+
+                <!-- Волосы Сон Джин-Ву (острые теневые пряди) -->
+                <path d="M62 78C58 55 72 28 102 26C132 24 145 50 140 78C136 65 128 56 122 52C120 65 112 74 104 78C105 64 100 55 95 50C90 62 82 72 74 76C72 64 66 68 62 78Z" fill="#070913" stroke="#6d28d9" stroke-width="1.2"/>
+                <path d="M75 34L66 20L86 28L96 14L106 27L124 18L118 34" fill="#070913"/>
+
+                <!-- Светящиеся неоновые глаза -->
+                <g filter="url(#eyeGlow)">
+                    <path d="M77 77L92 81L79 84Z" fill="#00f0ff"/>
+                    <path d="M123 77L108 81L121 84Z" fill="#00f0ff"/>
+                    <!-- Эффект шлейфа энергии из глаз -->
+                    <path d="M77 79L52 72L78 82Z" fill="#00f0ff" opacity="0.85"/>
+                    <path d="M123 79L148 72L122 82Z" fill="#9d4edd" opacity="0.85"/>
+                </g>
+
+                <!-- Кинжал Касаки на фоне -->
+                <path d="M155 45L172 28L165 65L145 110L138 105L155 45Z" fill="url(#daggerGrad)" stroke="#00f0ff" stroke-width="1"/>
+
+                <defs>
+                    <radialGradient id="shadowAura" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(100 110) rotate(90) scale(100 95)">
+                        <stop stop-color="#9d4edd"/>
+                        <stop offset="0.6" stop-color="#3b0764"/>
+                        <stop offset="1" stop-color="#04060c" stop-opacity="0"/>
+                    </radialGradient>
+                    <linearGradient id="daggerGrad" x1="172" y1="28" x2="138" y2="110" gradientUnits="userSpaceOnUse">
+                        <stop stop-color="#00f0ff"/>
+                        <stop offset="1" stop-color="#5a189a"/>
+                    </linearGradient>
+                    <filter id="eyeGlow" x="35" y="55" width="130" height="45" filterUnits="userSpaceOnUse">
+                        <feGaussianBlur stdDeviation="3" result="blur"/>
+                        <feMerge>
+                            <feMergeNode in="blur"/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                </defs>
+            </svg>
+        </div>
+
+        <!-- Классическое окно Системы -->
+        <div class="relative z-10 w-full max-w-md system-window rounded-xl p-5 text-center animate-glow">
+            <!-- Верхняя рамка уведомления -->
+            <div class="flex items-center justify-center gap-2 border-b border-cyan-500/40 pb-3 mb-4">
+                <span class="w-5 h-5 rounded-full border border-cyan-400 flex items-center justify-center text-cyan-400 font-bold text-xs animate-ping absolute opacity-40">!</span>
+                <span class="w-5 h-5 rounded-full border border-cyan-400 flex items-center justify-center text-cyan-400 font-bold text-xs">!</span>
+                <h2 class="font-system text-cyan-400 font-bold tracking-widest text-sm sm:text-base text-neon-cyan">УВЕДОМЛЕНИЕ СИСТЕМЫ</h2>
+            </div>
+
+            <p class="text-slate-200 text-sm sm:text-base leading-relaxed mb-3">
+                Вы успешно прошли скрытое испытание и получили квалификацию <span class="text-cyan-400 font-bold">«Игрока»</span>.
+            </p>
+            <p class="text-purple-300 text-xs sm:text-sm mb-5">
+                Ваше сердце готово вместить силу Монарха Теней. Примите ли вы пробуждение?
+            </p>
+
+            <!-- Прогресс-бар инициализации (скрыт до нажатия) -->
+            <div id="boot-progress-box" class="hidden mb-4">
+                <div class="flex justify-between text-xs font-system text-cyan-300 mb-1">
+                    <span id="boot-status-text">СИНХРОНИЗАЦИЯ ДУШИ...</span>
+                    <span id="boot-percent">0%</span>
+                </div>
+                <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden border border-cyan-500/30">
+                    <div id="boot-bar" class="h-full bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 w-0 transition-all duration-200"></div>
+                </div>
+            </div>
+
+            <!-- Кнопка входа в Систему -->
+            <button id="enter-system-btn" onclick="startSystemBoot()" class="w-full py-3.5 px-6 rounded-lg font-system font-bold text-sm sm:text-base tracking-wider text-white bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-700 hover:from-cyan-500 hover:to-purple-600 border border-cyan-300/60 shadow-[0_0_20px_rgba(0,240,255,0.4)] active:scale-95 transition-all cursor-pointer">
+                [ ВОЙТИ В СИСТЕМУ ]
+            </button>
+        </div>
+    </div>
+
+    <!-- =====================================================================
+         2. ВЕРХНЯЯ ПАНЕЛЬ СТАТУСА ИГРОКА (HEADER)
+         ===================================================================== -->
+    <header class="sticky top-0 z-30 system-window border-x-0 border-t-0 px-3 py-2.5">
+        <div class="max-w-lg mx-auto flex items-center justify-between gap-2">
+            <!-- Аватар и Имя из Telegram -->
+            <div class="flex items-center gap-2.5 min-w-0">
+                <div class="relative shrink-0">
+                    <img id="player-avatar" src="https://placehold.co/80x80/1e1b4b/00f0ff?text=SJW" onerror="this.src='https://placehold.co/80x80/1e1b4b/00f0ff?text=SJW'" alt="Avatar" class="w-10 h-10 rounded-lg object-cover border border-cyan-400 shadow-[0_0_10px_rgba(0,240,255,0.4)]">
+                    <span id="player-rank-badge" class="absolute -bottom-1.5 -right-1.5 px-1.5 py-0.2 text-[10px] font-system font-black rounded bg-purple-950 border border-purple-400 text-purple-200">E</span>
+                </div>
+                <div class="truncate">
+                    <div class="flex items-center gap-1.5">
+                        <h1 id="player-name" class="font-bold text-sm text-white truncate">Сон Джин-Ву</h1>
+                        <span class="text-[10px] px-1.5 py-0.5 rounded bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 font-system">Ур.<span id="header-level">1</span></span>
+                    </div>
+                    <p id="player-title" class="text-[11px] text-purple-300 truncate">Слабейший охотник человечества</p>
+                </div>
+            </div>
+
+            <!-- Валюты (Золото и Кристаллы Маны) -->
+            <div class="flex items-center gap-2 shrink-0">
+                <div class="bg-slate-900/90 border border-amber-500/40 rounded-lg px-2 py-1 flex items-center gap-1">
+                    <span class="text-amber-400 text-xs">🪙</span>
+                    <span id="header-gold" class="font-system text-xs font-bold text-amber-300">500</span>
+                </div>
+                <div class="bg-slate-900/90 border border-purple-500/40 rounded-lg px-2 py-1 flex items-center gap-1">
+                    <span class="text-purple-400 text-xs">💎</span>
+                    <span id="header-crystals" class="font-system text-xs font-bold text-purple-300">10</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Полоски HP, MP и Опыта (XP) -->
+        <div class="max-w-lg mx-auto mt-2 grid grid-cols-3 gap-2 text-[10px] font-system">
+            <div>
+                <div class="flex justify-between text-rose-300 mb-0.5">
+                    <span>HP</span>
+                    <span id="header-hp-text">150/150</span>
+                </div>
+                <div class="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden">
+                    <div id="header-hp-bar" class="h-full bg-gradient-to-r from-rose-600 to-red-400 transition-all duration-300" style="width: 100%"></div>
+                </div>
+            </div>
+            <div>
+                <div class="flex justify-between text-cyan-300 mb-0.5">
+                    <span>MP</span>
+                    <span id="header-mp-text">80/80</span>
+                </div>
+                <div class="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden">
+                    <div id="header-mp-bar" class="h-full bg-gradient-to-r from-blue-600 to-cyan-400 transition-all duration-300" style="width: 100%"></div>
+                </div>
+            </div>
+            <div>
+                <div class="flex justify-between text-purple-300 mb-0.5">
+                    <span>EXP</span>
+                    <span id="header-xp-text">0%</span>
+                </div>
+                <div class="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden">
+                    <div id="header-xp-bar" class="h-full bg-gradient-to-r from-purple-600 to-fuchsia-400 transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- =====================================================================
+         3. ОСНОВНОЙ КОНТЕНТ (ВКЛАДКИ ИГРЫ)
+         ===================================================================== -->
+    <main class="flex-1 w-full max-w-lg mx-auto p-3 space-y-3">
+
+        <!-- Всплывающее системное уведомление (вместо alert) -->
+        <div id="toast-box" class="fixed top-24 left-1/2 -translate-x-1/2 z-50 pointer-events-none transition-all duration-300 opacity-0 -translate-y-4 w-[90%] max-w-sm">
+            <div class="system-window rounded-lg px-4 py-2.5 text-center border-cyan-400 shadow-2xl">
+                <p id="toast-message" class="text-xs sm:text-sm font-semibold text-cyan-200"></p>
+            </div>
+        </div>
+
+        <!-- -----------------------------------------------------------------
+             ВКЛАДКА 1: ПОДЗЕМЕЛЬЯ И БОЕВАЯ АРЕНА
+             ----------------------------------------------------------------- -->
+        <section id="tab-dungeon" class="tab-content active space-y-3">
+            
+            <!-- Селектор подземелий по рангам -->
+            <div class="system-window rounded-xl p-3">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="font-system text-xs text-cyan-400 tracking-wider">ВРАТА ПОДЗЕМЕЛИЙ</span>
+                    <span class="text-[11px] text-slate-400">Боевая мощь: <strong id="combat-power-display" class="text-amber-400 font-system">120</strong></span>
+                </div>
+                <div id="dungeon-selector" class="flex gap-2 overflow-x-auto pb-1.5">
+                    <!-- Кнопки врат генерируются через JS -->
+                </div>
+            </div>
+
+            <!-- Боевая Арена -->
+            <div id="battle-arena" class="relative system-window
