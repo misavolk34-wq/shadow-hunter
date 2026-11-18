@@ -13,22 +13,25 @@
       background: #0f0f13;
       color: #e0e0e0;
       min-height: 100vh;
-      padding: 20px;
-      padding-top: 40px;
+      padding: 16px;
+      padding-top: 30px;
     }
-    h1 { text-align: center; font-size: 26px; color: #a78bfa; margin-bottom: 8px; }
-    .subtitle { text-align: center; opacity: 0.7; margin-bottom: 30px; font-size: 15px; }
-    .classes { display: flex; flex-direction: column; gap: 12px; margin-bottom: 30px; }
+    h1 { text-align: center; font-size: 24px; color: #a78bfa; margin-bottom: 6px; }
+    .subtitle { text-align: center; opacity: 0.7; margin-bottom: 24px; font-size: 14px; }
+
+    /* Создание персонажа */
+    .classes { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
     .class-card {
       background: #1a1a24;
       border: 2px solid #2a2a3a;
       border-radius: 14px;
-      padding: 16px;
+      padding: 14px;
       cursor: pointer;
     }
     .class-card.selected { border-color: #7c3aed; background: #221a35; }
-    .class-card h3 { font-size: 18px; margin-bottom: 6px; color: #c4b5fd; }
-    .class-card p { font-size: 13px; opacity: 0.75; line-height: 1.4; }
+    .class-card h3 { font-size: 17px; margin-bottom: 4px; color: #c4b5fd; }
+    .class-card p { font-size: 13px; opacity: 0.75; }
+
     input {
       width: 100%;
       padding: 14px;
@@ -37,24 +40,55 @@
       background: #1a1a24;
       color: white;
       font-size: 16px;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
       outline: none;
     }
     input:focus { border-color: #7c3aed; }
+
     .btn {
       width: 100%;
       background: #7c3aed;
       color: white;
       border: none;
-      padding: 16px;
+      padding: 15px;
       border-radius: 12px;
-      font-size: 17px;
+      font-size: 16px;
       font-weight: 600;
+      margin-bottom: 10px;
     }
     .btn:disabled { background: #3f3f46; }
+    .btn-secondary {
+      background: #1a1a24;
+      border: 1px solid #3f3f46;
+    }
+
+    /* Главный экран */
+    .hidden { display: none !important; }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 20px 0;
+    }
+    .stat-card {
+      background: #1a1a24;
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+    }
+    .stat-card .label { font-size: 12px; opacity: 0.6; margin-bottom: 4px; }
+    .stat-card .value { font-size: 18px; font-weight: 600; color: #c4b5fd; }
+
+    .character-header {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .character-header .name { font-size: 22px; font-weight: 700; color: #e0e0e0; }
+    .character-header .class-level { font-size: 14px; opacity: 0.7; margin-top: 4px; }
+
     .message {
       text-align: center;
-      margin-top: 20px;
+      margin-top: 16px;
       padding: 12px;
       border-radius: 10px;
       display: none;
@@ -64,27 +98,54 @@
   </style>
 </head>
 <body>
-  <h1>Shadow Hunter</h1>
-  <p class="subtitle">Создай своего охотника</p>
 
-  <div class="classes">
-    <div class="class-card" onclick="selectClass('warrior', this)">
-      <h3>Воин</h3>
-      <p>Высокое здоровье и защита. Идеален для ближнего боя.</p>
+  <!-- Экран создания персонажа -->
+  <div id="createScreen">
+    <h1>Shadow Hunter</h1>
+    <p class="subtitle">Создай своего охотника</p>
+
+    <div class="classes">
+      <div class="class-card" onclick="selectClass('warrior', this)">
+        <h3>Воин</h3>
+        <p>Высокое здоровье и защита. Идеален для ближнего боя.</p>
+      </div>
+      <div class="class-card" onclick="selectClass('assassin', this)">
+        <h3>Убийца</h3>
+        <p>Высокий урон и шанс критического удара.</p>
+      </div>
+      <div class="class-card" onclick="selectClass('mage', this)">
+        <h3>Маг</h3>
+        <p>Мощные заклинания, но хрупкий.</p>
+      </div>
     </div>
-    <div class="class-card" onclick="selectClass('assassin', this)">
-      <h3>Убийца</h3>
-      <p>Высокий урон и шанс критического удара. Быстрый и смертоносный.</p>
-    </div>
-    <div class="class-card" onclick="selectClass('mage', this)">
-      <h3>Маг</h3>
-      <p>Мощные заклинания, но хрупкий. Силён на расстоянии.</p>
-    </div>
+
+    <input type="text" id="nameInput" placeholder="Введи имя охотника" maxlength="16">
+    <button class="btn" id="createBtn" onclick="createCharacter()" disabled>Создать персонажа</button>
+    <div id="message" class="message"></div>
   </div>
 
-  <input type="text" id="nameInput" placeholder="Введи имя охотника" maxlength="16">
-  <button class="btn" id="createBtn" onclick="createCharacter()" disabled>Создать персонажа</button>
-  <div id="message" class="message"></div>
+  <!-- Главный экран персонажа -->
+  <div id="mainScreen" class="hidden">
+    <div class="character-header">
+      <div class="name" id="charName">—</div>
+      <div class="class-level" id="charClassLevel">—</div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card"><div class="label">Уровень</div><div class="value" id="statLevel">1</div></div>
+      <div class="stat-card"><div class="label">Опыт</div><div class="value" id="statExp">0</div></div>
+      <div class="stat-card"><div class="label">Здоровье</div><div class="value" id="statHp">0</div></div>
+      <div class="stat-card"><div class="label">Атака</div><div class="value" id="statAttack">0</div></div>
+      <div class="stat-card"><div class="label">Защита</div><div class="value" id="statDefense">0</div></div>
+      <div class="stat-card"><div class="label">Скорость</div><div class="value" id="statSpeed">0</div></div>
+      <div class="stat-card"><div class="label">Крит. шанс</div><div class="value" id="statCritChance">0%</div></div>
+      <div class="stat-card"><div class="label">Золото</div><div class="value" id="statGold">0</div></div>
+    </div>
+
+    <button class="btn" onclick="alert('Подземелья скоро появятся!')">Врата (Охота)</button>
+    <button class="btn btn-secondary" onclick="alert('Инвентарь в разработке')">Инвентарь</button>
+    <button class="btn btn-secondary" onclick="alert('Рейтинг скоро')">Таблица лидеров</button>
+  </div>
 
   <script>
     const tg = window.Telegram.WebApp;
@@ -92,11 +153,11 @@
     tg.expand();
 
     const SUPABASE_URL = 'https://optytvvqevlzmzqlcgah.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_NrlPlzEcCy0SM9G5MXHvXQ_XDvs2RJM';
-
+    const SUPABASE_KEY = 'sb_publishable_Nr1PlzEcCy0SM9G5MXHvXQ_XDvs2RJM';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let selectedClass = null;
+    let currentCharacter = null;
 
     const classStats = {
       warrior:  { hp: 120, attack: 12, defense: 15, speed: 8,  crit_chance: 5,  crit_damage: 150 },
@@ -104,10 +165,34 @@
       mage:     { hp: 80,  attack: 20, defense: 6,  speed: 10, crit_chance: 8,  crit_damage: 160 }
     };
 
+    const classNames = {
+      warrior: 'Воин',
+      assassin: 'Убийца',
+      mage: 'Маг'
+    };
+
+    // При загрузке проверяем, есть ли уже персонаж
+    async function init() {
+      const telegramId = tg.initDataUnsafe?.user?.id;
+      if (!telegramId) {
+        // Если нет данных Telegram — просто показываем создание
+        return;
+      }
+
+      const { data, error } = await supabaseClient
+        .from('characters1')
+        .select('*')
+        .eq('telegram_id', telegramId)
+        .limit(1);
+
+      if (data && data.length > 0) {
+        currentCharacter = data[0];
+        showMainScreen(currentCharacter);
+      }
+    }
+
     function selectClass(className, element) {
-      document.querySelectorAll('.class-card').forEach(card => {
-        card.classList.remove('selected');
-      });
+      document.querySelectorAll('.class-card').forEach(card => card.classList.remove('selected'));
       element.classList.add('selected');
       selectedClass = className;
       checkForm();
@@ -115,8 +200,7 @@
 
     function checkForm() {
       const name = document.getElementById('nameInput').value.trim();
-      const btn = document.getElementById('createBtn');
-      btn.disabled = !(selectedClass && name.length >= 2);
+      document.getElementById('createBtn').disabled = !(selectedClass && name.length >= 2);
     }
 
     document.getElementById('nameInput').addEventListener('input', checkForm);
@@ -147,7 +231,8 @@
           crit_chance: stats.crit_chance,
           crit_damage: stats.crit_damage,
           gold: 100
-        }]);
+        }])
+        .select();
 
       const messageEl = document.getElementById('message');
       messageEl.style.display = 'block';
@@ -158,11 +243,29 @@
         btn.disabled = false;
         btn.textContent = 'Создать персонажа';
       } else {
-        messageEl.className = 'message success';
-        messageEl.textContent = 'Охотник ' + name + ' успешно создан!';
-        btn.textContent = 'Создано';
+        currentCharacter = data[0];
+        showMainScreen(currentCharacter);
       }
     }
+
+    function showMainScreen(char) {
+      document.getElementById('createScreen').classList.add('hidden');
+      document.getElementById('mainScreen').classList.remove('hidden');
+
+      document.getElementById('charName').textContent = char.name;
+      document.getElementById('charClassLevel').textContent = `${classNames[char.class] || char.class} • Уровень ${char.level}`;
+      document.getElementById('statLevel').textContent = char.level;
+      document.getElementById('statExp').textContent = char.exp;
+      document.getElementById('statHp').textContent = char.hp;
+      document.getElementById('statAttack').textContent = char.attack;
+      document.getElementById('statDefense').textContent = char.defense;
+      document.getElementById('statSpeed').textContent = char.speed;
+      document.getElementById('statCritChance').textContent = char.crit_chance + '%';
+      document.getElementById('statGold').textContent = char.gold;
+    }
+
+    // Запускаем проверку при загрузке
+    init();
   </script>
 </body>
 </html>
