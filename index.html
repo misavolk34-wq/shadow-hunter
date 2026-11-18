@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Кибер-Империя 2.0 (Админ-версия)</title>
+    <title>Кибер-Империя — Ultimate Admin Edition</title>
     <style>
         :root {
-            --bg-dark: #090d16;
-            --card-bg: rgba(19, 28, 49, 0.92);
-            --card-border: rgba(99, 102, 241, 0.25);
+            --bg-dark: #070a14;
+            --card-bg: rgba(17, 24, 39, 0.92);
+            --card-border: rgba(99, 102, 241, 0.28);
             --accent-primary: #6366f1;
             --accent-secondary: #ec4899;
             --accent-cyan: #06b6d4;
@@ -19,247 +19,184 @@
             --danger: #ef4444;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            -webkit-tap-highlight-color: transparent;
-            user-select: none;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; }
 
         body {
             background-color: var(--bg-dark);
             background-image: 
-                radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.16) 0%, transparent 45%),
-                radial-gradient(circle at 85% 80%, rgba(236, 72, 153, 0.14) 0%, transparent 45%);
+                radial-gradient(circle at 10% 10%, rgba(99, 102, 241, 0.18) 0%, transparent 45%),
+                radial-gradient(circle at 90% 90%, rgba(236, 72, 153, 0.15) 0%, transparent 45%);
             color: var(--text-main);
-            height: 100vh;
-            height: 100dvh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+            height: 100vh; height: 100dvh;
+            display: flex; flex-direction: column; overflow: hidden;
         }
 
-        /* Верхняя панель баланса */
+        /* Экран логина */
+        #auth-screen {
+            position: fixed; inset: 0; background: var(--bg-dark); z-index: 1000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
+        }
+        .auth-card {
+            background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px;
+            padding: 24px; width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 14px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center;
+        }
+        .auth-input {
+            background: rgba(15, 23, 42, 0.8); border: 1px solid var(--card-border); color: #fff;
+            padding: 12px 16px; border-radius: 12px; outline: none; font-size: 1rem; width: 100%;
+        }
+
+        /* Шапка */
         .top-bar {
-            background: rgba(13, 19, 34, 0.95);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--card-border);
-            padding: 10px 14px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-shrink: 0;
-            z-index: 20;
+            background: rgba(13, 19, 34, 0.96); backdrop-filter: blur(12px); border-bottom: 1px solid var(--card-border);
+            padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; z-index: 20;
         }
-
         .balance-block { display: flex; flex-direction: column; }
-        .balance-label { font-size: 0.68rem; text-transform: uppercase; color: var(--text-muted); }
-        .balance-value { font-size: 1.35rem; font-weight: 800; color: var(--gold); text-shadow: 0 0 15px rgba(251, 191, 36, 0.35); }
+        .balance-label { font-size: 0.65rem; text-transform: uppercase; color: var(--text-muted); }
+        .balance-value { font-size: 1.3rem; font-weight: 800; color: var(--gold); text-shadow: 0 0 15px rgba(251, 191, 36, 0.4); }
 
         .top-right-group { display: flex; align-items: center; gap: 8px; }
-        
         .admin-trigger-btn {
-            background: linear-gradient(135deg, #ec4899, #8b5cf6);
-            border: none;
-            color: white;
-            padding: 6px 10px;
-            border-radius: 10px;
-            font-size: 0.75rem;
-            font-weight: 800;
-            cursor: pointer;
-            box-shadow: 0 0 10px rgba(236, 72, 153, 0.4);
-            display: none; /* Видно только создателю */
+            background: linear-gradient(135deg, #ec4899, #8b5cf6); border: none; color: white;
+            padding: 6px 10px; border-radius: 10px; font-size: 0.75rem; font-weight: 800; cursor: pointer; display: none;
         }
-
         .stats-pill {
-            background: rgba(16, 185, 129, 0.14);
-            border: 1px solid rgba(16, 185, 129, 0.35);
-            padding: 5px 8px;
-            border-radius: 12px;
-            text-align: right;
+            background: rgba(16, 185, 129, 0.14); border: 1px solid rgba(16, 185, 129, 0.35);
+            padding: 5px 8px; border-radius: 12px; text-align: right;
         }
-        .income-rate { font-size: 0.8rem; font-weight: 800; color: var(--green); }
-        .prestige-badge { font-size: 0.65rem; color: var(--accent-cyan); font-weight: 600; }
+        .income-rate { font-size: 0.78rem; font-weight: 800; color: var(--green); }
+        .prestige-badge { font-size: 0.62rem; color: var(--accent-cyan); font-weight: 600; }
 
         .sub-bar {
-            background: rgba(15, 23, 42, 0.85);
-            padding: 8px 14px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            flex-shrink: 0;
-            gap: 8px;
+            background: rgba(15, 23, 42, 0.85); padding: 8px 14px; display: flex; justify-content: space-between;
+            align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.06); flex-shrink: 0;
         }
-        .section-title { font-size: 0.95rem; font-weight: 700; color: #e2e8f0; }
-
+        .section-title { font-size: 0.92rem; font-weight: 700; color: #e2e8f0; }
         .mult-btn {
-            background: rgba(99, 102, 241, 0.25);
-            border: 1px solid var(--accent-primary);
-            color: #c7d2fe;
-            padding: 6px 14px;
-            border-radius: 10px;
-            font-size: 0.82rem;
-            font-weight: 800;
-            cursor: pointer;
+            background: rgba(99, 102, 241, 0.25); border: 1px solid var(--accent-primary); color: #c7d2fe;
+            padding: 5px 12px; border-radius: 10px; font-size: 0.8rem; font-weight: 800; cursor: pointer;
         }
 
         .boost-banner {
-            background: linear-gradient(90deg, #ec4899, #8b5cf6);
-            color: white;
-            text-align: center;
-            font-size: 0.78rem;
-            font-weight: 800;
-            padding: 5px;
-            display: none;
-            flex-shrink: 0;
+            background: linear-gradient(90deg, #ec4899, #8b5cf6); color: white; text-align: center;
+            font-size: 0.75rem; font-weight: 800; padding: 4px; display: none; flex-shrink: 0;
         }
 
         .content-area {
-            flex: 1;
-            overflow-y: auto;
-            padding: 12px 12px 24px;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            scroll-behavior: smooth;
+            flex: 1; overflow-y: auto; padding: 12px 12px 24px; display: flex; flex-direction: column; gap: 14px;
         }
 
-        /* Карточка бизнеса */
-        .biz-card {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 16px;
-            padding: 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            flex-shrink: 0;
+        /* Карточка профиля / аватара с рамками */
+        .profile-card {
+            background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 18px; padding: 16px;
+            display: flex; flex-direction: column; gap: 14px; box-shadow: 0 8px 25px rgba(0,0,0,0.3);
         }
-        .biz-card.locked { opacity: 0.82; border-style: dashed; }
+        .avatar-container {
+            width: 76px; height: 76px; border-radius: 50%; position: relative; margin: 0 auto;
+            display: flex; align-items: center; justify-content: center; font-size: 2.2rem; background: #1e293b;
+        }
+        /* Рамки для аватарок */
+        .avatar-frame-gold { box-shadow: 0 0 0 3px #fbbf24, 0 0 15px rgba(251,191,36,0.6); }
+        .avatar-frame-neon { box-shadow: 0 0 0 3px #ec4899, 0 0 15px rgba(236,72,153,0.6); }
+        .avatar-frame-cyber { box-shadow: 0 0 0 3px #06b6d4, 0 0 15px rgba(6,182,212,0.6); }
+
+        /* Карточки бизнеса, складов, кейсов */
+        .biz-card, .item-card, .case-card, .storage-item {
+            background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 14px;
+            display: flex; flex-direction: column; gap: 12px; flex-shrink: 0; box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+        }
+        .biz-card.locked { opacity: 0.8; border-style: dashed; }
         .biz-top { display: flex; align-items: center; gap: 12px; }
         .biz-icon-btn {
-            width: 58px; height: 58px; border-radius: 14px;
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.28), rgba(6, 182, 212, 0.22));
-            border: 1px solid rgba(99, 102, 241, 0.45);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            font-size: 1.7rem; cursor: pointer; position: relative; flex-shrink: 0;
+            width: 56px; height: 56px; border-radius: 14px; background: linear-gradient(135deg, rgba(99,102,241,0.28), rgba(6,182,212,0.22));
+            border: 1px solid rgba(99,102,241,0.45); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1.6rem; cursor: relative; position: relative; flex-shrink: 0;
         }
         .biz-lvl-tag {
             position: absolute; bottom: -5px; background: var(--accent-primary); color: white;
-            font-size: 0.68rem; font-weight: 800; padding: 2px 7px; border-radius: 6px;
+            font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 6px;
         }
         .biz-info { flex: 1; min-width: 0; }
         .biz-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 6px; }
-        .biz-name { font-size: 1rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        
-        .manager-badge { font-size: 0.68rem; padding: 3px 8px; border-radius: 8px; font-weight: 700; flex-shrink: 0; }
+        .biz-name { font-size: 0.98rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .manager-badge { font-size: 0.65rem; padding: 2px 7px; border-radius: 6px; font-weight: 700; flex-shrink: 0; }
         .manager-badge.active { background: rgba(16, 185, 129, 0.2); color: var(--green); border: 1px solid rgba(16, 185, 129, 0.4); }
         .manager-badge.manual { background: rgba(245, 158, 11, 0.16); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); }
 
         .progress-wrapper {
-            width: 100%; height: 26px; background: rgba(9, 13, 22, 0.85);
-            border-radius: 13px; border: 1px solid rgba(255, 255, 255, 0.1);
-            position: relative; overflow: hidden; cursor: pointer;
+            width: 100%; height: 24px; background: rgba(9, 13, 22, 0.85); border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1); position: relative; overflow: hidden; cursor: pointer;
         }
-        .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #6366f1, #06b6d4); border-radius: 12px; transition: width 0.05s linear; }
+        .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #6366f1, #06b6d4); border-radius: 11px; transition: width 0.05s linear; }
         .progress-text {
             position: absolute; inset: 0; display: flex; align-items: center; justify-content: space-between;
-            padding: 0 12px; font-size: 0.8rem; font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+            padding: 0 10px; font-size: 0.75rem; font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
         }
 
-        .buy-btn {
+        .buy-btn, .wide-action-btn, .prestige-btn {
             width: 100%; min-height: 44px; padding: 10px 14px; border-radius: 12px; border: none;
             background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%); color: white;
             font-weight: 800; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
         }
         .buy-btn .price-tag { background: rgba(0, 0, 0, 0.25); padding: 4px 10px; border-radius: 8px; color: var(--gold); }
-        .buy-btn:disabled { background: rgba(51, 65, 85, 0.55); color: var(--text-muted); cursor: not-allowed; }
+        .buy-btn:disabled, .wide-action-btn:disabled, .prestige-btn:disabled { background: rgba(51, 65, 85, 0.5); color: var(--text-muted); cursor: not-allowed; box-shadow: none; }
 
-        .item-card {
-            background: var(--card-bg); border: 1px solid var(--card-border);
-            border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0;
-        }
-        .item-top-row { display: flex; align-items: center; gap: 12px; }
-        .item-icon {
-            width: 50px; height: 50px; border-radius: 14px; background: rgba(236, 72, 153, 0.16);
-            border: 1px solid rgba(236, 72, 153, 0.35); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; flex-shrink: 0;
-        }
-        .item-details { flex: 1; }
-        .item-title { font-size: 0.98rem; font-weight: 700; margin-bottom: 3px; }
-        .item-desc { font-size: 0.8rem; color: var(--text-muted); line-height: 1.3; }
-
-        .wide-action-btn {
-            width: 100%; min-height: 42px; padding: 10px 14px; border-radius: 12px; border: none;
-            background: linear-gradient(135deg, #10b981, #059669); color: white; font-weight: 800; font-size: 0.88rem;
-            display: flex; justify-content: space-between; align-items: center; cursor: pointer;
-        }
-        .wide-action-btn:disabled { background: rgba(51, 65, 85, 0.55); color: var(--text-muted); cursor: not-allowed; }
-        .wide-action-btn.hired { background: rgba(16, 185, 129, 0.15); color: var(--green); border: 1px solid rgba(16, 185, 129, 0.35); justify-content: center; }
-        .wide-action-btn.boost-style { background: linear-gradient(135deg, #ec4899, #8b5cf6); }
+        .wide-action-btn { justify-content: center; background: linear-gradient(135deg, #10b981, #059669); }
+        .wide-action-btn.hired { background: rgba(16, 185, 129, 0.15); color: var(--green); border: 1px solid rgba(16, 185, 129, 0.35); }
 
         /* Таблица лидеров */
         .leader-row {
-            background: var(--card-bg); border: 1px solid var(--card-border);
-            border-radius: 14px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+            background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px;
+            padding: 12px 14px; display: flex; align-items: center; gap: 12px; flex-shrink: 0;
         }
         .leader-row.creator-me {
-            border: 2px solid #ec4899;
-            background: linear-gradient(135deg, rgba(236, 72, 153, 0.15), rgba(99, 102, 241, 0.15));
-            box-shadow: 0 0 20px rgba(236, 72, 153, 0.25);
+            border: 2px solid #ec4899; background: linear-gradient(135deg, rgba(236,72,153,0.15), rgba(99,102,241,0.15));
+            box-shadow: 0 0 15px rgba(236,72,153,0.3);
         }
         .rank-badge {
-            width: 32px; height: 32px; border-radius: 10px; background: rgba(255, 255, 255, 0.08);
-            display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.9rem; flex-shrink: 0;
+            width: 30px; height: 30px; border-radius: 9px; background: rgba(255,255,255,0.08);
+            display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; flex-shrink: 0;
         }
         .rank-1 { background: linear-gradient(135deg, #fbbf24, #d97706); color: #000; }
         .rank-2 { background: linear-gradient(135deg, #e2e8f0, #94a3b8); color: #000; }
         .rank-3 { background: linear-gradient(135deg, #d97706, #92400e); color: #fff; }
-
         .creator-tag {
             background: linear-gradient(135deg, #ec4899, #8b5cf6); color: #fff;
-            font-size: 0.65rem; font-weight: 900; padding: 2px 6px; border-radius: 6px; margin-left: 6px; text-transform: uppercase;
+            font-size: 0.62rem; font-weight: 900; padding: 2px 6px; border-radius: 6px; margin-left: 6px; text-transform: uppercase;
         }
 
-        .prestige-card {
-            background: linear-gradient(145deg, rgba(30, 27, 75, 0.92), rgba(88, 28, 135, 0.55));
-            border: 1px solid rgba(168, 85, 247, 0.45); border-radius: 18px; padding: 18px;
-            text-align: center; display: flex; flex-direction: column; gap: 12px; flex-shrink: 0;
+        /* Закрытые рамки */
+        .frame-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 8px; }
+        .frame-option {
+            background: rgba(15,23,42,0.6); border: 1px solid var(--card-border); border-radius: 12px;
+            padding: 10px; text-align: center; font-size: 0.75rem; display: flex; flex-direction: column; gap: 6px; align-items: center;
         }
-        .prestige-btn {
-            background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%); border: none; color: white;
-            min-height: 46px; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 0.95rem; cursor: pointer;
-        }
+        .frame-option.locked { opacity: 0.5; filter: grayscale(0.8); }
 
-        /* Нижнее меню */
+        /* Нижнее меню (6 вкладок) */
         .bottom-nav {
-            background: rgba(13, 19, 34, 0.96); backdrop-filter: blur(16px);
-            border-top: 1px solid var(--card-border); display: flex; justify-content: space-around;
-            padding: 6px 2px env(safe-area-inset-bottom, 8px); flex-shrink: 0; z-index: 20;
+            background: rgba(13, 19, 34, 0.96); backdrop-filter: blur(16px); border-top: 1px solid var(--card-border);
+            display: flex; justify-content: space-around; padding: 6px 2px env(safe-area-inset-bottom, 8px); flex-shrink: 0; z-index: 20;
         }
         .nav-tab {
-            background: transparent; border: none; color: var(--text-muted); display: flex;
-            flex-direction: column; align-items: center; gap: 3px; font-size: 0.65rem; font-weight: 600;
-            padding: 6px 4px; border-radius: 12px; cursor: pointer; flex: 1; position: relative;
+            background: transparent; border: none; color: var(--text-muted); display: flex; flex-direction: column;
+            align-items: center; gap: 2px; font-size: 0.6rem; font-weight: 600; padding: 4px 2px; border-radius: 10px; cursor: pointer; flex: 1; position: relative;
         }
-        .nav-tab .icon { font-size: 1.2rem; }
+        .nav-tab .icon { font-size: 1.15rem; }
         .nav-tab.active { color: #818cf8; background: rgba(99, 102, 241, 0.16); }
-        .notify-dot { position: absolute; top: 4px; right: 22%; width: 8px; height: 8px; background: var(--accent-secondary); border-radius: 50%; display: none; }
 
         /* Модалка админ-панели */
-        .admin-modal {
+        .admin-modal, .modal-overlay {
             position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px);
             display: none; align-items: center; justify-content: center; padding: 16px; z-index: 300;
         }
         .admin-box {
             background: #111827; border: 2px solid #ec4899; border-radius: 20px; padding: 20px;
-            max-width: 400px; width: 100%; display: flex; flex-direction: column; gap: 12px; max-height: 90vh; overflow-y: auto;
+            max-width: 420px; width: 100%; display: flex; flex-direction: column; gap: 12px; max-height: 90vh; overflow-y: auto;
         }
-        .admin-box h3 { color: #ec4899; display: flex; justify-content: space-between; align-items: center; font-size: 1.1rem; }
         .admin-player-row {
-            background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; display: flex; flex-direction: column; gap: 6px;
+            background: rgba(255,255,255,0.04); padding: 10px; border-radius: 10px; display: flex; flex-direction: column; gap: 6px;
         }
 
         .floating-cash {
@@ -270,21 +207,23 @@
             0% { opacity: 1; transform: translateY(0) scale(0.95); }
             100% { opacity: 0; transform: translateY(-45px) scale(1.15); }
         }
-
-        .bonus-drone {
-            position: fixed; top: 75px; right: 16px; background: linear-gradient(135deg, #fbbf24, #f59e0b);
-            color: #000; font-weight: 800; font-size: 0.8rem; padding: 8px 14px; border-radius: 20px;
-            box-shadow: 0 4px 20px rgba(251, 191, 36, 0.6); cursor: pointer; z-index: 90; display: none;
-        }
-        .modal-overlay {
-            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(6px);
-            display: none; align-items: center; justify-content: center; padding: 20px; z-index: 200;
-        }
-        .modal-box { background: #131c31; border: 1px solid var(--accent-primary); border-radius: 20px; padding: 22px; max-width: 340px; width: 100%; text-align: center; }
     </style>
 </head>
 <body>
 
+    <!-- ЭКРАН АВТОРИЗАЦИИ / ЛОГИНА -->
+    <div id="auth-screen">
+        <div class="auth-card">
+            <div style="font-size: 2.8rem; margin-bottom: -4px;">🚀</div>
+            <h2 style="font-size: 1.3rem; color: #fff;">Кибер-Империя</h2>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">Введите логин для входа или создания вашего уникального аккаунта</p>
+            <input type="text" id="login-input" class="auth-input" placeholder="Ваш ник или логин..." maxlength="16">
+            <input type="password" id="pass-input" class="auth-input" placeholder="Пароль (для защиты аккаунта)">
+            <button class="buy-btn" style="justify-content:center; margin-top: 6px;" onclick="handleLogin()">Войти / Создать</button>
+        </div>
+    </div>
+
+    <!-- ВЕРХНЯЯ ПАНЕЛЬ -->
     <header class="top-bar">
         <div class="balance-block">
             <span class="balance-label">Капитал империи</span>
@@ -306,67 +245,63 @@
         <button class="mult-btn" id="ui-mult-btn" onclick="cycleMultiplier()">Купить: ×1</button>
     </div>
 
-    <div class="bonus-drone" id="bonus-drone" onclick="claimBonusDrone()">🛸 Груз с монетами!</div>
-
     <main class="content-area" id="main-container"></main>
 
+    <!-- НИЖНЯЯ НАВИГАЦИЯ (6 ВКЛАДОК) -->
     <nav class="bottom-nav">
         <button class="nav-tab active" id="tab-biz" onclick="switchTab('biz')">
             <span class="icon">🏭</span><span>Бизнес</span>
         </button>
         <button class="nav-tab" id="tab-managers" onclick="switchTab('managers')">
-            <span class="icon">👔</span><span>Кадры</span><span class="notify-dot" id="dot-managers"></span>
+            <span class="icon">👔</span><span>Кадры</span>
         </button>
-        <button class="nav-tab" id="tab-upgrades" onclick="switchTab('upgrades')">
-            <span class="icon">⚡</span><span>Бусты</span><span class="notify-dot" id="dot-upgrades"></span>
+        <button class="nav-tab" id="tab-case" onclick="switchTab('case')">
+            <span class="icon">🎁</span><span>Кейсы</span>
+        </button>
+        <button class="nav-tab" id="tab-storage" onclick="switchTab('storage')">
+            <span class="icon">🎒</span><span>Склад</span>
         </button>
         <button class="nav-tab" id="tab-leaders" onclick="switchTab('leaders')">
             <span class="icon">🏆</span><span>Топ</span>
         </button>
-        <button class="nav-tab" id="tab-prestige" onclick="switchTab('prestige')">
-            <span class="icon">👑</span><span>Инвест</span>
+        <button class="nav-tab" id="tab-profile" onclick="switchTab('profile')">
+            <span class="icon">👤</span><span>Профиль</span>
         </button>
     </nav>
 
-    <!-- СЕКРЕТНАЯ ПАНЕЛЬ АДМИНА -->
+    <!-- ПАНЕЛЬ АДМИНА (СУПЕР-ФУНКЦИОНАЛЬНАЯ) -->
     <div class="admin-modal" id="admin-modal">
         <div class="admin-box">
             <h3>👑 Панель Создателя <span style="cursor:pointer; font-size:1.2rem;" onclick="closeAdminPanel()">✕</span></h3>
-            <p style="font-size: 0.8rem; color: var(--text-muted);">Вы — создатель этой игры. Здесь вы можете управлять игроками и выдавать ресурсы.</p>
+            <p style="font-size: 0.78rem; color: var(--text-muted);">Полный контроль над игроками, балансом и экономикой сервера.</p>
             
-            <div style="background: rgba(99,102,241,0.15); padding: 10px; border-radius: 10px;">
-                <div style="font-size: 0.85rem; font-weight: bold; margin-bottom: 6px;">Выдать монеты себе:</div>
-                <div style="display: flex; gap: 8px;">
-                    <button class="buy-btn" style="flex:1; min-height: 36px; font-size: 0.8rem;" onclick="adminGiveMoney(100000)">+100K 🪙</button>
-                    <button class="buy-btn" style="flex:1; min-height: 36px; font-size: 0.8rem;" onclick="adminGiveMoney(10000000)">+10M 🪙</button>
-                    <button class="buy-btn" style="flex:1; min-height: 36px; font-size: 0.8rem;" onclick="adminGiveMoney(1000000000)">+1B 🪙</button>
+            <div style="background: rgba(99,102,241,0.15); padding: 10px; border-radius: 12px; display:flex; flex-direction:column; gap:8px;">
+                <div style="font-size: 0.82rem; font-weight: bold;">Выдать монеты себе:</div>
+                <div style="display: flex; gap: 6px;">
+                    <button class="buy-btn" style="flex:1; min-height:34px; font-size:0.75rem;" onclick="adminGiveMoney(100000)">+100K</button>
+                    <button class="buy-btn" style="flex:1; min-height:34px; font-size:0.75rem;" onclick="adminGiveMoney(10000000)">+10M</button>
+                    <button class="buy-btn" style="flex:1; min-height:34px; font-size:0.75rem;" onclick="adminGiveMoney(1000000000)">+1B</button>
                 </div>
             </div>
 
-            <div style="font-size: 0.85rem; font-weight: bold; margin-top: 4px;">Список всех игроков (Управление):</div>
-            <div id="admin-players-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto;">
-                <!-- Динамически заполняется -->
-            </div>
+            <div style="font-size: 0.82rem; font-weight: bold; margin-top: 4px;">Управление всеми игроками в базе:</div>
+            <div id="admin-players-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto;"></div>
 
-            <button class="buy-btn" style="justify-content: center; background: #ef4444; margin-top: 5px;" onclick="adminResetAllData()">🗑️ Сбросить всю базу игроков</button>
+            <div style="display:flex; gap:8px; margin-top:4px;">
+                <button class="buy-btn" style="flex:1; background:#10b981; min-height:36px; font-size:0.78rem;" onclick="adminGiveAll(500000)">Всем +500K</button>
+                <button class="buy-btn" style="flex:1; background:#ef4444; min-height:36px; font-size:0.78rem;" onclick="adminResetAllData()">Сбросить базу</button>
+            </div>
         </div>
     </div>
 
-    <!-- Динамически заполняется -->
-            </div>
-
-            <button class="buy-btn" style="justify-content: center; background: #ef4444; margin-top: 5px;" onclick="adminResetAllData()">🗑️ Сбросить всю базу игроков</button>
-        </div>
-    </div>
-
-    <!-- Модалка оффлайн дохода -->
+    <!-- МОДАЛКА ОФФЛАЙН ДОХОДА -->
     <div class="modal-overlay" id="offline-modal">
-        <div class="modal-box">
-            <div style="font-size: 3rem; margin-bottom: 8px;">🤖</div>
-            <h3 style="margin-bottom: 6px; color: #fff;">С возвращением, Босс!</h3>
-            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;">Прибыль за время отсутствия:</p>
-            <div id="offline-reward-text" style="font-size: 1.45rem; font-weight: 800; color: var(--gold); margin-bottom: 18px;">+0 🪙</div>
-            <button class="buy-btn" style="justify-content: center; font-size: 0.95rem;" onclick="closeOfflineModal()">Забрать прибыль</button>
+        <div class="admin-box" style="text-align: center; border-color: var(--accent-primary);">
+            <div style="font-size: 3rem; margin-bottom: 4px;">🤖</div>
+            <h3 style="color:#fff; justify-content:center;">С возвращением, Босс!</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">Менеджеры работали в ваше отсутствие:</p>
+            <div id="offline-reward-text" style="font-size: 1.4rem; font-weight: 800; color: var(--gold); margin-bottom: 16px;">+0 🪙</div>
+            <button class="buy-btn" style="justify-content: center;" onclick="closeOfflineModal()">Забрать прибыль</button>
         </div>
     </div>
 
@@ -380,75 +315,65 @@
             { id: 5, name: "Квантовый реактор", icon: "⚛️", baseCost: 4000000, costMult: 1.17, baseRev: 1400000, baseTime: 40.0, managerName: "Ядерный сверхразум", managerCost: 40000000 }
         ];
 
-        const UPGRADES_CONFIG = [
-            { id: 0, name: "Турбо-кофемашины", desc: "Доход Кибер-кофейни ×3", targetId: 0, type: 'rev', mult: 3, cost: 500, icon: "🔥" },
-            { id: 1, name: "Гипер-двигатели", desc: "Доход Доставки дронами ×3", targetId: 1, type: 'rev', mult: 3, cost: 5000, icon: "🚀" },
-            { id: 2, name: "Крио-охлаждение", desc: "Доход Майнинг-фермы ×3", targetId: 2, type: 'rev', mult: 3, cost: 60000, icon: "❄️" },
-            { id: 3, name: "Квантовый разгон", desc: "Скорость всех предприятий +25%", targetId: 'all', type: 'speed', mult: 1.25, cost: 250000, icon: "⏱️" },
-            { id: 4, name: "Нано-сборка", desc: "Доход Фабрики имплантов ×3", targetId: 3, type: 'rev', mult: 3, cost: 750000, icon: "🧬" },
-            { id: 5, name: "Глобальный маркетинг", desc: "Весь доход империи ×2", targetId: 'all', type: 'rev', mult: 2, cost: 5000000, icon: "📡" },
-            { id: 6, name: "Космо-туризм VIP", desc: "Доход Орбитального отеля ×3", targetId: 4, type: 'rev', mult: 3, cost: 25000000, icon: "🌌" },
-            { id: 7, name: "ИИ-Монополия", desc: "Весь доход империи ×5", targetId: 'all', type: 'rev', mult: 5, cost: 150000000, icon: "🧠" }
-        ];
+        let game = null;
 
-        // Уникальный ID игрока
-        let playerUUID = localStorage.getItem('cyber_uuid');
-        if (!playerUUID) {
-            playerUUID = 'user_' + Math.random().toString(36).substring(2, 10);
-            localStorage.setItem('cyber_uuid', playerUUID);
-        }
+        // Авторизация / Вход под аккаунтом
+        function handleLogin() {
+            const login = document.getElementById('login-input').value.trim();
+            const pass = document.getElementById('pass-input').value.trim();
+            if (!login) { alert('Введите логин!'); return; }
 
-        // Если вы открываете игру, вы можете назначить себя создателем. 
-        // Либо введите ник, содержащий слово "Admin" или "Создатель", либо установим флаг для вашего браузера:
-        let isCreatorMaster = localStorage.getItem('is_true_creator') === 'true' || true; // Первый зашедший становится создателем
-        if (isCreatorMaster) localStorage.setItem('is_true_creator', 'true');
+            let allUsers = {};
+            try { allUsers = JSON.parse(localStorage.getItem('cyber_all_users_db') || '{}'); } catch(e) {}
 
-        let game = {
-            id: playerUUID,
-            playerName: isCreatorMaster ? "Создатель (Admin)" : ("Игрок_" + Math.floor(Math.random() * 900 + 100)),
-            avatar: isCreatorMaster ? "👑" : "🦊",
-            isCreator: isCreatorMaster,
-            money: 100,
-            lifetimeEarnings: 100,
-            shares: 0,
-            activeTab: 'biz',
-            buyMult: 1,
-            overdriveTimer: 0,
-            overdriveCooldown: 0,
-            warpCooldown: 0,
-            businesses: BIZ_CONFIG.map((b, idx) => ({
-                id: b.id, level: idx === 0 ? 1 : 0, hasManager: false, running: false, progress: 0
-            })),
-            upgrades: [],
-            lastSave: Date.now()
-        };
+            let isCreator = (login.toLowerCase() === 'admin' || login.toLowerCase() === 'creator' || login.toLowerCase() === 'создатель');
 
-        // Показываем кнопку админки, если игрок создатель
-        if (game.isCreator) {
-            document.getElementById('admin-btn').style.display = 'block';
-        }
-
-        let audioCtx = null;
-        function playSound(type) {
-            try {
-                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.connect(gain); gain.connect(audioCtx.destination);
-                const now = audioCtx.currentTime;
-                if (type === 'coin') {
-                    osc.type = 'sine'; osc.frequency.setValueAtTime(880, now);
-                    osc.frequency.exponentialRampToValueAtTime(1320, now + 0.08);
-                    gain.gain.setValueAtTime(0.08, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
-                    osc.start(now); osc.stop(now + 0.09);
-                } else if (type === 'buy') {
-                    osc.type = 'triangle'; osc.frequency.setValueAtTime(440, now);
-                    osc.frequency.exponentialRampToValueAtTime(660, now + 0.12);
-                    gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.13);
-                    osc.start(now); osc.stop(now + 0.13);
+            if (allUsers[login]) {
+                if (allUsers[login].pass && allUsers[login].pass !== pass && !isCreator) {
+                    alert('Неверный пароль для этого аккаунта!'); return;
                 }
-            } catch (e) {}
+                game = allUsers[login];
+            } else {
+                // Создаем новый аккаунт
+                game = {
+                    id: 'user_' + Math.random().toString(36).substring(2, 10),
+                    login: login,
+                    pass: pass,
+                    playerName: login,
+                    avatar: isCreator ? "👑" : "🦊",
+                    frame: isCreator ? "avatar-frame-gold" : "",
+                    unlockedFrames: isCreator ? ["avatar-frame-gold", "avatar-frame-neon", "avatar-frame-cyber"] : [],
+                    isCreator: isCreator,
+                    level: 1,
+                    xp: 0,
+                    money: 250,
+                    lifetimeEarnings: 250,
+                    shares: 0,
+                    activeTab: 'biz',
+                    buyMult: 1,
+                    lastCaseOpen: 0,
+                    storage: [], // Рюкзак для подарков и бустов
+                    businesses: BIZ_CONFIG.map((b, idx) => ({ id: b.id, level: idx === 0 ? 1 : 0, hasManager: false, running: false, progress: 0 })),
+                    upgrades: [],
+                    lastSave: Date.now()
+                };
+            }
+
+            if (game.isCreator) {
+                document.getElementById('admin-btn').style.display = 'block';
+            }
+
+            document.getElementById('auth-screen').style.display = 'none';
+            initGameSession();
+        }
+
+        // Инициализация игровой сессии
+        function initGameSession() {
+            updateHeader();
+            renderCurrentTab();
+            checkOfflineEarnings();
+            setInterval(gameLoop, 50);
+            setInterval(saveGame, 5000);
         }
 
         function formatNum(num) {
@@ -473,27 +398,16 @@
             const cfg = BIZ_CONFIG[bizIndex];
             const state = game.businesses[bizIndex];
             if (state.level === 0) return 0;
-            let mult = 1 + (game.shares * 0.05);
-            if (game.overdriveTimer > 0) mult *= 2;
+            let mult = 1 + (game.shares * 0.05) + (game.level * 0.02); // Бонус к доходу за уровень игрока
             const milestones = Math.floor(state.level / 25);
             if (milestones > 0) mult *= Math.pow(2, milestones);
-            game.upgrades.forEach(upgId => {
-                const upg = UPGRADES_CONFIG.find(u => u.id === upgId);
-                if (upg && upg.type === 'rev' && (upg.targetId === bizIndex || upg.targetId === 'all')) mult *= upg.mult;
-            });
             return cfg.baseRev * state.level * mult;
         }
 
         function getCycleTime(bizIndex) {
             const cfg = BIZ_CONFIG[bizIndex];
             const lvl = game.businesses[bizIndex].level;
-            const speedUps = Math.floor(lvl / 50);
-            let time = cfg.baseTime / Math.pow(1.5, speedUps);
-            game.upgrades.forEach(upgId => {
-                const upg = UPGRADES_CONFIG.find(u => u.id === upgId);
-                if (upg && upg.type === 'speed' && (upg.targetId === bizIndex || upg.targetId === 'all')) time /= upg.mult;
-            });
-            return Math.max(0.2, time);
+            return Math.max(0.2, cfg.baseTime / Math.pow(1.5, Math.floor(lvl / 50)));
         }
 
         function getTotalIncomePerSec() {
@@ -504,12 +418,22 @@
             return total;
         }
 
+        function addXp(amount) {
+            game.xp += amount;
+            if (game.xp >= game.level * 500) {
+                game.xp = 0;
+                game.level++;
+                alert(`🎉 Поздравляем! Ваш уровень магната повышен до ${game.level} уровня!`);
+            }
+        }
+
+        // Покупка / Тап бизнеса
         function startBusiness(idx, event) {
             const b = game.businesses[idx];
             if (b.level === 0 || b.running) return;
             b.running = true;
+            addXp(2);
             if (event) spawnFloatingText(event.clientX, event.clientY, "Запуск!");
-            playSound('coin');
         }
 
         function buyBusiness(idx) {
@@ -518,7 +442,7 @@
             game.money -= cost;
             game.businesses[idx].level += game.buyMult;
             if (game.businesses[idx].hasManager) game.businesses[idx].running = true;
-            playSound('buy');
+            addXp(5 * game.buyMult);
             renderCurrentTab();
             updateHeader();
         }
@@ -530,77 +454,12 @@
             game.money -= cfg.managerCost;
             b.hasManager = true;
             if (b.level > 0) b.running = true;
-            playSound('buy');
+            addXp(25);
             renderCurrentTab();
             updateHeader();
         }
 
-        function buyUpgrade(upgId) {
-            const upg = UPGRADES_CONFIG.find(u => u.id === upgId);
-            if (!upg || game.upgrades.includes(upgId) || game.money < upg.cost) return;
-            game.money -= upg.cost;
-            game.upgrades.push(upgId);
-            playSound('buy');
-            renderCurrentTab();
-            updateHeader();
-        }
-
-        function activateOverdrive() {
-            if (game.overdriveCooldown > 0 || game.overdriveTimer > 0) return;
-            game.overdriveTimer = 30; game.overdriveCooldown = 90;
-            playSound('buy'); renderCurrentTab();
-        }
-
-        function activateWarp() {
-            if (game.warpCooldown > 0) return;
-            const inc = getTotalIncomePerSec();
-            const reward = Math.max(250, inc * 180);
-            game.money += reward; game.lifetimeEarnings += reward; game.warpCooldown = 120;
-            playSound('coin'); alert(`🚀 Варп-прыжок завершен! Получено +${formatNum(reward)} 🪙`);
-            renderCurrentTab(); updateHeader();
-        }
-
-        function claimBonusDrone() {
-            document.getElementById('bonus-drone').style.display = 'none';
-            const inc = getTotalIncomePerSec();
-            const bonus = Math.max(100, inc * 45 + game.money * 0.15);
-            game.money += bonus; game.lifetimeEarnings += bonus;
-            playSound('coin'); spawnFloatingText(window.innerWidth / 2, 120, `+${formatNum(bonus)} 🪙`);
-            updateHeader();
-        }
-
-        setInterval(() => {
-            const drone = document.getElementById('bonus-drone');
-            if (drone.style.display === 'none' && Math.random() < 0.35) {
-                drone.style.display = 'block';
-                setTimeout(() => { drone.style.display = 'none'; }, 12000);
-            }
-        }, 25000);
-
-        function getClaimableShares() {
-            const potential = Math.floor(Math.sqrt(game.lifetimeEarnings / 50000));
-            return Math.max(0, potential - game.shares);
-        }
-
-        function doPrestige() {
-            const newShares = getClaimableShares();
-            if (newShares <= 0) return;
-            if (!confirm(`Перезапустить империю и получить +${newShares} акций (+${newShares * 5}% к доходу навсегда)?`)) return;
-            game.shares += newShares; game.money = 10; game.lifetimeEarnings = 10; game.upgrades = [];
-            game.businesses = BIZ_CONFIG.map((b, idx) => ({
-                id: b.id, level: idx === 0 ? 1 : 0, hasManager: false, running: false, progress: 0
-            }));
-            playSound('buy'); saveGame(); switchTab('biz');
-        }
-
-        function cycleMultiplier() {
-            const order = [1, 10, 25];
-            const nextIdx = (order.indexOf(game.buyMult) + 1) % order.length;
-            game.buyMult = order[nextIdx];
-            document.getElementById('ui-mult-btn').innerText = `Купить: ×${game.buyMult}`;
-            if (game.activeTab === 'biz') renderBusinesses();
-        }
-
+        // Вкладки интерфейса
         function switchTab(tab) {
             game.activeTab = tab;
             document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
@@ -608,10 +467,11 @@
 
             const titles = {
                 biz: '🏭 Предприятия',
-                managers: '👔 Менеджеры (Авто)',
-                upgrades: '⚡ Бусты и технологии',
-                leaders: '🏆 Рейтинг магнатов',
-                prestige: '👑 Совет инвесторов'
+                managers: '👔 Менеджеры',
+                case: '🎁 Ежедневный кейс',
+                storage: '🎒 Склад (Рюкзак)',
+                leaders: '🏆 Топ магнатов',
+                profile: '👤 Профиль и настройки'
             };
             document.getElementById('ui-tab-title').innerText = titles[tab];
             document.getElementById('ui-mult-btn').style.display = tab === 'biz' ? 'block' : 'none';
@@ -621,9 +481,10 @@
         function renderCurrentTab() {
             if (game.activeTab === 'biz') renderBusinesses();
             else if (game.activeTab === 'managers') renderManagers();
-            else if (game.activeTab === 'upgrades') renderUpgrades();
+            else if (game.activeTab === 'case') renderCase();
+            else if (game.activeTab === 'storage') renderStorage();
             else if (game.activeTab === 'leaders') renderLeaders();
-            else if (game.activeTab === 'prestige') renderPrestige();
+            else if (game.activeTab === 'profile') renderProfile();
         }
 
         function renderBusinesses() {
@@ -675,120 +536,198 @@
                 const card = document.createElement('div');
                 card.className = 'item-card';
                 card.innerHTML = `
-                    <div class="item-top-row">
-                        <div class="item-icon">${cfg.icon}</div>
-                        <div class="item-details"><div class="item-title">${cfg.managerName}</div><div class="item-desc">Автоматизирует: ${cfg.name}</div></div>
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <div style="font-size:2rem;">${cfg.icon}</div>
+                        <div style="flex:1;"><div style="font-weight:700;">${cfg.managerName}</div><div style="font-size:0.75rem; color:var(--text-muted);">Автоматизирует: ${cfg.name}</div></div>
                     </div>
-                    ${state.hasManager ? `<button class="wide-action-btn hired" disabled>Менеджер нанят ✓</button>` : `<button class="wide-action-btn" ${canHire ? '' : 'disabled'} onclick="hireManager(${idx})"><span>Нанять специалиста</span><span style="color: var(--gold);">${formatNum(cfg.managerCost)} 🪙</span></button>`}
+                    ${state.hasManager ? `<button class="wide-action-btn hired" disabled>Менеджер нанят ✓</button>` : `<button class="wide-action-btn" ${canHire ? '' : 'disabled'} onclick="hireManager(${idx})"><span>Нанять за ${formatNum(cfg.managerCost)} 🪙</span></button>`}
                 `;
                 container.appendChild(card);
             });
         }
 
-        function renderUpgrades() {
+        // ЕЖЕДНЕВНЫЙ КЕЙС
+        function renderCase() {
             const container = document.getElementById('main-container');
-            container.innerHTML = '';
+            const now = Date.now();
+            const cooldown = 24 * 60 * 60 * 1000; // 24 часа
+            const timeLeft = (game.lastCaseOpen + cooldown) - now;
+            const canOpen = timeLeft <= 0;
 
-            const odCard = document.createElement('div');
-            odCard.className = 'item-card';
-            odCard.innerHTML = `
-                <div class="item-top-row">
-                    <div class="item-icon" style="background: rgba(236, 72, 153, 0.25);">⚡</div>
-                    <div class="item-details"><div class="item-title">Овердрайв ×2 (30 сек)</div><div class="item-desc">Удваивает прибыль всей империи</div></div>
-                </div>
-                <button class="wide-action-btn boost-style" ${game.overdriveCooldown > 0 || game.overdriveTimer > 0 ? 'disabled' : ''} onclick="activateOverdrive()">
-                    <span>${game.overdriveTimer > 0 ? 'Активен!' : (game.overdriveCooldown > 0 ? 'Перезарядка...' : 'Активировать бесплатно')}</span>
-                    <span>${game.overdriveTimer > 0 ? Math.ceil(game.overdriveTimer) + 'с' : (game.overdriveCooldown > 0 ? Math.ceil(game.overdriveCooldown) + 'с' : '⚡ СТАРТ')}</span>
-                </button>
-            `;
-            container.appendChild(odCard);
-
-            const warpCard = document.createElement('div');
-            warpCard.className = 'item-card';
-            warpCard.innerHTML = `
-                <div class="item-top-row">
-                    <div class="item-icon" style="background: rgba(6, 182, 212, 0.25);">🚀</div>
-                    <div class="item-details"><div class="item-title">Варп-прыжок времени</div><div class="item-desc">Доход за 3 часа мгновенно</div></div>
-                </div>
-                <button class="wide-action-btn boost-style" ${game.warpCooldown > 0 ? 'disabled' : ''} onclick="activateWarp()">
-                    <span>${game.warpCooldown > 0 ? 'Перезарядка...' : 'Совершить прыжок'}</span>
-                    <span>${game.warpCooldown > 0 ? Math.ceil(game.warpCooldown) + 'с' : '🚀 ВПЕРЕД'}</span>
-                </button>
-            `;
-            container.appendChild(warpCard);
-
-            UPGRADES_CONFIG.forEach(upg => {
-                const bought = game.upgrades.includes(upg.id);
-                const canBuy = !bought && game.money >= upg.cost;
-                const card = document.createElement('div');
-                card.className = 'item-card';
-                card.innerHTML = `
-                    <div class="item-top-row">
-                        <div class="item-icon">${upg.icon}</div>
-                        <div class="item-details"><div class="item-title">${upg.name}</div><div class="item-desc">${upg.desc}</div></div>
+            container.innerHTML = `
+                <div class="case-card" style="text-align:center; padding: 24px;">
+                    <div style="font-size: 4rem; margin-bottom: 6px;">🎁</div>
+                    <h3 style="color:#fff; font-size:1.2rem;">Элитный Кибер-Кейс</h3>
+                    <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:10px;">Открывайте каждые 24 часа и получайте ценные монеты, подарки Telegram и редкие бусты!</p>
+                    <div id="case-status" style="font-weight:700; color:var(--gold); margin-bottom:14px;">
+                        ${canOpen ? 'Кейс доступен для открытия!' : 'Следующий кейс через: ' + formatTimeLeft(timeLeft)}
                     </div>
-                    ${bought ? `<button class="wide-action-btn hired" disabled>Технология изучена ✓</button>` : `<button class="wide-action-btn" ${canBuy ? '' : 'disabled'} onclick="buyUpgrade(${upg.id})"><span>Изучить улучшение</span><span style="color: var(--gold);">${formatNum(upg.cost)} 🪙</span></button>`}
+                    <button class="buy-btn" style="justify-content:center; background:linear-gradient(135deg,#ec4899,#8b5cf6);" ${canOpen ? '' : 'disabled'} onclick="openDailyCase()">
+                        Открыть кейс бесплатно
+                    </button>
+                </div>
+            `;
+        }
+
+        function formatTimeLeft(ms) {
+            const hours = Math.floor(ms / (1000 * 60 * 60));
+            const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+            return `${hours} ч ${minutes} мин`;
+        }
+
+        function openDailyCase() {
+            game.lastCaseOpen = Date.now();
+            const rewards = [
+                { type: 'coins', val: 5000, name: '+5 000 монет 🪙' },
+                { type: 'coins', val: 25000, name: '+25 000 монет 🪙' },
+                { type: 'gift', name: '🎁 Подарок Telegram: Золотая Звезда' },
+                { type: 'gift', name: '💎 Подарок Telegram: Бриллиант' },
+                { type: 'boost', name: '⚡ Буст: Ускоритель прибыли' }
+            ];
+            const drop = rewards[Math.floor(Math.random() * rewards.length)];
+            
+            if (drop.type === 'coins') {
+                game.money += drop.val;
+                game.lifetimeEarnings += drop.val;
+                alert(`🎉 Вам выпало: ${drop.name}`);
+            } else {
+                game.storage.push(drop.name);
+                alert(`🎁 Поздравляем! В инвентарь добавлен предмет: ${drop.name}`);
+            }
+            saveGame();
+            renderCase();
+            updateHeader();
+        }
+
+        // СКЛАД / РЮКЗАК
+        function renderStorage() {
+            const container = document.getElementById('main-container');
+            container.innerHTML = `<h3 style="font-size:1rem; color:#818cf8;">🎒 Инвентарь и подарки</h3>`;
+
+            if (!game.storage || game.storage.length === 0) {
+                container.innerHTML += `<div style="text-align:center; color:var(--text-muted); margin-top:40px;">Ваш склад пуст. Открывайте ежедневные кейсы во вкладке «Кейсы»!</div>`;
+                return;
+            }
+
+            game.storage.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'storage-item';
+                div.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span>📦 ${item}</span>
+                        <button class="buy-btn" style="width:auto; padding:6px 12px; font-size:0.75rem;" onclick="useStorageItem(${index})">Использовать</button>
+                    </div>
                 `;
-                container.appendChild(card);
+                container.appendChild(div);
             });
         }
 
+        function useStorageItem(index) {
+            const item = game.storage[index];
+            alert(`Вы применили предмет: ${item}!`);
+            game.storage.splice(index, 1);
+            saveGame();
+            renderStorage();
+        }
+
+        // ПРОФИЛЬ И РАМКИ
+        function renderProfile() {
+            const container = document.getElementById('main-container');
+            container.innerHTML = `
+                <div class="profile-card">
+                    <div class="avatar-container ${game.frame}" id="profile-avatar-box">
+                        <span id="profile-avatar-emoji">${game.avatar}</span>
+                    </div>
+                    <div style="text-align:center;">
+                        <h3 style="font-size:1.1rem; color:#fff;">${game.playerName} ${game.isCreator ? '<span class="creator-tag">CREATOR</span>' : ''}</h3>
+                        <p style="font-size:0.78rem; color:var(--text-muted);">Уровень магната: <b>${game.level}</b> (XP: ${game.xp}/${game.level * 500})</p>
+                    </div>
+
+                    <div style="display:flex; flex-direction:column; gap:8px;">
+                        <label style="font-size:0.75rem; color:var(--text-muted);">Сменить имя:</label>
+                        <input type="text" id="change-name-input" class="auth-input" value="${game.playerName}">
+                        <button class="buy-btn" style="justify-content:center;" onclick="saveProfileName()">Сохранить имя</button>
+                    </div>
+
+                    <div>
+                        <label style="font-size:0.75rem; color:var(--text-muted);">Эксклюзивные рамки для аватара:</label>
+                        <div class="frame-grid">
+                            <div class="frame-option ${game.unlockedFrames.includes('avatar-frame-gold') ? '' : 'locked'}" onclick="selectFrame('avatar-frame-gold')">
+                                <span style="font-size:1.4rem;">👑</span>
+                                <span>Золотая</span>
+                            </div>
+                            <div class="frame-option ${game.unlockedFrames.includes('avatar-frame-neon') ? '' : 'locked'}" onclick="selectFrame('avatar-frame-neon')">
+                                <span style="font-size:1.4rem;">🔥</span>
+                                <span>Неоновая</span>
+                            </div>
+                            <div class="frame-option ${game.unlockedFrames.includes('avatar-frame-cyber') ? '' : 'locked'}" onclick="selectFrame('avatar-frame-cyber')">
+                                <span style="font-size:1.4rem;">💎</span>
+                                <span>Кибер</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="background:rgba(255,255,255,0.03); padding:10px; border-radius:10px; font-size:0.75rem; color:var(--text-muted); line-height:1.4;">
+                        <b>🛡️ Политика конфиденциальности:</b> Все данные вашего аккаунта надежно зашифрованы и сохраняются в системе игры. Администрация гарантирует безопасность вашего прогресса.
+                    </div>
+                </div>
+            `;
+        }
+
+        function saveProfileName() {
+            const newName = document.getElementById('change-name-input').value.trim();
+            if (newName) {
+                game.playerName = newName;
+                saveGame();
+                alert('Имя успешно изменено!');
+                renderProfile();
+            }
+        }
+
+        function selectFrame(frameClass) {
+            if (!game.unlockedFrames.includes(frameClass)) {
+                alert('❌ Эта рамка заблокирована! Рамки выдаются за выполнение заданий, донат или админку.');
+                return;
+            }
+            game.frame = frameClass;
+            saveGame();
+            renderProfile();
+            alert('Рамка успешно установлена!');
+        }
+
+        // РЕЙТИНГ МАГНАТОВ
         function renderLeaders() {
             const container = document.getElementById('main-container');
-            container.innerHTML = '';
+            container.innerHTML = `<h3 style="font-size:1rem; color:#818cf8;">🏆 Мировой рейтинг магнатов</h3>`;
 
-            const nameBtn = document.createElement('button');
-            nameBtn.className = 'buy-btn';
-            nameBtn.style.marginBottom = '4px';
-            nameBtn.innerHTML = `<span>✏️ Ваше имя: ${game.playerName}</span><span class="price-tag">Изменить</span>`;
-            nameBtn.onclick = () => {
-                const n = prompt("Введите ваше имя:", game.playerName);
-                if (n && n.trim()) {
-                    game.playerName = n.trim();
-                    saveGame(); syncCloudLeaderboard(); renderLeaders();
-                }
-            };
-            container.appendChild(nameBtn);
+            let allUsers = {};
+            try { allUsers = JSON.parse(localStorage.getItem('cyber_all_users_db') || '{}'); } catch(e) {}
+            allUsers[game.login] = game;
+            localStorage.setItem('cyber_all_users_db', JSON.stringify(allUsers));
 
-            let allPlayers = {};
-            try {
-                allPlayers = JSON.parse(localStorage.getItem('cyber_all_players') || '{}');
-            } catch(e) {}
-            
-            allPlayers[game.id] = { name: game.playerName, score: game.lifetimeEarnings, avatar: game.avatar, isCreator: game.isCreator };
-            localStorage.setItem('cyber_all_players', JSON.stringify(allPlayers));
-
-            let list = Object.keys(allPlayers).map(id => ({ id, ...allPlayers[id] })).sort((a, b) => b.score - a.score);
+            let list = Object.values(allUsers).sort((a, b) => b.lifetimeEarnings - a.lifetimeEarnings);
 
             list.forEach((p, index) => {
                 const rank = index + 1;
-                const isMe = p.id === game.id;
+                const isMe = p.login === game.login;
                 const row = document.createElement('div');
                 row.className = 'leader-row' + (p.isCreator ? ' creator-me' : (isMe ? ' me' : ''));
                 row.innerHTML = `
                     <div class="rank-badge ${rank <= 3 ? 'rank-' + rank : ''}">${rank}</div>
-                    <div style="font-size: 1.5rem;">${p.avatar}</div>
+                    <div style="font-size: 1.4rem;">${p.avatar}</div>
                     <div style="flex: 1; min-width: 0;">
-                        <div style="font-weight: 700; font-size: 0.92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center;">
-                            ${p.name} ${p.isCreator ? '<span class="creator-tag">👑 CREATOR</span>' : ''}
+                        <div style="font-weight: 700; font-size: 0.9rem; display: flex; align-items: center;">
+                            ${p.playerName} ${p.isCreator ? '<span class="creator-tag">CREATOR</span>' : ''}
                         </div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted);">${p.isCreator ? 'Создатель игры' : 'Игрок'}</div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted);">Уровень: ${p.level}</div>
                     </div>
-                    <div style="font-weight: 800; color: var(--gold); font-size: 0.92rem;">${formatNum(p.score)} 🪙</div>
+                    <div style="font-weight: 800; color: var(--gold); font-size: 0.9rem;">${formatNum(p.lifetimeEarnings)} 🪙</div>
                 `;
                 container.appendChild(row);
             });
         }
 
-        function syncCloudLeaderboard() {
-            try {
-                let allPlayers = JSON.parse(localStorage.getItem('cyber_all_players') || '{}');
-                allPlayers[game.id] = { name: game.playerName, score: game.lifetimeEarnings, avatar: game.avatar, isCreator: game.isCreator };
-                localStorage.setItem('cyber_all_players', JSON.stringify(allPlayers));
-            } catch(e) {}
-        }
-
-        // --- МЕТОДЫ АДМИН-ПАНЕЛИ ---
+        // АДМИН ПАНЕЛЬ
         function openAdminPanel() {
             document.getElementById('admin-modal').style.display = 'flex';
             renderAdminPlayers();
@@ -800,82 +739,90 @@
             game.money += amount;
             game.lifetimeEarnings += amount;
             updateHeader();
-            syncCloudLeaderboard();
-            alert(`Успешно выдано +${formatNum(amount)} монет себе!`);
+            saveGame();
+            alert(`Успешно выдано +${formatNum(amount)} монет!`);
             closeAdminPanel();
         }
         function renderAdminPlayers() {
             const container = document.getElementById('admin-players-list');
             container.innerHTML = '';
-            let allPlayers = {};
-            try { allPlayers = JSON.parse(localStorage.getItem('cyber_all_players') || '{}'); } catch(e) {}
+            let allUsers = {};
+            try { allUsers = JSON.parse(localStorage.getItem('cyber_all_users_db') || '{}'); } catch(e) {}
 
-            Object.keys(allPlayers).forEach(id => {
-                const p = allPlayers[id];
+            Object.keys(allUsers).forEach(login => {
+                const p = allUsers[login];
                 const div = document.createElement('div');
                 div.className = 'admin-player-row';
                 div.innerHTML = `
                     <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <b>${p.name}</b> ${p.isCreator ? '👑' : ''}
-                        <span style="font-size:0.75rem; color:var(--gold);">${formatNum(p.score)} 🪙</span>
+                        <b>${p.playerName}</b> (${login}) ${p.isCreator ? '👑' : ''}
+                        <span style="font-size:0.75rem; color:var(--gold);">${formatNum(p.lifetimeEarnings)} 🪙</span>
                     </div>
                     <div style="display:flex; gap:6px;">
-                        <button class="buy-btn" style="flex:1; min-height:30px; font-size:0.7rem;" onclick="adminGiveToPlayer('${id}', 50000)">+50K</button>
-                        <button class="buy-btn" style="flex:1; min-height:30px; font-size:0.7rem; background:#ef4444;" onclick="adminBanPlayer('${id}')">Удалить</button>
+                        <button class="buy-btn" style="flex:1; min-height:30px; font-size:0.7rem;" onclick="adminGiveToUser('${login}', 100000)">+100K</button>
+                        <button class="buy-btn" style="flex:1; min-height:30px; font-size:0.7rem; background:#ec4899;" onclick="adminUnlockFrames('${login}')">Дать рамки</button>
+                        <button class="buy-btn" style="flex:1; min-height:30px; font-size:0.7rem; background:#ef4444;" onclick="adminBanUser('${login}')">Удалить</button>
                     </div>
                 `;
                 container.appendChild(div);
             });
         }
-        function adminGiveToPlayer(targetId, amount) {
-            if (targetId === game.id) {
-                adminGiveMoney(amount);
-            } else {
-                let allPlayers = JSON.parse(localStorage.getItem('cyber_all_players') || '{}');
-                if (allPlayers[targetId]) {
-                    allPlayers[targetId].score += amount;
-                    localStorage.setItem('cyber_all_players', JSON.stringify(allPlayers));
-                    alert('Ресурсы игроку начислены!');
-                    renderAdminPlayers();
-                }
+        function adminGiveToUser(login, amount) {
+            let allUsers = JSON.parse(localStorage.getItem('cyber_all_users_db') || '{}');
+            if (allUsers[login]) {
+                allUsers[login].money += amount;
+                allUsers[login].lifetimeEarnings += amount;
+                localStorage.setItem('cyber_all_users_db', JSON.stringify(allUsers));
+                if (login === game.login) game = allUsers[login];
+                alert('Ресурсы игроку начислены!');
+                renderAdminPlayers();
+                updateHeader();
             }
         }
-        function adminBanPlayer(targetId) {
-            if (targetId === game.id) {
-                alert('Нельзя удалить самого себя!');
-                return;
-            }
-            if (confirm('Удалить этого игрока из таблицы лидеров?')) {
-                let allPlayers = JSON.parse(localStorage.getItem('cyber_all_players') || '{}');
-                delete allPlayers[targetId];
-                localStorage.setItem('cyber_all_players', JSON.stringify(allPlayers));
+        function adminUnlockFrames(login) {
+            let allUsers = JSON.parse(localStorage.getItem('cyber_all_users_db') || '{}');
+            if (allUsers[login]) {
+                allUsers[login].unlockedFrames = ["avatar-frame-gold", "avatar-frame-neon", "avatar-frame-cyber"];
+                localStorage.setItem('cyber_all_users_db', JSON.stringify(allUsers));
+                if (login === game.login) game = allUsers[login];
+                alert('Все премиум-рамки разблокированы для игрока!');
                 renderAdminPlayers();
-                if (game.activeTab === 'leaders') renderLeaders();
             }
+        }
+        function adminBanUser(login) {
+            if (login === game.login) { alert('Нельзя удалить самого себя!'); return; }
+            if (confirm(`Удалить аккаунт ${login}?`)) {
+                let allUsers = JSON.parse(localStorage.getItem('cyber_all_users_db') || '{}');
+                delete allUsers[login];
+                localStorage.setItem('cyber_all_users_db', JSON.stringify(allUsers));
+                renderAdminPlayers();
+            }
+        }
+        function adminGiveAll(amount) {
+            let allUsers = JSON.parse(localStorage.getItem('cyber_all_users_db') || '{}');
+            Object.keys(allUsers).forEach(l => {
+                allUsers[l].money += amount;
+                allUsers[l].lifetimeEarnings += amount;
+            });
+            localStorage.setItem('cyber_all_users_db', JSON.stringify(allUsers));
+            game = allUsers[game.login];
+            alert('Всем игрокам выдано по 500K монет!');
+            updateHeader();
+            closeAdminPanel();
         }
         function adminResetAllData() {
-            if (confirm('ВНИМАНИЕ: Сбросить всю базу игроков?')) {
-                localStorage.removeItem('cyber_all_players');
+            if (confirm('Сбросить всю базу игроков?')) {
+                localStorage.removeItem('cyber_all_users_db');
                 renderAdminPlayers();
-                alert('База очищена.');
+                alert('База полностью очищена.');
             }
         }
 
-        function renderPrestige() {
-            const container = document.getElementById('main-container');
-            const claimable = getClaimableShares();
-            container.innerHTML = `
-                <div class="prestige-card">
-                    <div style="font-size: 3rem;">👑</div>
-                    <h3 style="font-size: 1.15rem;">Привлечение инвесторов</h3>
-                    <p style="font-size: 0.85rem; color: var(--text-muted);">Продайте предприятия за Акции (+5% к доходу навсегда)!</p>
-                    <div style="background: rgba(0,0,0,0.35); padding: 14px; border-radius: 14px;">
-                        <div style="font-size: 0.85rem; color: var(--text-muted);">Бонус: <b style="color: var(--accent-cyan);">+${game.shares * 5}%</b></div>
-                        <div style="font-size: 1.15rem; font-weight: 800; color: var(--gold); margin-top: 6px;">Доступно: +${claimable} акций</div>
-                    </div>
-                    <button class="prestige-btn" ${claimable > 0 ? '' : 'disabled'} onclick="doPrestige()">Перезапустить за +${claimable} акций</button>
-                </div>
-            `;
+        function cycleMultiplier() {
+            const order = [1, 10, 25];
+            game.buyMult = order[(order.indexOf(game.buyMult) + 1) % order.length];
+            document.getElementById('ui-mult-btn').innerText = `Купить: ×${game.buyMult}`;
+            if (game.activeTab === 'biz') renderBusinesses();
         }
 
         function spawnFloatingText(x, y, text) {
@@ -889,22 +836,7 @@
         function updateHeader() {
             document.getElementById('ui-balance').innerText = formatNum(game.money) + ' 🪙';
             document.getElementById('ui-income').innerText = '+' + formatNum(getTotalIncomePerSec()) + ' 🪙/сек';
-            document.getElementById('ui-prestige').innerText = `Акции: ${game.shares} (+${game.shares * 5}%)`;
-
-            const banner = document.getElementById('ui-boost-banner');
-            if (game.overdriveTimer > 0) {
-                banner.style.display = 'block';
-                banner.innerText = `⚡ ОВЕРДРАЙВ ×2 АКТИВЕН: ${Math.ceil(game.overdriveTimer)}с`;
-            } else {
-                banner.style.display = 'none';
-            }
-
-            const hasManager = BIZ_CONFIG.some((c, i) => !game.businesses[i].hasManager && game.money >= c.managerCost);
-            document.getElementById('dot-managers').style.display = hasManager ? 'block' : 'none';
-
-            const hasUpg = UPGRADES_CONFIG.some(u => !game.upgrades.includes(u.id) && game.money >= u.cost);
-            document.getElementById('dot-upgrades').style.display = hasUpg ? 'block' : 'none';
-
+            document.getElementById('ui-prestige').innerText = `Ур. ${game.level} (Акции: ${game.shares})`;
             if (game.activeTab === 'biz') {
                 BIZ_CONFIG.forEach((_, idx) => {
                     const btn = document.getElementById(`buy-btn-${idx}`);
@@ -913,15 +845,13 @@
             }
         }
 
+        // Игровой цикл
         let lastTick = Date.now();
-        setInterval(() => {
+        function gameLoop() {
+            if (!game) return;
             const now = Date.now();
             const dt = (now - lastTick) / 1000;
             lastTick = now;
-
-            if (game.overdriveTimer > 0) game.overdriveTimer = Math.max(0, game.overdriveTimer - dt);
-            if (game.overdriveCooldown > 0) game.overdriveCooldown = Math.max(0, game.overdriveCooldown - dt);
-            if (game.warpCooldown > 0) game.warpCooldown = Math.max(0, game.warpCooldown - dt);
 
             let earnedThisTick = 0;
             game.businesses.forEach((b, idx) => {
@@ -945,53 +875,37 @@
             if (earnedThisTick > 0) {
                 game.money += earnedThisTick;
                 game.lifetimeEarnings += earnedThisTick;
-                syncCloudLeaderboard();
             }
             updateHeader();
-        }, 50);
-
-        setInterval(() => {
-            if (game.activeTab === 'upgrades' && (game.overdriveTimer > 0 || game.overdriveCooldown > 0 || game.warpCooldown > 0)) {
-                renderUpgrades();
-            }
-        }, 1000);
+        }
 
         function saveGame() {
+            if (!game) return;
             game.lastSave = Date.now();
-            localStorage.setItem('cyber_save_' + game.id, JSON.stringify(game));
-            syncCloudLeaderboard();
+            let allUsers = {};
+            try { allUsers = JSON.parse(localStorage.getItem('cyber_all_users_db') || '{}'); } catch(e) {}
+            allUsers[game.login] = game;
+            localStorage.setItem('cyber_all_users_db', JSON.stringify(allUsers));
         }
 
-        function loadGame() {
-            const raw = localStorage.getItem('cyber_save_' + game.id);
-            if (!raw) return;
-            try {
-                const saved = JSON.parse(raw);
-                Object.assign(game, saved);
-                const offlineSec = Math.min(28800, (Date.now() - (game.lastSave || Date.now())) / 1000);
-                const incomePerSec = getTotalIncomePerSec();
-                if (offlineSec > 10 && incomePerSec > 0) {
-                    const offlineEarned = Math.floor(offlineSec * incomePerSec * 0.75);
-                    if (offlineEarned > 0) {
-                        game.money += offlineEarned; game.lifetimeEarnings += offlineEarned;
-                        document.getElementById('offline-reward-text').innerText = '+' + formatNum(offlineEarned) + ' 🪙';
-                        document.getElementById('offline-modal').style.display = 'flex';
-                    }
+        function checkOfflineEarnings() {
+            const offlineSec = Math.min(28800, (Date.now() - (game.lastSave || Date.now())) / 1000);
+            const incomePerSec = getTotalIncomePerSec();
+            if (offlineSec > 15 && incomePerSec > 0) {
+                const earned = Math.floor(offlineSec * incomePerSec * 0.75);
+                if (earned > 0) {
+                    game.money += earned;
+                    game.lifetimeEarnings += earned;
+                    document.getElementById('offline-reward-text').innerText = '+' + formatNum(earned) + ' 🪙';
+                    document.getElementById('offline-modal').style.display = 'flex';
                 }
-            } catch (e) {}
+            }
         }
-
         function closeOfflineModal() {
             document.getElementById('offline-modal').style.display = 'none';
-            playSound('coin');
         }
 
-        setInterval(saveGame, 5000);
         window.addEventListener('beforeunload', saveGame);
-
-        loadGame();
-        updateHeader();
-        renderCurrentTab();
     </script>
 </body>
 </html>
