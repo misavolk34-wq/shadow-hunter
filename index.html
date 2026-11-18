@@ -17,81 +17,62 @@
       padding-top: 30px;
     }
     h1 { text-align: center; font-size: 24px; color: #a78bfa; margin-bottom: 6px; }
-    .subtitle { text-align: center; opacity: 0.7; margin-bottom: 24px; font-size: 14px; }
+    .subtitle { text-align: center; opacity: 0.7; margin-bottom: 20px; font-size: 14px; }
+    .hidden { display: none !important; }
 
-    /* Создание персонажа */
     .classes { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
     .class-card {
-      background: #1a1a24;
-      border: 2px solid #2a2a3a;
-      border-radius: 14px;
-      padding: 14px;
-      cursor: pointer;
+      background: #1a1a24; border: 2px solid #2a2a3a; border-radius: 14px;
+      padding: 14px; cursor: pointer;
     }
     .class-card.selected { border-color: #7c3aed; background: #221a35; }
     .class-card h3 { font-size: 17px; margin-bottom: 4px; color: #c4b5fd; }
     .class-card p { font-size: 13px; opacity: 0.75; }
 
     input {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: 2px solid #2a2a3a;
-      background: #1a1a24;
-      color: white;
-      font-size: 16px;
-      margin-bottom: 16px;
-      outline: none;
+      width: 100%; padding: 14px; border-radius: 12px; border: 2px solid #2a2a3a;
+      background: #1a1a24; color: white; font-size: 16px; margin-bottom: 16px; outline: none;
     }
     input:focus { border-color: #7c3aed; }
 
     .btn {
-      width: 100%;
-      background: #7c3aed;
-      color: white;
-      border: none;
-      padding: 15px;
-      border-radius: 12px;
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 10px;
+      width: 100%; background: #7c3aed; color: white; border: none;
+      padding: 15px; border-radius: 12px; font-size: 16px; font-weight: 600; margin-bottom: 10px;
     }
     .btn:disabled { background: #3f3f46; }
-    .btn-secondary {
-      background: #1a1a24;
-      border: 1px solid #3f3f46;
-    }
+    .btn-secondary { background: #1a1a24; border: 1px solid #3f3f46; }
+    .btn-danger { background: #7f1d1d; }
 
-    /* Главный экран */
-    .hidden { display: none !important; }
     .stats-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin: 20px 0;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 16px 0;
     }
     .stat-card {
-      background: #1a1a24;
-      border-radius: 12px;
-      padding: 12px;
-      text-align: center;
+      background: #1a1a24; border-radius: 12px; padding: 12px; text-align: center;
     }
     .stat-card .label { font-size: 12px; opacity: 0.6; margin-bottom: 4px; }
     .stat-card .value { font-size: 18px; font-weight: 600; color: #c4b5fd; }
 
-    .character-header {
-      text-align: center;
-      margin-bottom: 10px;
-    }
-    .character-header .name { font-size: 22px; font-weight: 700; color: #e0e0e0; }
+    .character-header { text-align: center; margin-bottom: 8px; }
+    .character-header .name { font-size: 22px; font-weight: 700; }
     .character-header .class-level { font-size: 14px; opacity: 0.7; margin-top: 4px; }
 
+    /* Бой */
+    .battle-header { text-align: center; margin-bottom: 20px; }
+    .battle-header .monster-name { font-size: 20px; color: #f87171; margin-bottom: 4px; }
+    .hp-bar {
+      height: 18px; background: #1a1a24; border-radius: 10px; overflow: hidden; margin: 8px 0;
+    }
+    .hp-fill { height: 100%; background: #16a34a; transition: width 0.3s; }
+    .hp-fill.enemy { background: #dc2626; }
+    .battle-log {
+      background: #1a1a24; border-radius: 12px; padding: 12px; min-height: 120px;
+      margin: 16px 0; font-size: 14px; line-height: 1.5; max-height: 160px; overflow-y: auto;
+    }
+    .battle-actions { display: flex; gap: 10px; }
+    .battle-actions .btn { flex: 1; margin-bottom: 0; }
+
     .message {
-      text-align: center;
-      margin-top: 16px;
-      padding: 12px;
-      border-radius: 10px;
-      display: none;
+      text-align: center; margin-top: 12px; padding: 12px; border-radius: 10px; display: none;
     }
     .success { background: #14532d; color: #86efac; }
     .error { background: #450a0a; color: #fca5a5; }
@@ -99,38 +80,35 @@
 </head>
 <body>
 
-  <!-- Экран создания персонажа -->
+  <!-- Создание персонажа -->
   <div id="createScreen">
     <h1>Shadow Hunter</h1>
     <p class="subtitle">Создай своего охотника</p>
-
     <div class="classes">
       <div class="class-card" onclick="selectClass('warrior', this)">
         <h3>Воин</h3>
-        <p>Высокое здоровье и защита. Идеален для ближнего боя.</p>
+        <p>Высокое здоровье и защита.</p>
       </div>
       <div class="class-card" onclick="selectClass('assassin', this)">
         <h3>Убийца</h3>
-        <p>Высокий урон и шанс критического удара.</p>
+        <p>Высокий урон и шанс крита.</p>
       </div>
       <div class="class-card" onclick="selectClass('mage', this)">
         <h3>Маг</h3>
         <p>Мощные заклинания, но хрупкий.</p>
       </div>
     </div>
-
     <input type="text" id="nameInput" placeholder="Введи имя охотника" maxlength="16">
     <button class="btn" id="createBtn" onclick="createCharacter()" disabled>Создать персонажа</button>
     <div id="message" class="message"></div>
   </div>
 
-  <!-- Главный экран персонажа -->
+  <!-- Главный экран -->
   <div id="mainScreen" class="hidden">
     <div class="character-header">
       <div class="name" id="charName">—</div>
       <div class="class-level" id="charClassLevel">—</div>
     </div>
-
     <div class="stats-grid">
       <div class="stat-card"><div class="label">Уровень</div><div class="value" id="statLevel">1</div></div>
       <div class="stat-card"><div class="label">Опыт</div><div class="value" id="statExp">0</div></div>
@@ -141,10 +119,31 @@
       <div class="stat-card"><div class="label">Крит. шанс</div><div class="value" id="statCritChance">0%</div></div>
       <div class="stat-card"><div class="label">Золото</div><div class="value" id="statGold">0</div></div>
     </div>
-
-    <button class="btn" onclick="alert('Подземелья скоро появятся!')">Врата (Охота)</button>
+    <button class="btn" onclick="startBattle()">Врата (Охота)</button>
     <button class="btn btn-secondary" onclick="alert('Инвентарь в разработке')">Инвентарь</button>
     <button class="btn btn-secondary" onclick="alert('Рейтинг скоро')">Таблица лидеров</button>
+  </div>
+
+  <!-- Экран боя -->
+  <div id="battleScreen" class="hidden">
+    <div class="battle-header">
+      <div class="monster-name" id="monsterName">Теневой волк</div>
+      <div class="hp-bar"><div class="hp-fill enemy" id="monsterHpBar" style="width: 100%"></div></div>
+      <div style="font-size:13px; opacity:0.7" id="monsterHpText">100 / 100</div>
+    </div>
+
+    <div class="battle-header">
+      <div id="playerBattleName" style="font-size:16px; margin-bottom:4px">Ты</div>
+      <div class="hp-bar"><div class="hp-fill" id="playerHpBar" style="width: 100%"></div></div>
+      <div style="font-size:13px; opacity:0.7" id="playerHpText">100 / 100</div>
+    </div>
+
+    <div class="battle-log" id="battleLog"></div>
+
+    <div class="battle-actions">
+      <button class="btn" id="attackBtn" onclick="playerAttack()">Атака</button>
+      <button class="btn btn-secondary" onclick="fleeBattle()">Сбежать</button>
+    </div>
   </div>
 
   <script>
@@ -159,6 +158,11 @@
     let selectedClass = null;
     let currentCharacter = null;
 
+    // Состояние боя
+    let playerHp = 0;
+    let playerMaxHp = 0;
+    let monster = null;
+
     const classStats = {
       warrior:  { hp: 120, attack: 12, defense: 15, speed: 8,  crit_chance: 5,  crit_damage: 150 },
       assassin: { hp: 90,  attack: 18, defense: 8,  speed: 14, crit_chance: 15, crit_damage: 180 },
@@ -171,15 +175,16 @@
       mage: 'Маг'
     };
 
-    // При загрузке проверяем, есть ли уже персонаж
+    // Монстры (пока один для теста)
+    const monsters = [
+      { name: 'Теневой волк', hp: 60, attack: 10, defense: 4, exp: 25, gold: 15 }
+    ];
+
     async function init() {
       const telegramId = tg.initDataUnsafe?.user?.id;
-      if (!telegramId) {
-        // Если нет данных Telegram — просто показываем создание
-        return;
-      }
+      if (!telegramId) return;
 
-      const { data, error } = await supabaseClient
+      const { data } = await supabaseClient
         .from('characters1')
         .select('*')
         .eq('telegram_id', telegramId)
@@ -192,7 +197,7 @@
     }
 
     function selectClass(className, element) {
-      document.querySelectorAll('.class-card').forEach(card => card.classList.remove('selected'));
+      document.querySelectorAll('.class-card').forEach(c => c.classList.remove('selected'));
       element.classList.add('selected');
       selectedClass = className;
       checkForm();
@@ -202,7 +207,6 @@
       const name = document.getElementById('nameInput').value.trim();
       document.getElementById('createBtn').disabled = !(selectedClass && name.length >= 2);
     }
-
     document.getElementById('nameInput').addEventListener('input', checkForm);
 
     async function createCharacter() {
@@ -234,12 +238,11 @@
         }])
         .select();
 
-      const messageEl = document.getElementById('message');
-      messageEl.style.display = 'block';
-
       if (error) {
-        messageEl.className = 'message error';
-        messageEl.textContent = 'Ошибка: ' + error.message;
+        const msg = document.getElementById('message');
+        msg.style.display = 'block';
+        msg.className = 'message error';
+        msg.textContent = 'Ошибка: ' + error.message;
         btn.disabled = false;
         btn.textContent = 'Создать персонажа';
       } else {
@@ -250,6 +253,7 @@
 
     function showMainScreen(char) {
       document.getElementById('createScreen').classList.add('hidden');
+      document.getElementById('battleScreen').classList.add('hidden');
       document.getElementById('mainScreen').classList.remove('hidden');
 
       document.getElementById('charName').textContent = char.name;
@@ -264,7 +268,144 @@
       document.getElementById('statGold').textContent = char.gold;
     }
 
-    // Запускаем проверку при загрузке
+    // ================== БОЙ ==================
+    function startBattle() {
+      monster = { ...monsters[0] }; // копируем монстра
+      playerMaxHp = currentCharacter.hp;
+      playerHp = playerMaxHp;
+
+      document.getElementById('mainScreen').classList.add('hidden');
+      document.getElementById('battleScreen').classList.remove('hidden');
+
+      document.getElementById('monsterName').textContent = monster.name;
+      document.getElementById('playerBattleName').textContent = currentCharacter.name;
+      updateHpBars();
+      clearLog();
+      addLog(`Ты вошёл во Врата. Перед тобой ${monster.name}!`);
+      document.getElementById('attackBtn').disabled = false;
+    }
+
+    function updateHpBars() {
+      const monsterPercent = Math.max(0, (monster.hp / monsters[0].hp) * 100);
+      const playerPercent = Math.max(0, (playerHp / playerMaxHp) * 100);
+
+      document.getElementById('monsterHpBar').style.width = monsterPercent + '%';
+      document.getElementById('playerHpBar').style.width = playerPercent + '%';
+      document.getElementById('monsterHpText').textContent = `${Math.max(0, Math.floor(monster.hp))} / ${monsters[0].hp}`;
+      document.getElementById('playerHpText').textContent = `${Math.max(0, Math.floor(playerHp))} / ${playerMaxHp}`;
+    }
+
+    function addLog(text) {
+      const log = document.getElementById('battleLog');
+      log.innerHTML += text + '<br>';
+      log.scrollTop = log.scrollHeight;
+    }
+
+    function clearLog() {
+      document.getElementById('battleLog').innerHTML = '';
+    }
+
+    function playerAttack() {
+      document.getElementById('attackBtn').disabled = true;
+
+      // Расчёт урона игрока
+      let damage = currentCharacter.attack - monster.defense / 2;
+      damage = Math.max(1, Math.floor(damage));
+
+      // Крит
+      const isCrit = Math.random() * 100 < currentCharacter.crit_chance;
+      if (isCrit) {
+        damage = Math.floor(damage * (currentCharacter.crit_damage / 100));
+        addLog(`Критический удар! Ты нанёс ${damage} урона!`);
+      } else {
+        addLog(`Ты нанёс ${damage} урона.`);
+      }
+
+      monster.hp -= damage;
+      updateHpBars();
+
+      if (monster.hp <= 0) {
+        endBattle(true);
+        return;
+      }
+
+      // Ход монстра
+      setTimeout(() => {
+        let monsterDamage = monster.attack - currentCharacter.defense / 2;
+        monsterDamage = Math.max(1, Math.floor(monsterDamage));
+        playerHp -= monsterDamage;
+        addLog(`${monster.name} нанёс тебе ${monsterDamage} урона.`);
+        updateHpBars();
+
+        if (playerHp <= 0) {
+          endBattle(false);
+        } else {
+          document.getElementById('attackBtn').disabled = false;
+        }
+      }, 600);
+    }
+
+    async function endBattle(victory) {
+      document.getElementById('attackBtn').disabled = true;
+
+      if (victory) {
+        addLog(`<b>Победа!</b> +\( {monster.exp} опыта, + \){monster.gold} золота`);
+
+        // Обновляем персонажа
+        const newExp = currentCharacter.exp + monster.exp;
+        const newGold = currentCharacter.gold + monster.gold;
+        let newLevel = currentCharacter.level;
+        let newHp = currentCharacter.hp;
+        let newAttack = currentCharacter.attack;
+        let newDefense = currentCharacter.defense;
+
+        // Простая система уровней
+        const expNeeded = newLevel * 50;
+        if (newExp >= expNeeded) {
+          newLevel += 1;
+          newHp += 10;
+          newAttack += 2;
+          newDefense += 1;
+          addLog(`<b>Уровень повышен! Теперь ${newLevel} уровень!</b>`);
+        }
+
+        // Сохраняем в базу
+        await supabaseClient
+          .from('characters1')
+          .update({
+            exp: newExp,
+            gold: newGold,
+            level: newLevel,
+            hp: newHp,
+            attack: newAttack,
+            defense: newDefense
+          })
+          .eq('id', currentCharacter.id);
+
+        // Обновляем локальные данные
+        currentCharacter.exp = newExp;
+        currentCharacter.gold = newGold;
+        currentCharacter.level = newLevel;
+        currentCharacter.hp = newHp;
+        currentCharacter.attack = newAttack;
+        currentCharacter.defense = newDefense;
+
+      } else {
+        addLog(`<b>Ты проиграл...</b>`);
+      }
+
+      setTimeout(() => {
+        showMainScreen(currentCharacter);
+      }, 2000);
+    }
+
+    function fleeBattle() {
+      addLog('Ты сбежал из Врат.');
+      setTimeout(() => {
+        showMainScreen(currentCharacter);
+      }, 1000);
+    }
+
     init();
   </script>
 </body>
