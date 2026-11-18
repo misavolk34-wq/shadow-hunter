@@ -1,4 +1,4 @@
-<!DOCTYPE<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
@@ -8,17 +8,9 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
-    --bg: #03050a;
-    --panel: #090e1d;
-    --panel2: #111730;
-    --border: #1e2952;
-    --cyan: #38bdf8;
-    --purple: #a855f7;
-    --gold: #f59e0b;
-    --red: #ef4444;
-    --green: #22c55e;
-    --text: #f8fafc;
-    --muted: #64748b;
+    --bg: #03050a; --panel: #090e1d; --panel2: #111730; --border: #1e2952;
+    --cyan: #38bdf8; --purple: #a855f7; --gold: #f59e0b; --red: #ef4444;
+    --green: #22c55e; --text: #f8fafc; --muted: #64748b;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   body {
@@ -27,7 +19,6 @@
     min-height: 100vh; overflow-x: hidden; padding-bottom: 78px;
   }
   .hidden { display: none !important; }
-
   @keyframes pulseSys {
     0%, 100% { box-shadow: 0 0 20px rgba(56, 189, 248, 0.4), inset 0 0 15px rgba(168, 85, 247, 0.2); }
     50% { box-shadow: 0 0 35px rgba(168, 85, 247, 0.7), inset 0 0 25px rgba(56, 189, 248, 0.4); }
@@ -50,8 +41,6 @@
     50% { opacity: 1; transform: translateY(-30px) scale(1.2); }
     100% { opacity: 0; transform: translateY(-55px) scale(1); }
   }
-
-  /* Экран пробуждения */
   #splash-screen {
     position: fixed; inset: 0; z-index: 100;
     background: radial-gradient(circle at center, #0c0824 0%, #020307 100%);
@@ -70,8 +59,6 @@
     letter-spacing: 1px; cursor: pointer; width: 100%; margin-top: 14px;
     box-shadow: 0 4px 20px rgba(56, 189, 248, 0.4);
   }
-
-  /* Шапка и Навигация */
   .topbar {
     position: sticky; top: 0; z-index: 40;
     background: rgba(3, 5, 10, 0.95); backdrop-filter: blur(10px);
@@ -84,8 +71,6 @@
     border-radius: 14px; padding: 14px; margin-bottom: 12px;
     box-shadow: 0 4px 16px rgba(0,0,0,0.6);
   }
-
-  /* Классы и выбор образов */
   .class-card {
     background: var(--panel2); border: 1.5px solid var(--border);
     border-radius: 12px; padding: 12px; margin-bottom: 10px; cursor: pointer; transition: 0.2s;
@@ -96,8 +81,6 @@
     background: var(--panel); border: 1.5px solid var(--cyan);
     color: #fff; font-size: 15px; outline: none; margin-bottom: 12px;
   }
-
-  /* Арена боя */
   .arena {
     background: radial-gradient(circle at 50% 30%, #1e1b4b 0%, #070913 100%);
     border: 1.5px solid #312e81; border-radius: 16px; padding: 20px 14px;
@@ -128,8 +111,6 @@
     color: #fde047; text-shadow: 0 2px 10px #000, 0 0 15px #f59e0b; pointer-events: none;
     animation: popDmg 0.75s forwards;
   }
-
-  /* Снаряжение 9 слотов (E-SSS) */
   .equip-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .slot-box {
     background: var(--panel2); border: 1.5px solid var(--border);
@@ -157,16 +138,12 @@
     padding: 6px 12px; border-radius: 7px; font-size: 12px; font-weight: 800; cursor: pointer;
   }
   .btn-gold { background: var(--gold); color: #000; }
-
-  /* Чат */
   .chat-box {
     height: 240px; overflow-y: auto; background: #03050a;
     border: 1px solid var(--border); border-radius: 10px; padding: 10px;
     margin-bottom: 8px; display: flex; flex-direction: column; gap: 6px; font-size: 12px;
   }
   .chat-sys { color: var(--gold); font-style: italic; background: rgba(245, 158, 11, 0.1); padding: 4px 8px; border-radius: 6px; }
-
-  /* Нижняя навигация */
   .bottom-nav {
     position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
     background: rgba(9, 14, 29, 0.98); backdrop-filter: blur(12px);
@@ -183,7 +160,6 @@
 </head>
 <body>
 
-<!-- Экран пробуждения Системы -->
 <div id="splash-screen">
   <svg style="width:140px; height:160px; margin-bottom:16px; animation: floatChar 3s ease-in-out infinite;" viewBox="0 0 200 240">
     <defs>
@@ -202,35 +178,10 @@
   <div class="system-box">
     <div style="color:var(--cyan); font-weight:900; font-size:12px; letter-spacing:2px; margin-bottom:8px;">[ УВЕДОМЛЕНИЕ СИСТЕМЫ ]</div>
     <p style="font-size:13px; line-height:1.4; margin:0 0 12px;">Вы прошли пробуждение. Примите силу Монарха Теней?</p>
-    <button class="btn-system" onclick="goToCharacterSetup()">ПРИНЯТЬ СИЛУ</button>
+    <button class="btn-system" onclick="enterGameDirectly()">ПРИНЯТЬ СИЛУ</button>
   </div>
 </div>
 
-<!-- Выбор класса и имени -->
-<div id="select-screen" class="hidden" style="padding:20px; max-width:450px; margin:auto;">
-  <h2 style="color:var(--cyan); text-align:center; margin-bottom:4px;">ВЫБОР СОСУДА</h2>
-  <p style="text-align:center; color:var(--muted); font-size:12px; margin-bottom:16px;">Выберите класс Охотника</p>
-  
-  <div id="classes-list">
-    <div class="class-card selected" onclick="selectClass('lich', this)">
-      <div style="font-weight:800; color:#a855f7; font-size:15px;">💀 Король-Лич</div>
-      <div style="font-size:11px; color:var(--muted); margin-top:4px;">Власть над мертвыми армиями и магия тени (+15% урон)</div>
-    </div>
-    <div class="class-card" onclick="selectClass('returner', this)">
-      <div style="font-weight:800; color:#38bdf8; font-size:15px;">⏳ Возвращающийся</div>
-      <div style="font-size:11px; color:var(--muted); margin-top:4px;">Опыт прошлых жизней и повышенный шанс крита (+20%)</div>
-    </div>
-    <div class="class-card" onclick="selectClass('dragon', this)">
-      <div style="font-weight:800; color:#ef4444; font-size:15px;">🐉 Дракон из Яйца</div>
-      <div style="font-size:11px; color:var(--muted); margin-top:4px;">Сокрушительная физическая мощь и ярость пламени</div>
-    </div>
-  </div>
-
-  <input type="text" id="player-nick" class="nick-input" placeholder="Введите ваше имя Охотника..." maxlength="16">
-  <button class="btn-system" onclick="confirmCharacter()">НАЧАТЬ ПУТЬ ОХОТНИКА</button>
-</div>
-
-<!-- Основной игровой интерфейс -->
 <div id="game-ui" class="hidden">
   <div class="topbar">
     <div style="display:flex; align-items:center; gap:8px;">
@@ -247,7 +198,6 @@
   </div>
 
   <div class="container">
-    <!-- Врата -->
     <div id="tab-dungeon">
       <div class="arena">
         <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--muted);">
@@ -274,7 +224,6 @@
       </div>
     </div>
 
-    <!-- Экипировка (9 слотов, E-SSS) -->
     <div id="tab-hero" class="hidden">
       <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
@@ -292,7 +241,6 @@
       </div>
     </div>
 
-    <!-- Рюкзак -->
     <div id="tab-inv" class="hidden">
       <div class="card">
         <b style="color:var(--cyan); font-size:12px; display:block; margin-bottom:8px;">РЮКЗАК ОХОТНИКА</b>
@@ -300,7 +248,6 @@
       </div>
     </div>
 
-    <!-- Рынок -->
     <div id="tab-market" class="hidden">
       <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
@@ -311,7 +258,6 @@
       </div>
     </div>
 
-    <!-- Топ и Чат -->
     <div id="tab-social" class="hidden">
       <div class="card">
         <b style="color:var(--cyan); font-size:12px; display:block; margin-bottom:6px;">🏆 РЕЙТИНГ ОХОТНИКОВ</b>
@@ -328,7 +274,6 @@
     </div>
   </div>
 
-  <!-- Нижнее меню -->
   <div class="bottom-nav">
     <button class="nav-btn active" onclick="switchTab('dungeon', this)"><span>⚔️</span>Врата</button>
     <button class="nav-btn" onclick="switchTab('hero', this)"><span>🛡️</span>Снаряжение</button>
@@ -347,14 +292,10 @@ const tg = window.Telegram?.WebApp;
 if (tg) { tg.expand(); tg.ready(); }
 
 const SLOTS = [
-  { id: 'weapon', name: 'Оружие', icon: '🗡️' },
-  { id: 'helm', name: 'Шлем', icon: '🪖' },
-  { id: 'armor', name: 'Броня', icon: '🦺' },
-  { id: 'pants', name: 'Штаны', icon: '👖' },
-  { id: 'boots', name: 'Ботинки', icon: '👢' },
-  { id: 'gloves', name: 'Перчатки', icon: '🧤' },
-  { id: 'neck', name: 'Амулет', icon: '📿' },
-  { id: 'ear', name: 'Серьга', icon: '💠' },
+  { id: 'weapon', name: 'Оружие', icon: '🗡️' }, { id: 'helm', name: 'Шлем', icon: '🪖' },
+  { id: 'armor', name: 'Броня', icon: '🦺' }, { id: 'pants', name: 'Штаны', icon: '👖' },
+  { id: 'boots', name: 'Ботинки', icon: '👢' }, { id: 'gloves', name: 'Перчатки', icon: '🧤' },
+  { id: 'neck', name: 'Амулет', icon: '📿' }, { id: 'ear', name: 'Серьга', icon: '💠' },
   { id: 'ring', name: 'Кольцо', icon: '💍' }
 ];
 
@@ -364,59 +305,22 @@ const MONSTERS = ['🐺 Ликан', '👺 Гоблин', '🧟 Зомби', '�
 
 let state = {
   id: tg?.initDataUnsafe?.user?.id ? String(tg.initDataUnsafe.user.id) : ('guest_' + Math.floor(Math.random()*900000)),
-  name: tg?.initDataUnsafe?.user?.first_name || '',
-  classId: 'lich',
-  level: 1, exp: 0, gold: 600, shards: 8,
+  name: tg?.initDataUnsafe?.user?.first_name || 'Охотник',
+  classId: 'lich', level: 1, exp: 0, gold: 600, shards: 8,
   equip: {
-    weapon: { grade: 'E', name: 'Ржавый клинок', power: 15 },
-    helm: { grade: 'E', name: 'Капюшон', power: 10 },
-    armor: { grade: 'E', name: 'Нагрудник', power: 15 },
-    pants: { grade: 'E', name: 'Поножи', power: 10 },
-    boots: { grade: 'E', name: 'Сапоги', power: 10 },
-    gloves: { grade: 'E', name: 'Перчатки', power: 10 },
-    neck: { grade: 'E', name: 'Амулет', power: 10 },
-    ear: { grade: 'E', name: 'Серьга', power: 10 },
+    weapon: { grade: 'E', name: 'Ржавый клинок', power: 15 }, helm: { grade: 'E', name: 'Капюшон', power: 10 },
+    armor: { grade: 'E', name: 'Нагрудник', power: 15 }, pants: { grade: 'E', name: 'Поножи', power: 10 },
+    boots: { grade: 'E', name: 'Сапоги', power: 10 }, gloves: { grade: 'E', name: 'Перчатки', power: 10 },
+    neck: { grade: 'E', name: 'Амулет', power: 10 }, ear: { grade: 'E', name: 'Серьга', power: 10 },
     ring: { grade: 'E', name: 'Кольцо', power: 10 }
   },
   inventory: []
 };
 
 let wave = 1, hp = 100, maxHp = 100;
-let selectedClass = 'lich';
 
-function goToCharacterSetup() {
+function enterGameDirectly() {
   document.getElementById('splash-screen').classList.add('hidden');
-  document.getElementById('select-screen').classList.add('hidden');
-  startGame();
-}
-
-function selectClass(id, el) {
-  selectedClass = id;
-  document.querySelectorAll('.class-card').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
-}
-function goToCharacterSetup() {
-  document.getElementById('splash-screen').classList.add('hidden');
-  document.getElementById('select-screen').classList.add('hidden');
-  startGame();
-}
-
-function selectClass(id, el) {
-  selectedClass = id;
-  document.querySelectorAll('.class-card').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
-}
-
-
-function confirmCharacter() {
-  const n = document.getElementById('player-nick').value.trim();
-  if (n) state.name = n;
-  state.classId = selectedClass;
-  document.getElementById('select-screen').classList.add('hidden');
-  startGame();
-}
-
-function startGame() {
   document.getElementById('game-ui').classList.remove('hidden');
   updateUI(); renderEquip(); renderInv();
   syncCloud(); loadMarket(); loadTop(); loadChat();
@@ -426,15 +330,11 @@ function startGame() {
 function totalPower() {
   let p = state.level * 30;
   for (let k in state.equip) p += state.equip[k].power;
-  if (state.classId === 'returner') p = Math.floor(p * 1.12);
-  if (state.classId === 'lich') p = Math.floor(p * 1.1);
   return p;
 }
 
 function updateUI() {
-  const icons = { lich: '💀', returner: '⏳', dragon: '🐉' };
-  document.getElementById('top-class-icon').textContent = icons[state.classId || 'lich'];
-  document.getElementById('top-name').textContent = state.name || 'Охотник';
+  document.getElementById('top-name').textContent = state.name;
   document.getElementById('top-lvl').textContent = `Ур. ${state.level} • Мощь ${totalPower()}`;
   document.getElementById('top-gold').textContent = state.gold.toLocaleString();
   document.getElementById('shards-count').textContent = state.shards;
@@ -443,6 +343,7 @@ function updateUI() {
 
 function showDmgFloat(txt, color = '#fde047') {
   const arena = document.querySelector('.arena');
+  if (!arena) return;
   const el = document.createElement('div');
   el.className = 'dmg-float'; el.style.color = color; el.textContent = txt;
   arena.appendChild(el);
@@ -451,4 +352,78 @@ function showDmgFloat(txt, color = '#fde047') {
 
 function attackMonster(mult = 1) {
   let dmg = Math.floor(totalPower() * mult);
-  const critChance = stat
+  const isCrit = Math.random() < 0.25;
+  if (isCrit) dmg = Math.floor(dmg * 1.8);
+
+  hp -= dmg;
+  showDmgFloat((isCrit ? '💥 ' : '-') + dmg, isCrit ? '#f43f5e' : '#fde047');
+
+  const spr = document.getElementById('monster-sprite');
+  if (spr) {
+    spr.classList.remove('monster-hit'); void spr.offsetWidth; spr.classList.add('monster-hit');
+  }
+  if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+
+  if (hp <= 0) {
+    state.gold += (50 + wave * 12); state.exp += 40;
+    if (Math.random() < 0.45) state.shards += 1;
+
+    if (state.exp >= state.level * 100) {
+      state.exp = 0; state.level++;
+      document.getElementById('battle-log').textContent = `🎉 ПОВЫШЕНИЕ УРОВНЯ! Вы теперь ${state.level} уровня!`;
+    }
+
+    if (Math.random() < 0.4) {
+      const drop = rollLoot();
+      state.inventory.push(drop);
+      document.getElementById('battle-log').textContent = `✨ Лут во Вратах: [${drop.grade}] ${drop.name} (+${drop.power})!`;
+    }
+
+    wave++; maxHp = 100 + wave * 35; hp = maxHp;
+    document.getElementById('wave-num').textContent = wave;
+    const m = MONSTERS[Math.floor(Math.random() * MONSTERS.length)].split(' ');
+    document.getElementById('monster-sprite').textContent = m[0];
+    document.getElementById('monster-name').textContent = m.slice(1).join(' ');
+  }
+
+  document.getElementById('hp-fill').style.width = Math.max(0, (hp / maxHp) * 100) + '%';
+  document.getElementById('hp-text').textContent = `${Math.max(0, Math.floor(hp))} / ${maxHp}`;
+  saveState();
+}
+
+function useSkill(type) {
+  if (type === 'dash') attackMonster(2.2);
+  else if (type === 'blood') attackMonster(3.5);
+  else if (type === 'arise') attackMonster(5.5);
+}
+
+function rollLoot() {
+  const r = Math.random() * 100;
+  let grade = r < 2 ? 'SSS' : r < 6 ? 'SS' : r < 14 ? 'S' : r < 28 ? 'A' : r < 48 ? 'B' : r < 70 ? 'C' : 'D';
+  const slot = SLOTS[Math.floor(Math.random() * SLOTS.length)];
+  return {
+    id: Date.now() + Math.random(), slot: slot.id, grade: grade,
+    name: `${slot.name} [${grade}]`, power: Math.floor(20 * GRADE_MULT[grade])
+  };
+}
+
+function renderEquip() {
+  document.getElementById('equip-grid').innerHTML = SLOTS.map(s => {
+    let it = state.equip[s.id];
+    return `<div class="slot-box g-${it.grade}" onclick="upgradeSlot('${s.id}')">
+      <div style="position:absolute; top:3px; left:4px; font-size:9px; font-weight:900;">${it.grade}</div>
+      <div style="font-size:22px; margin:4px 0;">${s.icon}</div>
+      <div style="font-size:10px; font-weight:700; white-space:nowrap; overflow:hidden;">${it.name}</div>
+      <div style="font-size:9px; color:var(--cyan);">+${it.power}</div>
+    </div>`;
+  }).join('');
+}
+
+function upgradeSlot(slotId) {
+  let it = state.equip[slotId];
+  let idx = GRADES.indexOf(it.grade);
+  if (idx >= GRADES.length - 1) return alert('Максимальный грейд SSS достигнут!');
+  let next = GRADES[idx + 1];
+  let costGold = (idx + 1) * 200, costShards = (idx + 1) * 2;
+
+  if (
