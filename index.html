@@ -1,418 +1,472 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Врата Бездны</title>
-<style>
-  :root {
-    --bg: #080a12;
-    --panel: rgba(17, 21, 36, .92);
-    --line: rgba(164, 178, 255, .18);
-    --text: #eef0ff;
-    --muted: #9ca5c6;
-    --violet: #a37bff;
-    --blue: #62d8ff;
-    --gold: #ffc75e;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0; min-height: 100vh; color: var(--text);
-    font: 15px/1.45 system-ui, Arial, sans-serif;
-    background:
-      radial-gradient(ellipse at 50% 32%, rgba(91, 54, 174, .22), transparent 34%),
-      radial-gradient(ellipse at 15% 75%, rgba(30, 108, 150, .16), transparent 35%),
-      linear-gradient(145deg, #080a12, #111327 55%, #090b13);
-    overflow-x: hidden;
-  }
-  body::before {
-    content: ""; position: fixed; inset: 0; pointer-events: none; opacity: .34;
-    background-image: radial-gradient(#d9e3ff 1px, transparent 1px);
-    background-size: 53px 53px;
-    mask-image: linear-gradient(to bottom, black, transparent 85%);
-  }
-  button { font: inherit; color: inherit; cursor: pointer; }
-  .wrap { max-width: 1120px; margin: auto; padding: 22px; position: relative; }
-  header {
-    display: flex; justify-content: space-between; align-items: center; gap: 14px;
-    margin-bottom: 18px;
-  }
-  .brand { font-size: 22px; font-weight: 900; letter-spacing: 2px; }
-  .brand span { color: var(--violet); }
-  .resources { display: flex; gap: 10px; flex-wrap: wrap; }
-  .chip, .panel {
-    background: var(--panel); border: 1px solid var(--line);
-    border-radius: 15px; box-shadow: 0 12px 40px #0004;
-  }
-  .chip { padding: 9px 13px; color: var(--gold); font-weight: 700; }
-  .layout { display: grid; grid-template-columns: 245px 1fr; gap: 16px; }
-  .panel { padding: 18px; }
-  .side h3, h2, h3 { margin-top: 0; }
-  .hero-card { text-align: center; }
-  .portrait {
-    width: 112px; height: 112px; border-radius: 50%; margin: 8px auto 12px;
-    display: grid; place-items: center; font-size: 54px;
-    background: radial-gradient(circle, #574091, #15182c 68%);
-    border: 2px solid #9d83ff; box-shadow: 0 0 28px #936eff55;
-    animation: float 3s ease-in-out infinite;
-  }
-  @keyframes float { 50% { transform: translateY(-6px); } }
-  .muted { color: var(--muted); }
-  .statline { display: flex; justify-content: space-between; margin: 8px 0; }
-  .bar { height: 9px; background: #24283d; border-radius: 10px; overflow: hidden; }
-  .fill { height: 100%; transition: width .35s ease; border-radius: inherit; }
-  .hp { background: linear-gradient(90deg, #ff486e, #ff9368); }
-  .xp { background: linear-gradient(90deg, #7e67ff, #51d6ff); }
-  .nav { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
-  .nav button, .secondary {
-    background: #171b2d; border: 1px solid var(--line); border-radius: 10px;
-    padding: 10px 14px;
-  }
-  .nav button.active { border-color: var(--violet); background: #30234c; }
-  .primary {
-    background: linear-gradient(100deg, #7556e8, #a35bea);
-    border: 0; border-radius: 10px; padding: 11px 16px; font-weight: 800;
-    box-shadow: 0 5px 20px #8b63ff33;
-  }
-  .primary:hover, .secondary:hover, .nav button:hover { filter: brightness(1.18); }
-  .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
-  .arena { min-height: 300px; position: relative; overflow: hidden; }
-  .arena::before {
-    content: ""; position: absolute; width: 260px; height: 260px; border-radius: 50%;
-    border: 2px solid #7d58ff88; left: 50%; top: 47%; transform: translate(-50%,-50%);
-    box-shadow: 0 0 34px #834eff66, inset 0 0 34px #834eff33;
-    animation: portal 4s linear infinite;
-  }
-  @keyframes portal { to { transform: translate(-50%,-50%) rotate(360deg); } }
-  .arena-content { position: relative; z-index: 1; text-align: center; padding: 26px 8px; }
-  .enemy { font-size: 74px; display: inline-block; filter: drop-shadow(0 0 15px #a45cff88); }
-  .enemy.hit { animation: hit .25s ease; }
-  @keyframes hit { 25% { transform: translateX(-10px) rotate(-8deg); filter: brightness(2); }
-                   75% { transform: translateX(10px) rotate(8deg); } }
-  .battle-log {
-    min-height: 40px; color: #c7cbe1; background: #0b0e19bb; border-radius: 10px;
-    padding: 10px; margin-top: 12px; text-align: left;
-  }
-  .section { display: none; }
-  .section.active { display: block; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
-  .item, .portal-card, .class-card {
-    background: #111528; border: 1px solid var(--line); border-radius: 12px; padding: 13px;
-  }
-  .class-card { cursor: pointer; text-align: center; }
-  .class-card:hover { border-color: var(--violet); transform: translateY(-2px); }
-  .class-card .icon { font-size: 35px; }
-  .rarity-common { color: #d0d3df; }
-  .rarity-legendary { color: #64ceff; }
-  .rarity-gold { color: #ffd05a; }
-  .rarity-mythic { color: #e98aff; }
-  .small { font-size: 13px; }
-  .tag { color: var(--gold); font-size: 12px; }
-  .levelup {
-    position: fixed; inset: 0; z-index: 5; display: none; place-items: center;
-    background: #050611cc; text-align: center;
-  }
-  .levelup.show { display: grid; animation: appear .3s; }
-  .levelbox { padding: 28px; border: 1px solid #ad8bff; border-radius: 18px;
-    background: #17152a; box-shadow: 0 0 60px #8d61ff66; }
-  .levelbox h1 { color: #d3b7ff; font-size: 38px; }
-  @keyframes appear { from { opacity: 0; } to { opacity: 1; } }
-  .notice { min-height: 22px; color: var(--gold); margin-top: 9px; }
-  @media(max-width: 720px) {
-    .layout { grid-template-columns: 1fr; }
-    header { align-items: flex-start; flex-direction: column; }
-    .arena::before { width: 210px; height: 210px; }
-  }
-</style>
-</head>
-<body>
-<div class="wrap">
-  <header>
-    <div class="brand">ВРАТА <span>БЕЗДНЫ</span></div>
-    <div class="resources">
-      <div class="chip">🪙 <span id="gold">0</span></div>
-      <div class="chip">🧪 Зелья: <span id="potions">0</span></div>
-    </div>
-  </header>
+require("dotenv").config();
 
-  <div id="choose" class="panel">
-    <h2>Выбери своего охотника</h2>
-    <p class="muted">Каждый класс сражается по-своему. Выбор можно сделать только в начале игры.</p>
-    <div class="grid" id="classList"></div>
-  </div>
+const express = require("express");
+const crypto = require("crypto");
+const path = require("path");
+const { createClient } = require("@supabase/supabase-js");
 
-  <div id="game" class="layout" style="display:none">
-    <aside class="panel side">
-      <div class="hero-card">
-        <div class="portrait" id="portrait">✦</div>
-        <h2 id="heroName">Охотник</h2>
-        <div class="muted" id="heroClass"></div>
-      </div>
-      <div class="statline"><b>Уровень</b><span id="level">1</span></div>
-      <div class="statline"><b>Здоровье</b><span id="hpText"></span></div>
-      <div class="bar"><div class="fill hp" id="hpBar"></div></div>
-      <div class="statline small"><span>Опыт</span><span id="xpText"></span></div>
-      <div class="bar"><div class="fill xp" id="xpBar"></div></div>
-      <hr style="border-color:var(--line); margin:16px 0">
-      <div class="statline"><span>⚔️ Атака</span><b id="atk"></b></div>
-      <div class="statline"><span>🛡️ Защита</span><b id="def"></b></div>
-      <div class="statline"><span>✨ Очки талантов</span><b id="points"></b></div>
-      <div class="actions">
-        <button class="secondary" onclick="upgrade('atk')">+ Атака</button>
-        <button class="secondary" onclick="upgrade('def')">+ Защита</button>
-        <button class="secondary" onclick="upgrade('hp')">+ Здоровье</button>
-      </div>
-      <div class="notice" id="notice"></div>
-    </aside>
+const app = express();
+const PORT = process.env.PORT || 3000;
+const BOT_TOKEN = process.env.BOT_TOKEN;
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    <main>
-      <nav class="nav">
-        <button class="active" data-tab="dungeon">⚔️ Подземелье</button>
-        <button data-tab="inventory">🎒 Инвентарь</button>
-        <button data-tab="portals">🌀 Порталы</button>
-      </nav>
+if (!BOT_TOKEN) throw new Error("В .env не задан BOT_TOKEN");
+if (!SUPABASE_URL) throw new Error("В .env не задан SUPABASE_URL");
+if (!SUPABASE_KEY) throw new Error("В .env не задан SUPABASE_SERVICE_ROLE_KEY");
 
-      <section class="section active" id="dungeon">
-        <div class="panel arena">
-          <div class="arena-content">
-            <div class="muted" id="floorLabel">Портал не открыт</div>
-            <div class="enemy" id="enemyIcon">🌀</div>
-            <h2 id="enemyName">Войди в портал</h2>
-            <div id="enemyHealth"></div>
-            <div class="bar" style="max-width:320px;margin:8px auto">
-              <div class="fill hp" id="enemyBar"></div>
-            </div>
-            <div class="actions" style="justify-content:center">
-              <button class="primary" onclick="attack(false)">⚔️ Атаковать</button>
-              <button class="primary" onclick="attack(true)">✨ Особый удар</button>
-              <button class="secondary" onclick="usePotion()">🧪 Выпить зелье</button>
-              <button class="secondary" onclick="enterPortal()">🌀 Войти в портал</button>
-            </div>
-            <div class="battle-log" id="log">Выбери портал, чтобы начать охоту.</div>
-          </div>
-        </div>
-      </section>
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: {
+    persistSession: false,
+    autoRefreshToken: false
+  }
+});
 
-      <section class="section" id="inventory">
-        <div class="panel">
-          <h2>Инвентарь</h2>
-          <p class="muted">Нажми «Экипировать», чтобы надеть предмет. Повторное нажатие снимет его.</p>
-          <div id="equipment" class="grid" style="margin-bottom:14px"></div>
-          <div id="items" class="grid"></div>
-        </div>
-      </section>
+app.use(express.json({ limit: "30kb" }));
+app.use(express.static(path.join(__dirname, "public")));
 
-      <section class="section" id="portals">
-        <div class="panel">
-          <h2>Порталы подземелий</h2>
-          <p class="muted">Чем выше этаж, тем опаснее враги и ценнее добыча.</p>
-          <div id="portalList" class="grid"></div>
-        </div>
-      </section>
-    </main>
-  </div>
-</div>
-
-<div class="levelup" id="levelup">
-  <div class="levelbox">
-    <div style="font-size:48px">✧</div>
-    <h1>НОВЫЙ УРОВЕНЬ!</h1>
-    <p id="levelMessage"></p>
-    <button class="primary" onclick="closeLevelup()">Продолжить</button>
-  </div>
-</div>
-
-<script>
 const classes = {
-  mage:    { name:"Маг", icon:"🧙", hp:85, atk:17, def:3, desc:"Сильные магические удары" },
-  fighter: { name:"Боец", icon:"⚔️", hp:115, atk:13, def:7, desc:"Надёжный баланс атаки и защиты" },
-  archer:  { name:"Стрелок", icon:"🏹", hp:95, atk:15, def:5, desc:"Быстрые точные атаки" },
-  tank:    { name:"Танк", icon:"🛡️", hp:145, atk:10, def:11, desc:"Много здоровья и крепкая броня" }
+  mage:    { name: "Маг",      icon: "🔮", hp: 85,  atk: 17, def: 3 },
+  fighter: { name: "Боец",    icon: "⚔️", hp: 115, atk: 13, def: 7 },
+  archer:  { name: "Стрелок", icon: "🏹", hp: 95,  atk: 15, def: 5 },
+  tank:    { name: "Танк",    icon: "🛡️", hp: 145, atk: 10, def: 11 }
 };
-const rarityData = [
-  {name:"Обычный", key:"common", chance:58, mult:1},
-  {name:"Легендарный", key:"legendary", chance:25, mult:1.7},
-  {name:"Золотой", key:"gold", chance:13, mult:2.5},
-  {name:"Мифический", key:"mythic", chance:4, mult:3.7}
-];
-const enemyNames = ["Теневой волк","Падший рыцарь","Пожиратель маны","Костяной страж","Демон портала"];
-const enemyIcons = ["🐺","💀","👹","🦇","👾"];
-let state = loadGame();
 
-function freshGame(){
-  return { hero:null, level:1, xp:0, gold:120, potions:3, points:0,
-    bonus:{atk:0,def:0,hp:0}, inventory:[], equipped:{weapon:null,armor:null,relic:null},
-    maxFloor:1, floor:1, enemy:null };
+const enemyNames = [
+  ["Теневой волк", "🐺"],
+  ["Падший рыцарь", "💀"],
+  ["Пожиратель маны", "👹"],
+  ["Костяной страж", "🦇"],
+  ["Демон врат", "👾"]
+];
+
+function emptyGame() {
+  return {
+    classId: null,
+    level: 1,
+    xp: 0,
+    gold: 100,
+    maxFloor: 1,
+    floor: 1,
+    hp: 100,
+    inventory: [],
+    equipped: { weapon: null, armor: null, relic: null },
+    enemy: null,
+    lastAction: 0
+  };
 }
-function loadGame(){
-  try { return JSON.parse(localStorage.getItem("abyss_save")) || freshGame(); }
-  catch(e){ return freshGame(); }
-}
-function save(){ localStorage.setItem("abyss_save", JSON.stringify(state)); }
-function classPick(){
-  document.getElementById("classList").innerHTML = Object.entries(classes).map(([key,c]) =>
-    `<div class="class-card" onclick="chooseClass('${key}')">
-      <div class="icon">${c.icon}</div><h3>${c.name}</h3><div class="muted small">${c.desc}</div>
-      <div class="small">❤️ ${c.hp}　⚔️ ${c.atk}　🛡️ ${c.def}</div>
-    </div>`).join("");
-}
-function chooseClass(key){
-  state = freshGame(); state.hero = key; save(); render();
-}
-function stats(){
-  const c = classes[state.hero];
-  let s = {hp:c.hp + (state.level-1)*14 + state.bonus.hp,
-           atk:c.atk + (state.level-1)*3 + state.bonus.atk,
-           def:c.def + Math.floor((state.level-1)*1.2) + state.bonus.def};
-  for(const slot of Object.keys(state.equipped)){
-    const item = state.inventory.find(x=>x.id===state.equipped[slot]);
-    if(item){ s.hp+=item.hp||0; s.atk+=item.atk||0; s.def+=item.def||0; }
-  }
-  return s;
-}
-function xpNeed(){ return 80 + state.level*42; }
-function render(){
-  const choosing = !state.hero;
-  document.getElementById("choose").style.display = choosing ? "block" : "none";
-  document.getElementById("game").style.display = choosing ? "none" : "grid";
-  if(choosing){ classPick(); return; }
-  const c = classes[state.hero], s = stats();
-  state.hp = Math.min(state.hp ?? s.hp, s.hp);
-  document.getElementById("portrait").textContent = c.icon;
-  document.getElementById("heroName").textContent = c.name;
-  document.getElementById("heroClass").textContent = "Охотник Бездны";
-  document.getElementById("level").textContent = state.level;
-  document.getElementById("hpText").textContent = `${state.hp} / ${s.hp}`;
-  document.getElementById("hpBar").style.width = Math.max(0,state.hp/s.hp*100)+"%";
-  document.getElementById("xpText").textContent = `${state.xp} / ${xpNeed()}`;
-  document.getElementById("xpBar").style.width = Math.min(100,state.xp/xpNeed()*100)+"%";
-  document.getElementById("atk").textContent = s.atk;
-  document.getElementById("def").textContent = s.def;
-  document.getElementById("points").textContent = state.points;
-  document.getElementById("gold").textContent = state.gold;
-  document.getElementById("potions").textContent = state.potions;
-  renderEnemy(); renderItems(); renderPortals(); save();
-}
-function renderEnemy(){
-  const e=state.enemy;
-  document.getElementById("floorLabel").textContent = e ? `Этаж ${e.floor} · Подземелье` : "Портал не открыт";
-  document.getElementById("enemyName").textContent = e ? e.name : "Войди в портал";
-  document.getElementById("enemyIcon").textContent = e ? e.icon : "🌀";
-  document.getElementById("enemyHealth").textContent = e ? `❤️ ${Math.max(0,e.hp)} / ${e.maxHp}` : "";
-  document.getElementById("enemyBar").style.width = e ? Math.max(0,e.hp/e.maxHp*100)+"%" : "0%";
-}
-function enterPortal(floor=state.maxFloor){
-  if(state.enemy && state.enemy.hp>0){ setLog("Сначала победи текущего противника!"); return; }
-  state.floor=Math.min(floor,state.maxFloor);
-  const i=Math.floor(Math.random()*enemyNames.length);
-  const boss=state.floor%5===0;
-  const maxHp=Math.floor((45+state.floor*22)*(boss?2.4:1));
-  state.enemy={floor:state.floor,name:(boss?"Босс: ":"")+enemyNames[i],
-    icon:boss?"🐉":enemyIcons[i], maxHp, hp:maxHp, atk:Math.floor(7+state.floor*2.3)};
-  setLog(`Портал открылся. На тебя выходит ${state.enemy.name}!`);
-  render();
-}
-function attack(skill){
-  const e=state.enemy;
-  if(!e || e.hp<=0){ setLog("Сначала войди в портал."); return; }
-  const s=stats();
-  const power=skill?1.9:1;
-  const damage=Math.max(1,Math.floor((s.atk*power)*(0.85+Math.random()*0.3)));
-  e.hp-=damage;
-  document.getElementById("enemyIcon").classList.remove("hit");
-  void document.getElementById("enemyIcon").offsetWidth;
-  document.getElementById("enemyIcon").classList.add("hit");
-  if(e.hp<=0){ defeatEnemy(); render(); return; }
-  const incoming=Math.max(1,e.atk-s.def+Math.floor(Math.random()*4));
-  state.hp-=incoming;
-  if(state.hp<=0){
-    state.hp=Math.max(1,Math.floor(s.hp*.55));
-    state.gold=Math.max(0,state.gold-Math.floor(state.gold*.05));
-    setLog(`Ты нанёс ${damage} урона, но пал в бою. Охотник восстановился; потеряно 5% золота.`);
-  } else setLog(`${skill?"Особый удар":"Атака"}: ${damage} урона. Враг ответил на ${incoming}.`);
-  render();
-}
-function defeatEnemy(){
-  const e=state.enemy, reward=12+e.floor*7;
-  state.gold+=reward;
-  state.xp+=35+e.floor*13;
-  setLog(`Победа! Получено ${reward} золота и опыт. Исследуй добычу.`);
-  if(e.floor>=state.maxFloor && state.maxFloor<30) state.maxFloor++;
-  if(Math.random()<.24) state.potions++;
-  if(Math.random()<.78) dropItem(e.floor);
-  state.enemy=null;
-  while(state.xp>=xpNeed()){
-    state.xp-=xpNeed(); state.level++; state.points+=2;
-    state.hp=stats().hp;
-    document.getElementById("levelMessage").textContent =
-      `Ты достиг ${state.level} уровня! Получено 2 очка талантов.`;
-    document.getElementById("levelup").classList.add("show");
+
+function verifyTelegramData(initData) {
+  if (!initData) return null;
+
+  const params = new URLSearchParams(initData);
+  const receivedHash = params.get("hash");
+  const authDate = Number(params.get("auth_date"));
+
+  if (!receivedHash || !authDate) return null;
+
+  // Не принимаем данные Telegram старше суток.
+  if (Date.now() / 1000 - authDate > 86400) return null;
+
+  const entries = [...params.entries()]
+    .filter(([key]) => key !== "hash")
+    .sort(([a], [b]) => a.localeCompare(b));
+
+  const dataCheckString = entries
+    .map(([key, value]) => `${key}=${value}`)
+    .join("\n");
+
+  const secretKey = crypto
+    .createHmac("sha256", "WebAppData")
+    .update(BOT_TOKEN)
+    .digest();
+
+  const calculatedHash = crypto
+    .createHmac("sha256", secretKey)
+    .update(dataCheckString)
+    .digest("hex");
+
+  const expected = Buffer.from(calculatedHash, "hex");
+  const received = Buffer.from(receivedHash, "hex");
+
+  if (expected.length !== received.length) return null;
+  if (!crypto.timingSafeEqual(expected, received)) return null;
+
+  try {
+    return JSON.parse(params.get("user") || "null");
+  } catch {
+    return null;
   }
 }
-function dropItem(floor){
-  let roll=Math.random()*100, chosen=rarityData[0];
-  for(const r of rarityData){ if(roll<r.chance){chosen=r;break;} roll-=r.chance; }
-  const slots=["weapon","armor","relic"], slot=slots[Math.floor(Math.random()*slots.length)];
-  const power=Math.max(1,Math.floor((2+floor*.8)*chosen.mult));
-  const item={id:Date.now()+Math.random(), rarity:chosen.key, rarityName:chosen.name,
-    slot, name:`${["Забытый","Портальный","Теневой","Древний"][Math.floor(Math.random()*4)]} ${slotName(slot)}`,
-    atk:slot==="weapon"?power:0, def:slot==="armor"?Math.max(1,Math.floor(power*.65)):0,
-    hp:slot==="relic"?power*5:0};
-  state.inventory.unshift(item);
-  setLog(`Добыча: ${item.name} — ${chosen.name}!`);
+
+function getStats(game) {
+  const c = classes[game.classId] || classes.fighter;
+
+  const result = {
+    maxHp: c.hp + (game.level - 1) * 14,
+    atk: c.atk + (game.level - 1) * 3,
+    def: c.def + Math.floor((game.level - 1) * 1.2)
+  };
+
+  for (const slot of ["weapon", "armor", "relic"]) {
+    const item = game.inventory.find(
+      entry => entry.id === game.equipped[slot]
+    );
+
+    if (!item) continue;
+
+    result.maxHp += item.hp || 0;
+    result.atk += item.atk || 0;
+    result.def += item.def || 0;
+  }
+
+  return result;
 }
-function slotName(s){ return s==="weapon"?"клинок":s==="armor"?"доспех":"артефакт"; }
-function renderItems(){
-  const slots={weapon:"Оружие",armor:"Броня",relic:"Артефакт"};
-  document.getElementById("equipment").innerHTML=Object.entries(slots).map(([slot,label])=>{
-    const item=state.inventory.find(x=>x.id===state.equipped[slot]);
-    return `<div class="item"><b>${label}</b><div class="small">${item?item.name:"Пусто"}</div></div>`;
-  }).join("");
-  document.getElementById("items").innerHTML=state.inventory.length ? state.inventory.map(item=>{
-    const equipped=state.equipped[item.slot]===item.id;
-    return `<div class="item">
-      <b class="rarity-${item.rarity}">${item.name}</b>
-      <div class="small">${item.rarityName} · ${slotName(item.slot)}</div>
-      <div class="tag">${item.atk?`⚔️ +${item.atk} `:""}${item.def?`🛡️ +${item.def} `:""}${item.hp?`❤️ +${item.hp}`:""}</div>
-      <button class="secondary small" style="margin-top:8px" onclick="equip(${item.id})">${equipped?"Снять":"Экипировать"}</button>
-    </div>`;
-  }).join("") : `<p class="muted">Пока пусто. Побеждай врагов, чтобы найти добычу.</p>`;
+
+function xpNeeded(level) {
+  return 80 + level * 42;
 }
-function equip(id){
-  const item=state.inventory.find(x=>x.id===id); if(!item)return;
-  state.equipped[item.slot]=state.equipped[item.slot]===id?null:id;
-  render();
+
+function rollItem(floor) {
+  const roll = Math.random() * 100;
+  let rarity;
+
+  if (roll < 4) {
+    rarity = { key: "mythic", name: "Мифический", mult: 3.7 };
+  } else if (roll < 17) {
+    rarity = { key: "gold", name: "Золотой", mult: 2.5 };
+  } else if (roll < 42) {
+    rarity = { key: "legendary", name: "Легендарный", mult: 1.7 };
+  } else {
+    rarity = { key: "common", name: "Обычный", mult: 1 };
+  }
+
+  const slot = ["weapon", "armor", "relic"][
+    Math.floor(Math.random() * 3)
+  ];
+  const power = Math.max(
+    1,
+    Math.floor((2 + floor * 0.8) * rarity.mult)
+  );
+
+  const slotNames = {
+    weapon: "клинок",
+    armor: "доспех",
+    relic: "артефакт"
+  };
+
+  const prefixes = ["Забытый", "Теневой", "Портальный", "Древний"];
+
+  return {
+    id: crypto.randomUUID(),
+    name: `${prefixes[Math.floor(Math.random() * prefixes.length)]} ${slotNames[slot]}`,
+    slot,
+    rarity: rarity.key,
+    rarityName: rarity.name,
+    atk: slot === "weapon" ? power : 0,
+    def: slot === "armor" ? Math.max(1, Math.floor(power * 0.65)) : 0,
+    hp: slot === "relic" ? power * 5 : 0
+  };
 }
-function renderPortals(){
-  document.getElementById("portalList").innerHTML=Array.from({length:Math.min(10,state.maxFloor)},(_,i)=>i+1).map(f=>
-    `<div class="portal-card"><b>🌀 Этаж ${f}</b><p class="muted small">${f%5===0?"Босс подземелья":"Враги и добыча"}</p>
-     <button class="primary" onclick="enterPortal(${f})">Войти</button></div>`).join("");
+
+async function fetchPlayer(telegramId) {
+  const { data, error } = await supabase
+    .from("players")
+    .select("*")
+    .eq("telegram_id", telegramId)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
 }
-function usePotion(){
-  if(state.potions<=0){setLog("Зелий не осталось. Иногда их можно получить после победы.");return;}
-  const s=stats(); if(state.hp>=s.hp){setLog("Здоровье уже полное.");return;}
-  state.potions--; const heal=Math.min(s.hp-state.hp,Math.floor(s.hp*.4)); state.hp+=heal;
-  if(state.enemy && state.enemy.hp>0){
-    const incoming=Math.max(1,state.enemy.atk-s.def);
-    state.hp=Math.max(1,state.hp-incoming);
-    setLog(`Зелье восстановило ${heal} здоровья. Враг атаковал на ${incoming}.`);
-  } else setLog(`Зелье восстановило ${heal} здоровья.`);
-  render();
+
+async function savePlayer(telegramId, name, game) {
+  const { error } = await supabase
+    .from("players")
+    .upsert({
+      telegram_id: telegramId,
+      name,
+      level: game.level,
+      xp: game.xp,
+      game,
+      updated_at: Date.now()
+    }, {
+      onConflict: "telegram_id"
+    });
+
+  if (error) throw error;
 }
-function upgrade(type){
-  if(state.points<=0){setLog("Нет очков талантов. Повышай уровень в боях.");return;}
-  state.points--; state.bonus[type]+=type==="hp"?18:type==="atk"?2:2;
-  if(type==="hp") state.hp+=18;
-  setLog("Талант улучшен!"); render();
+
+async function auth(req, res, next) {
+  try {
+    const telegramUser = verifyTelegramData(
+      req.get("x-telegram-init-data")
+    );
+
+    if (!telegramUser?.id) {
+      return res.status(401).json({
+        error: "Открой игру через Telegram."
+      });
+    }
+
+    const telegramId = String(telegramUser.id);
+    const name = String(
+      telegramUser.first_name ||
+      telegramUser.username ||
+      "Охотник"
+    ).slice(0, 40);
+
+    let player = await fetchPlayer(telegramId);
+
+    if (!player) {
+      const game = emptyGame();
+      await savePlayer(telegramId, name, game);
+      player = await fetchPlayer(telegramId);
+    } else if (player.name !== name) {
+      await supabase
+        .from("players")
+        .update({ name })
+        .eq("telegram_id", telegramId);
+
+      player.name = name;
+    }
+
+    req.player = player;
+    req.telegramId = telegramId;
+    req.game = player.game || emptyGame();
+
+    next();
+  } catch (error) {
+    console.error("Ошибка авторизации/Supabase:", error.message);
+    res.status(500).json({ error: "Не удалось загрузить сохранение." });
+  }
 }
-function setLog(text){document.getElementById("log").textContent=text;}
-function closeLevelup(){document.getElementById("levelup").classList.remove("show");}
-document.querySelectorAll(".nav button").forEach(btn=>btn.addEventListener("click",()=>{
-  document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
-  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
-  btn.classList.add("active"); document.getElementById(btn.dataset.tab).classList.add("active");
-}));
-render();
-</script>
-</body>
-</html>
+
+app.use("/api", auth);
+
+app.get("/api/state", (req, res) => {
+  res.json({
+    name: req.player.name,
+    game: req.game,
+    stats: req.game.classId ? getStats(req.game) : null
+  });
+});
+
+app.post("/api/class", async (req, res) => {
+  try {
+    const game = req.game;
+    const classId = req.body?.classId;
+
+    if (!classes[classId]) {
+      return res.status(400).json({ error: "Неизвестный класс." });
+    }
+
+    if (game.classId) {
+      return res.status(400).json({ error: "Класс уже выбран." });
+    }
+
+    game.classId = classId;
+    game.hp = getStats(game).maxHp;
+
+    await savePlayer(req.telegramId, req.player.name, game);
+    res.json({ ok: true });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Не удалось сохранить класс." });
+  }
+});
+
+app.post("/api/start", async (req, res) => {
+  try {
+    const game = req.game;
+
+    if (!game.classId) {
+      return res.status(400).json({ error: "Сначала выбери класс." });
+    }
+
+    if (game.enemy && game.enemy.hp > 0) {
+      return res.json({ ok: true, enemy: game.enemy });
+    }
+
+    const floor = Number(req.body?.floor || game.maxFloor);
+
+    if (!Number.isInteger(floor) || floor < 1 || floor > game.maxFloor) {
+      return res.status(400).json({ error: "Этот этаж ещё закрыт." });
+    }
+
+    game.floor = floor;
+
+    const [name, icon] =
+      enemyNames[Math.floor(Math.random() * enemyNames.length)];
+
+    const boss = floor % 5 === 0;
+    const maxHp = Math.floor((45 + floor * 22) * (boss ? 2.4 : 1));
+
+    game.enemy = {
+      floor,
+      name: boss ? `Босс: ${name}` : name,
+      icon: boss ? "🐉" : icon,
+      maxHp,
+      hp: maxHp,
+      atk: Math.floor(7 + floor * 2.3)
+    };
+
+    await savePlayer(req.telegramId, req.player.name, game);
+    res.json({ ok: true, enemy: game.enemy });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Не удалось открыть врата." });
+  }
+});
+
+app.post("/api/attack", async (req, res) => {
+  try {
+    const game = req.game;
+    const enemy = game.enemy;
+
+    if (!game.classId || !enemy || enemy.hp <= 0) {
+      return res.status(400).json({ error: "Сначала войди во врата." });
+    }
+
+    if (Date.now() - (game.lastAction || 0) < 450) {
+      return res.status(429).json({ error: "Подожди мгновение." });
+    }
+
+    game.lastAction = Date.now();
+
+    const stats = getStats(game);
+    const special = Boolean(req.body?.special);
+    const damage = Math.max(
+      1,
+      Math.floor(
+        stats.atk *
+        (special ? 1.9 : 1) *
+        (0.85 + Math.random() * 0.3)
+      )
+    );
+
+    enemy.hp = Math.max(0, enemy.hp - damage);
+    let message = `Ты нанёс ${damage} урона.`;
+
+    if (enemy.hp <= 0) {
+      const floor = enemy.floor;
+      const reward = 12 + floor * 7;
+
+      game.gold += reward;
+      game.xp += 35 + floor * 13;
+      game.enemy = null;
+
+      if (floor >= game.maxFloor && game.maxFloor < 30) {
+        game.maxFloor++;
+      }
+
+      let loot = null;
+
+      if (Math.random() < 0.78) {
+        loot = rollItem(floor);
+        game.inventory.unshift(loot);
+      }
+
+      if (Math.random() < 0.24) {
+        game.potions = (game.potions || 0) + 1;
+      }
+
+      let leveledUp = false;
+
+      while (game.xp >= xpNeeded(game.level)) {
+        game.xp -= xpNeeded(game.level);
+        game.level++;
+        game.hp = getStats(game).maxHp;
+        leveledUp = true;
+      }
+
+      message = `Победа! +${reward} золота и опыт.`;
+
+      if (loot) {
+        message += ` Найден предмет: ${loot.name} (${loot.rarityName}).`;
+      }
+
+      if (leveledUp) {
+        message += ` Новый уровень: ${game.level}!`;
+      }
+    } else {
+      const incoming = Math.max(
+        1,
+        enemy.atk - stats.def + Math.floor(Math.random() * 4)
+      );
+
+      game.hp -= incoming;
+
+      if (game.hp <= 0) {
+        game.hp = Math.max(1, Math.floor(stats.maxHp * 0.55));
+        game.gold = Math.max(0, game.gold - Math.floor(game.gold * 0.05));
+        game.enemy = null;
+        message += " Охотник пал, потеряв 5% золота.";
+      } else {
+        message += ` Враг ответил на ${incoming} урона.`;
+      }
+    }
+
+    await savePlayer(req.telegramId, req.player.name, game);
+
+    res.json({
+      ok: true,
+      message,
+      game,
+      stats: getStats(game)
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Не удалось провести бой." });
+  }
+});
+
+app.post("/api/equip", async (req, res) => {
+  try {
+    const game = req.game;
+    const item = game.inventory.find(
+      entry => entry.id === req.body?.id
+    );
+
+    if (!item) {
+      return res.status(404).json({ error: "Предмет не найден." });
+    }
+
+    game.equipped[item.slot] =
+      game.equipped[item.slot] === item.id ? null : item.id;
+
+    game.hp = Math.min(game.hp, getStats(game).maxHp);
+
+    await savePlayer(req.telegramId, req.player.name, game);
+
+    res.json({
+      ok: true,
+      game,
+      stats: getStats(game)
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Не удалось надеть предмет." });
+  }
+});
+
+app.get("/api/leaderboard", async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from("players")
+      .select("name, level, xp")
+      .order("level", { ascending: false })
+      .order("xp", { ascending: false })
+      .limit(20);
+
+    if (error) throw error;
+    res.json(data || []);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Не удалось загрузить рейтинг." });
+  }
+});
+
+app.listen(PORT, () => {
+  console.log(`Игра запущена на порту ${PORT}`);
+});
