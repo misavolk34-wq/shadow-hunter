@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
@@ -8,9 +8,9 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
-    --bg: #04060b;
-    --panel: #0a0f1d;
-    --panel2: #101831;
+    --bg: #03050a;
+    --panel: #090e1d;
+    --panel2: #111730;
     --border: #1e2952;
     --cyan: #38bdf8;
     --purple: #a855f7;
@@ -22,33 +22,32 @@
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   body {
-    margin: 0; background: radial-gradient(circle at 50% 0%, #15103a 0%, var(--bg) 70%);
+    margin: 0; background: radial-gradient(circle at 50% 0%, #1a103c 0%, var(--bg) 75%);
     color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    min-height: 100vh; overflow-x: hidden; padding-bottom: 76px;
+    min-height: 100vh; overflow-x: hidden; padding-bottom: 78px;
   }
   .hidden { display: none !important; }
 
-  /* Анимации Системы и Теней */
-  @keyframes shadowGlow {
-    0%, 100% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.4), inset 0 0 15px rgba(56, 189, 248, 0.2); }
-    50% { box-shadow: 0 0 35px rgba(56, 189, 248, 0.7), inset 0 0 25px rgba(168, 85, 247, 0.4); }
+  @keyframes pulseSys {
+    0%, 100% { box-shadow: 0 0 20px rgba(56, 189, 248, 0.4), inset 0 0 15px rgba(168, 85, 247, 0.2); }
+    50% { box-shadow: 0 0 35px rgba(168, 85, 247, 0.7), inset 0 0 25px rgba(56, 189, 248, 0.4); }
   }
-  @keyframes floatHero {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-6px); }
+  @keyframes floatChar {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
   }
-  @keyframes eyePulse {
-    0%, 100% { filter: drop-shadow(0 0 4px #38bdf8); opacity: 0.8; }
-    50% { filter: drop-shadow(0 0 14px #a855f7); opacity: 1; }
+  @keyframes eyeGlow {
+    0%, 100% { filter: drop-shadow(0 0 5px #38bdf8); }
+    50% { filter: drop-shadow(0 0 15px #a855f7); }
   }
   @keyframes shakeMob {
     0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-8px) scale(0.98); }
-    75% { transform: translateX(8px) scale(1.02); }
+    25% { transform: translateX(-6px) scale(0.98); }
+    75% { transform: translateX(6px) scale(1.02); }
   }
-  @keyframes dmgAnim {
+  @keyframes popDmg {
     0% { opacity: 1; transform: translateY(0) scale(0.7); }
-    50% { opacity: 1; transform: translateY(-35px) scale(1.3); }
+    50% { opacity: 1; transform: translateY(-30px) scale(1.2); }
     100% { opacity: 0; transform: translateY(-55px) scale(1); }
   }
 
@@ -59,47 +58,50 @@
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     padding: 20px; text-align: center;
   }
-  .jinwoo-art {
-    width: 140px; height: 160px; margin-bottom: 16px;
-    animation: floatHero 3s ease-in-out infinite;
-  }
   .system-box {
-    background: rgba(10, 15, 29, 0.95);
-    border: 1.5px solid var(--cyan);
-    border-radius: 16px; padding: 22px;
-    max-width: 350px; width: 100%;
-    animation: shadowGlow 2.5s infinite;
+    background: rgba(9, 14, 29, 0.96); border: 1.5px solid var(--cyan);
+    border-radius: 16px; padding: 22px; max-width: 350px; width: 100%;
+    animation: pulseSys 2.5s infinite;
   }
   .btn-system {
     background: linear-gradient(135deg, #0284c7, #7e22ce);
-    color: #fff; border: 1px solid var(--cyan);
-    padding: 13px; border-radius: 10px; font-weight: 800; font-size: 14px;
+    color: #fff; border: 1px solid var(--cyan); padding: 13px;
+    border-radius: 10px; font-weight: 800; font-size: 14px;
     letter-spacing: 1px; cursor: pointer; width: 100%; margin-top: 14px;
     box-shadow: 0 4px 20px rgba(56, 189, 248, 0.4);
-    transition: transform 0.1s;
   }
-  .btn-system:active { transform: scale(0.97); }
 
-  /* Навигация и Шапка */
+  /* Шапка и Навигация */
   .topbar {
     position: sticky; top: 0; z-index: 40;
-    background: rgba(4, 6, 11, 0.94); backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
-    padding: 10px 14px; display: flex; justify-content: space-between; align-items: center;
+    background: rgba(3, 5, 10, 0.95); backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border); padding: 10px 14px;
+    display: flex; justify-content: space-between; align-items: center;
   }
   .container { padding: 12px; max-width: 600px; margin: 0 auto; }
   .card {
     background: var(--panel); border: 1px solid var(--border);
     border-radius: 14px; padding: 14px; margin-bottom: 12px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+  }
+
+  /* Классы и выбор образов */
+  .class-card {
+    background: var(--panel2); border: 1.5px solid var(--border);
+    border-radius: 12px; padding: 12px; margin-bottom: 10px; cursor: pointer; transition: 0.2s;
+  }
+  .class-card.selected { border-color: var(--cyan); background: rgba(56,189,248,0.12); box-shadow: 0 0 15px rgba(56,189,248,0.3); }
+  .nick-input {
+    width: 100%; padding: 12px; border-radius: 10px;
+    background: var(--panel); border: 1.5px solid var(--cyan);
+    color: #fff; font-size: 15px; outline: none; margin-bottom: 12px;
   }
 
   /* Арена боя */
   .arena {
     background: radial-gradient(circle at 50% 30%, #1e1b4b 0%, #070913 100%);
-    border: 1.5px solid #312e81; border-radius: 16px;
-    padding: 20px 14px; text-align: center; position: relative; overflow: hidden;
-    box-shadow: inset 0 0 30px rgba(168, 85, 247, 0.15);
+    border: 1.5px solid #312e81; border-radius: 16px; padding: 20px 14px;
+    text-align: center; position: relative; overflow: hidden;
   }
   .monster-sprite {
     font-size: 72px; display: inline-block; margin: 10px 0;
@@ -112,7 +114,7 @@
     border-radius: 7px; overflow: hidden; margin: 10px 0; border: 1px solid #334155;
   }
   .hp-bar-fill {
-    height: 100%; background: linear-gradient(90deg, #dc2626, #f97316, #ef4444);
+    height: 100%; background: linear-gradient(90deg, #dc2626, #f97316);
     transition: width 0.2s; box-shadow: 0 0 10px rgba(220, 38, 38, 0.7);
   }
   .skills-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
@@ -124,10 +126,10 @@
   .dmg-float {
     position: absolute; left: 50%; top: 35%; font-weight: 900; font-size: 24px;
     color: #fde047; text-shadow: 0 2px 10px #000, 0 0 15px #f59e0b; pointer-events: none;
-    animation: dmgAnim 0.75s forwards;
+    animation: popDmg 0.75s forwards;
   }
 
-  /* Сетка экипировки и рюкзак */
+  /* Снаряжение 9 слотов (E-SSS) */
   .equip-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .slot-box {
     background: var(--panel2); border: 1.5px solid var(--border);
@@ -151,28 +153,23 @@
     padding: 10px; border-radius: 10px; margin-bottom: 8px; font-size: 13px;
   }
   .btn-sm {
-    background: var(--cyan); color: #04060b; border: none;
+    background: var(--cyan); color: #03050a; border: none;
     padding: 6px 12px; border-radius: 7px; font-size: 12px; font-weight: 800; cursor: pointer;
   }
   .btn-gold { background: var(--gold); color: #000; }
-  
-  /* Чат и аукцион */
+
+  /* Чат */
   .chat-box {
     height: 240px; overflow-y: auto; background: #03050a;
     border: 1px solid var(--border); border-radius: 10px; padding: 10px;
     margin-bottom: 8px; display: flex; flex-direction: column; gap: 6px; font-size: 12px;
   }
   .chat-sys { color: var(--gold); font-style: italic; background: rgba(245, 158, 11, 0.1); padding: 4px 8px; border-radius: 6px; }
-  .nick-input {
-    width: 100%; padding: 11px; border-radius: 10px;
-    background: var(--panel); border: 1px solid var(--cyan);
-    color: #fff; font-size: 14px; outline: none; margin-bottom: 10px;
-  }
 
-  /* Нижняя панель */
+  /* Нижняя навигация */
   .bottom-nav {
     position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
-    background: rgba(10, 15, 29, 0.98); backdrop-filter: blur(12px);
+    background: rgba(9, 14, 29, 0.98); backdrop-filter: blur(12px);
     border-top: 1px solid var(--border);
     display: grid; grid-template-columns: repeat(5, 1fr); padding: 6px 2px;
   }
@@ -186,59 +183,75 @@
 </head>
 <body>
 
-<!-- Экран запуска Системы -->
+<!-- Экран пробуждения Системы -->
 <div id="splash-screen">
-  <svg class="jinwoo-art" viewBox="0 0 200 240">
+  <svg style="width:140px; height:160px; margin-bottom:16px; animation: floatChar 3s ease-in-out infinite;" viewBox="0 0 200 240">
     <defs>
-      <radialGradient id="aura" cx="50%" cy="50%" r="50%">
+      <radialGradient id="aur" cx="50%" cy="50%" r="50%">
         <stop offset="0%" stop-color="#a855f7" stop-opacity="0.7"/>
         <stop offset="70%" stop-color="#38bdf8" stop-opacity="0.2"/>
         <stop offset="100%" stop-color="#000" stop-opacity="0"/>
       </radialGradient>
     </defs>
-    <circle cx="100" cy="120" r="95" fill="url(#aura)"/>
+    <circle cx="100" cy="120" r="95" fill="url(#aur)"/>
     <path d="M55,85 Q30,150 20,225 L75,210 L100,230 L125,210 L180,225 Q170,150 145,85 Z" fill="#060913" stroke="#38bdf8" stroke-width="2"/>
     <path d="M75,55 Q100,25 125,55 Q132,75 120,88 L80,88 Q68,75 75,55 Z" fill="#03050a"/>
-    <ellipse cx="90" cy="66" rx="5" ry="2.5" fill="#38bdf8" style="animation: eyePulse 1.6s infinite;"/>
-    <ellipse cx="110" cy="66" rx="5" ry="2.5" fill="#38bdf8" style="animation: eyePulse 1.6s infinite;"/>
+    <ellipse cx="90" cy="66" rx="5" ry="2.5" fill="#38bdf8" style="animation: eyeGlow 1.6s infinite;"/>
+    <ellipse cx="110" cy="66" rx="5" ry="2.5" fill="#38bdf8" style="animation: eyeGlow 1.6s infinite;"/>
   </svg>
   <div class="system-box">
     <div style="color:var(--cyan); font-weight:900; font-size:12px; letter-spacing:2px; margin-bottom:8px;">[ УВЕДОМЛЕНИЕ СИСТЕМЫ ]</div>
     <p style="font-size:13px; line-height:1.4; margin:0 0 12px;">Вы прошли пробуждение. Примите силу Монарха Теней?</p>
-    <button class="btn-system" onclick="enterGame()">ПРИНЯТЬ СИЛУ</button>
+    <button class="btn-system" onclick="goToCharacterSetup()">ПРИНЯТЬ СИЛУ</button>
   </div>
 </div>
 
-<!-- Выбор никнейма -->
-<div id="select-screen" class="hidden" style="padding:30px 20px; max-width:400px; margin:auto; text-align:center; height:100vh; display:flex; flex-direction:column; justify-content:center;">
-  <h2 style="color:var(--cyan); letter-spacing:1px; margin-bottom:6px;">РЕГИСТРАЦИЯ ОХОТНИКА</h2>
-  <p style="color:var(--muted); font-size:12px; margin-bottom:20px;">Введите имя вашего сосуда</p>
-  <input type="text" id="player-nick" class="nick-input" placeholder="Имя Охотника..." maxlength="16">
-  <button class="btn-system" onclick="saveNick()">ВОЙТИ В ПОДЗЕМЕЛЬЕ</button>
+<!-- Выбор класса и имени -->
+<div id="select-screen" class="hidden" style="padding:20px; max-width:450px; margin:auto;">
+  <h2 style="color:var(--cyan); text-align:center; margin-bottom:4px;">ВЫБОР СОСУДА</h2>
+  <p style="text-align:center; color:var(--muted); font-size:12px; margin-bottom:16px;">Выберите класс Охотника</p>
+  
+  <div id="classes-list">
+    <div class="class-card selected" onclick="selectClass('lich', this)">
+      <div style="font-weight:800; color:#a855f7; font-size:15px;">💀 Король-Лич</div>
+      <div style="font-size:11px; color:var(--muted); margin-top:4px;">Власть над мертвыми армиями и магия тени (+15% урон)</div>
+    </div>
+    <div class="class-card" onclick="selectClass('returner', this)">
+      <div style="font-weight:800; color:#38bdf8; font-size:15px;">⏳ Возвращающийся</div>
+      <div style="font-size:11px; color:var(--muted); margin-top:4px;">Опыт прошлых жизней и повышенный шанс крита (+20%)</div>
+    </div>
+    <div class="class-card" onclick="selectClass('dragon', this)">
+      <div style="font-weight:800; color:#ef4444; font-size:15px;">🐉 Дракон из Яйца</div>
+      <div style="font-size:11px; color:var(--muted); margin-top:4px;">Сокрушительная физическая мощь и ярость пламени</div>
+    </div>
+  </div>
+
+  <input type="text" id="player-nick" class="nick-input" placeholder="Введите ваше имя Охотника..." maxlength="16">
+  <button class="btn-system" onclick="confirmCharacter()">НАЧАТЬ ПУТЬ ОХОТНИКА</button>
 </div>
 
-<!-- Игровой интерфейс -->
+<!-- Основной игровой интерфейс -->
 <div id="game-ui" class="hidden">
   <div class="topbar">
     <div style="display:flex; align-items:center; gap:8px;">
-      <div style="width:36px; height:36px; background:var(--panel2); border:1.5px solid var(--cyan); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px;">👤</div>
+      <div style="width:36px; height:36px; background:var(--panel2); border:1.5px solid var(--cyan); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px;" id="top-class-icon">💀</div>
       <div>
         <div style="font-weight:800; font-size:13px;" id="top-name">Охотник</div>
         <div style="font-size:10px; color:var(--cyan);" id="top-lvl">Ур. 1 • Ранг E</div>
       </div>
     </div>
     <div style="display:flex; gap:6px; font-size:11px; font-weight:700;">
-      <div style="background:var(--panel2); padding:4px 8px; border-radius:6px; border:1px solid var(--border); color:var(--gold);">💰 <span id="top-gold">500</span></div>
+      <div style="background:var(--panel2); padding:4px 8px; border-radius:6px; border:1px solid var(--border); color:var(--gold);">💰 <span id="top-gold">600</span></div>
       <div style="background:var(--panel2); padding:4px 8px; border-radius:6px; border:1px solid var(--border); color:#f472b6;">⚔️ <span id="top-power">100</span></div>
     </div>
   </div>
 
   <div class="container">
-    <!-- Врата / Бой -->
+    <!-- Врата -->
     <div id="tab-dungeon">
       <div class="arena">
         <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--muted);">
-          <span id="dng-title">Врата E-Ранга</span>
+          <span>Врата E-Ранга</span>
           <span>Волна: <b id="wave-num" style="color:#fff;">1</b></span>
         </div>
         <div id="monster-sprite" class="monster-sprite">🐺</div>
@@ -257,7 +270,7 @@
         </div>
       </div>
       <div class="card" style="margin-top:10px; font-size:11px; color:var(--muted); text-align:center;" id="battle-log">
-        Система активирована. Уничтожайте монстров для получения лута и осколков!
+        Система активирована. Уничтожайте монстров для получения ценного лута!
       </div>
     </div>
 
@@ -265,15 +278,15 @@
     <div id="tab-hero" class="hidden">
       <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-          <b style="color:var(--cyan); font-size:12px;">СЛОТЫ ЭКИПИРОВКИ (E → SSS)</b>
-          <span style="font-size:10px; color:var(--muted);">Тап для прокачки</span>
+          <b style="color:var(--cyan); font-size:12px;">ЭКИПИРОВКА (E → SSS)</b>
+          <span style="font-size:10px; color:var(--muted);">Тап для пробуждения</span>
         </div>
         <div class="equip-grid" id="equip-grid"></div>
       </div>
       <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
         <div>
-          <b>Осколки Теней: <span id="shards-count" style="color:var(--purple);">5</span>🔮</b>
-          <div style="font-size:10px; color:var(--muted);">Нужны для улучшения грейда</div>
+          <b>Осколки Теней: <span id="shards-count" style="color:var(--purple);">8</span>🔮</b>
+          <div style="font-size:10px; color:var(--muted);">Нужны для улучшения грейда слотов</div>
         </div>
         <button class="btn-sm btn-gold" onclick="openChest()">🎁 Сундук (300💰)</button>
       </div>
@@ -301,7 +314,7 @@
     <!-- Топ и Чат -->
     <div id="tab-social" class="hidden">
       <div class="card">
-        <b style="color:var(--cyan); font-size:12px; display:block; margin-bottom:6px;">🏆 РЕЙТИНГ ТОП-ОХОТНИКОВ</b>
+        <b style="color:var(--cyan); font-size:12px; display:block; margin-bottom:6px;">🏆 РЕЙТИНГ ОХОТНИКОВ</b>
         <div id="top-list" style="font-size:12px;"></div>
       </div>
       <div class="card">
@@ -347,12 +360,12 @@ const SLOTS = [
 
 const GRADES = ['E', 'D', 'C', 'B', 'A', 'S', 'SS', 'SSS'];
 const GRADE_MULT = { E: 1, D: 1.8, C: 3.2, B: 6, A: 11, S: 22, SS: 45, SSS: 95 };
-
 const MONSTERS = ['🐺 Ликан', '👺 Гоблин', '🧟 Зомби', '🗿 Голем', '🐍 Василиск', '🧌 Огр', '🐜 Муравей Беру', '🐉 Дракон'];
 
 let state = {
   id: tg?.initDataUnsafe?.user?.id ? String(tg.initDataUnsafe.user.id) : ('guest_' + Math.floor(Math.random()*900000)),
   name: tg?.initDataUnsafe?.user?.first_name || '',
+  classId: 'lich',
   level: 1, exp: 0, gold: 600, shards: 8,
   equip: {
     weapon: { grade: 'E', name: 'Ржавый клинок', power: 15 },
@@ -369,19 +382,31 @@ let state = {
 };
 
 let wave = 1, hp = 100, maxHp = 100;
+let selectedClass = 'lich';
 
-function enterGame() {
+function goToCharacterSetup() {
   document.getElementById('splash-screen').classList.add('hidden');
-  const saved = localStorage.getItem('shadow_hunter_save_v3');
+  const saved = localStorage.getItem('shadow_hunter_save_v4');
   if (saved) {
-    try { state = { ...state, ...JSON.parse(saved) }; startGame(); return; } catch(e){}
+    try {
+      state = { ...state, ...JSON.parse(saved) };
+      startGame();
+      return;
+    } catch(e){}
   }
   document.getElementById('select-screen').classList.remove('hidden');
 }
 
-function saveNick() {
+function selectClass(id, el) {
+  selectedClass = id;
+  document.querySelectorAll('.class-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function confirmCharacter() {
   const n = document.getElementById('player-nick').value.trim();
   if (n) state.name = n;
+  state.classId = selectedClass;
   document.getElementById('select-screen').classList.add('hidden');
   startGame();
 }
@@ -396,10 +421,14 @@ function startGame() {
 function totalPower() {
   let p = state.level * 30;
   for (let k in state.equip) p += state.equip[k].power;
+  if (state.classId === 'returner') p = Math.floor(p * 1.12);
+  if (state.classId === 'lich') p = Math.floor(p * 1.1);
   return p;
 }
 
 function updateUI() {
+  const icons = { lich: '💀', returner: '⏳', dragon: '🐉' };
+  document.getElementById('top-class-icon').textContent = icons[state.classId || 'lich'];
   document.getElementById('top-name').textContent = state.name || 'Охотник';
   document.getElementById('top-lvl').textContent = `Ур. ${state.level} • Мощь ${totalPower()}`;
   document.getElementById('top-gold').textContent = state.gold.toLocaleString();
@@ -417,43 +446,4 @@ function showDmgFloat(txt, color = '#fde047') {
 
 function attackMonster(mult = 1) {
   let dmg = Math.floor(totalPower() * mult);
-  const isCrit = Math.random() < 0.25;
-  if (isCrit) dmg = Math.floor(dmg * 1.8);
-
-  hp -= dmg;
-  showDmgFloat((isCrit ? '💥 ' : '-') + dmg, isCrit ? '#f43f5e' : '#fde047');
-
-  const spr = document.getElementById('monster-sprite');
-  spr.classList.remove('monster-hit'); void spr.offsetWidth; spr.classList.add('monster-hit');
-  if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
-
-  if (hp <= 0) {
-    const goldGain = 45 + wave * 10;
-    state.gold += goldGain; state.exp += 35;
-    if (Math.random() < 0.45) state.shards += 1;
-
-    if (state.exp >= state.level * 100) {
-      state.exp = 0; state.level++;
-      document.getElementById('battle-log').textContent = `🎉 ПОВЫШЕНИЕ УРОВНЯ! Вы теперь ${state.level} уровня!`;
-    }
-
-    if (Math.random() < 0.38) {
-      const drop = rollLoot();
-      state.inventory.push(drop);
-      document.getElementById('battle-log').textContent = `✨ Найден лут: [${drop.grade}] ${drop.name} (+${drop.power})!`;
-    }
-
-    wave++; maxHp = 100 + wave * 30; hp = maxHp;
-    document.getElementById('wave-num').textContent = wave;
-    const m = MONSTERS[Math.floor(Math.random() * MONSTERS.length)].split(' ');
-    document.getElementById('monster-sprite').textContent = m[0];
-    document.getElementById('monster-name').textContent = m.slice(1).join(' ');
-  }
-
-  document.getElementById('hp-fill').style.width = Math.max(0, (hp / maxHp) * 100) + '%';
-  document.getElementById('hp-text').textContent = `${Math.max(0, Math.floor(hp))} / ${maxHp}`;
-  saveState();
-}
-
-function useSkill(type) {
-  if (
+  const critChance = stat
