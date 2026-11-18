@@ -386,15 +386,8 @@ let selectedClass = 'lich';
 
 function goToCharacterSetup() {
   document.getElementById('splash-screen').classList.add('hidden');
-  const saved = localStorage.getItem('shadow_hunter_save_v4');
-  if (saved) {
-    try {
-      state = { ...state, ...JSON.parse(saved) };
-      startGame();
-      return;
-    } catch(e){}
-  }
-  document.getElementById('select-screen').classList.remove('hidden');
+  document.getElementById('select-screen').classList.add('hidden');
+  startGame();
 }
 
 function selectClass(id, el) {
@@ -402,6 +395,18 @@ function selectClass(id, el) {
   document.querySelectorAll('.class-card').forEach(c => c.classList.remove('selected'));
   el.classList.add('selected');
 }
+function goToCharacterSetup() {
+  document.getElementById('splash-screen').classList.add('hidden');
+  document.getElementById('select-screen').classList.add('hidden');
+  startGame();
+}
+
+function selectClass(id, el) {
+  selectedClass = id;
+  document.querySelectorAll('.class-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
 
 function confirmCharacter() {
   const n = document.getElementById('player-nick').value.trim();
