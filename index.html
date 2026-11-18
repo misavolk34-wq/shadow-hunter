@@ -1,377 +1,366 @@
-```html
 <!DOCTYPE html>
-<html lang="ru" class="dark">
+<html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Solo Leveling: Пробуждение Системы</title>
-    
-    <!-- Подключение официального скрипта Telegram WebApp -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    
-    <!-- Подключение Tailwind CSS для быстрой и адаптивной верстки -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Шрифты для атмосферы Системы -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
-
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        system: ['Orbitron', 'sans-serif'],
-                    },
-                    colors: {
-                        sys: {
-                            bg: '#06080f',
-                            panel: 'rgba(13, 19, 38, 0.85)',
-                            border: '#1e3a8a',
-                            cyan: '#00f0ff',
-                            purple: '#9d4edd',
-                            shadow: '#5a189a',
-                            gold: '#ffb703'
-                        }
-                    },
-                    animation: {
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'float': 'float 3.5s ease-in-out infinite',
-                        'glow': 'glow 2s ease-in-out infinite alternate',
-                    },
-                    keyframes: {
-                        float: {
-                            '0%, 100%': { transform: 'translateY(0px)' },
-                            '50%': { transform: 'translateY(-10px)' },
-                        },
-                        glow: {
-                            '0%': { boxShadow: '0 0 10px rgba(0, 240, 255, 0.3), inset 0 0 10px rgba(0, 240, 255, 0.1)' },
-                            '100%': { boxShadow: '0 0 25px rgba(157, 78, 221, 0.6), inset 0 0 15px rgba(0, 240, 255, 0.3)' }
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-
-    <style>
-        /* Базовые настройки и запрет выделения для мобильного UX */
-        * {
-            -webkit-tap-highlight-color: transparent;
-            user-select: none;
-            box-sizing: border-box;
-        }
-
-        body {
-            background-color: #06080f;
-            color: #e2e8f0;
-            overflow-x: hidden;
-            background-image: 
-                radial-gradient(circle at 50% 0%, rgba(90, 24, 154, 0.25) 0%, transparent 60%),
-                radial-gradient(circle at 80% 80%, rgba(0, 240, 255, 0.12) 0%, transparent 50%);
-        }
-
-        /* Кастомный скроллбар */
-        ::-webkit-scrollbar {
-            width: 4px;
-            height: 4px;
-        }
-        ::-webkit-scrollbar-track {
-            background: rgba(6, 8, 15, 0.8);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #3b82f6;
-            border-radius: 4px;
-        }
-
-        /* Стеклянные панели Системы */
-        .system-window {
-            background: linear-gradient(180deg, rgba(13, 22, 48, 0.92) 0%, rgba(7, 11, 24, 0.96) 100%);
-            border: 1px solid rgba(0, 240, 255, 0.45);
-            box-shadow: 0 0 20px rgba(0, 240, 255, 0.15), inset 0 0 20px rgba(0, 140, 255, 0.1);
-            backdrop-filter: blur(12px);
-        }
-
-        .system-window-purple {
-            background: linear-gradient(180deg, rgba(28, 12, 48, 0.92) 0%, rgba(12, 7, 24, 0.96) 100%);
-            border: 1px solid rgba(157, 78, 221, 0.6);
-            box-shadow: 0 0 25px rgba(157, 78, 221, 0.25), inset 0 0 20px rgba(157, 78, 221, 0.15);
-            backdrop-filter: blur(12px);
-        }
-
-        /* Неоновый текст */
-        .text-neon-cyan {
-            text-shadow: 0 0 8px rgba(0, 240, 255, 0.8), 0 0 18px rgba(0, 240, 255, 0.4);
-        }
-        .text-neon-purple {
-            text-shadow: 0 0 8px rgba(157, 78, 221, 0.9), 0 0 20px rgba(157, 78, 221, 0.5);
-        }
-        .text-neon-gold {
-            text-shadow: 0 0 8px rgba(255, 183, 3, 0.8), 0 0 18px rgba(255, 183, 3, 0.4);
-        }
-
-        /* Анимации боя */
-        @keyframes hitShake {
-            0%, 100% { transform: translate(0, 0) scale(1); filter: brightness(1); }
-            25% { transform: translate(-8px, 4px) scale(0.96); filter: brightness(2) drop-shadow(0 0 15px #ff0055); }
-            50% { transform: translate(8px, -4px) scale(1.02); }
-            75% { transform: translate(-4px, -2px); }
-        }
-        .animate-hit {
-            animation: hitShake 0.3s ease-out;
-        }
-
-        @keyframes floatDamage {
-            0% { opacity: 1; transform: translateY(0) scale(0.8); }
-            20% { transform: translateY(-15px) scale(1.2); }
-            100% { opacity: 0; transform: translateY(-65px) scale(0.95); }
-        }
-        .damage-popup {
-            position: absolute;
-            pointer-events: none;
-            font-family: 'Orbitron', sans-serif;
-            font-weight: 900;
-            animation: floatDamage 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            z-index: 40;
-        }
-
-        @keyframes slashEffect {
-            0% { opacity: 0; transform: scale(0.4) rotate(-35deg); }
-            40% { opacity: 1; transform: scale(1.1) rotate(0deg); }
-            100% { opacity: 0; transform: scale(1.3) rotate(15deg); }
-        }
-        .slash-vfx {
-            animation: slashEffect 0.35s ease-out forwards;
-        }
-
-        /* Цвета редкости предметов */
-        .rarity-common { border-color: #64748b; color: #cbd5e1; background: rgba(100, 116, 139, 0.12); }
-        .rarity-uncommon { border-color: #22c55e; color: #4ade80; background: rgba(34, 197, 94, 0.12); }
-        .rarity-rare { border-color: #3b82f6; color: #60a5fa; background: rgba(59, 130, 246, 0.15); box-shadow: 0 0 10px rgba(59, 130, 246, 0.2); }
-        .rarity-epic { border-color: #a855f7; color: #c084fc; background: rgba(168, 85, 247, 0.18); box-shadow: 0 0 14px rgba(168, 85, 247, 0.3); }
-        .rarity-legendary { 
-            border-color: #f59e0b; 
-            color: #fbbf24; 
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.22), rgba(168, 85, 247, 0.2)); 
-            box-shadow: 0 0 18px rgba(245, 158, 11, 0.45);
-        }
-
-        /* Теневые частицы на стартовом экране */
-        .particle {
-            position: absolute;
-            border-radius: 50%;
-            pointer-events: none;
-            animation: riseUp linear infinite;
-        }
-        @keyframes riseUp {
-            0% { transform: translateY(100vh) scale(0); opacity: 0; }
-            20% { opacity: 0.8; }
-            80% { opacity: 0.6; }
-            100% { transform: translateY(-10vh) scale(1.2); opacity: 0; }
-        }
-
-        /* Скрытие неактивных вкладок */
-        .tab-content { display: none; }
-        .tab-content.active { display: block; animation: fadeIn 0.25s ease-out; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(6px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Охотник за Тенями — Система Пробуждения</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --bg: #060913; --panel: #0d1326; --panel2: #131c38; --border: #233261;
+    --cyan: #38bdf8; --blue: #3b82f6; --purple: #a855f7; --gold: #f59e0b;
+    --red: #ef4444; --green: #22c55e; --text: #f1f5f9; --muted: #94a3b8;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { margin: 0; background: radial-gradient(circle at 50% 0%, #111c3d 0%, var(--bg) 70%); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; min-height: 100vh; overflow-x: hidden; padding-bottom: 76px; }
+  .hidden { display: none !important; }
+  @keyframes pulseGlow { 0%, 100% { box-shadow: 0 0 15px rgba(56, 189, 248, 0.35); } 50% { box-shadow: 0 0 28px rgba(56, 189, 248, 0.7); } }
+  @keyframes floatHero { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  @keyframes eyeGlow { 0%, 100% { filter: drop-shadow(0 0 4px #38bdf8); } 50% { filter: drop-shadow(0 0 12px #a855f7); } }
+  @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+  @keyframes dmgPop { 0% { opacity: 1; transform: translateY(0) scale(0.8); } 50% { opacity: 1; transform: translateY(-28px) scale(1.2); } 100% { opacity: 0; transform: translateY(-50px) scale(1); } }
+  #splash-screen { position: fixed; inset: 0; z-index: 100; background: radial-gradient(circle at center, #0f172a 0%, #03050a 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
+  .jinwoo-silhouette { width: 150px; height: 180px; margin-bottom: 18px; animation: floatHero 3.2s ease-in-out infinite; }
+  .system-box { background: rgba(13, 19, 38, 0.92); border: 1.5px solid var(--cyan); border-radius: 14px; padding: 22px 18px; max-width: 360px; width: 100%; animation: pulseGlow 2.5s infinite; }
+  .system-title { color: var(--cyan); font-weight: 800; letter-spacing: 2px; font-size: 13px; text-transform: uppercase; margin-bottom: 10px; border-bottom: 1px solid rgba(56, 189, 248, 0.3); padding-bottom: 8px; }
+  .btn-system { background: linear-gradient(135deg, #0284c7, #6d28d9); color: #fff; border: 1px solid var(--cyan); padding: 13px 22px; border-radius: 10px; font-weight: 700; font-size: 15px; cursor: pointer; width: 100%; margin-top: 14px; box-shadow: 0 4px 20px rgba(56, 189, 248, 0.4); }
+  #select-screen { padding: 16px; max-width: 600px; margin: 0 auto; }
+  .class-section { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 14px; }
+  .class-header { font-size: 15px; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .avatars-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .avatar-card { background: var(--panel2); border: 1.5px solid #1e293b; border-radius: 10px; padding: 6px 4px; text-align: center; cursor: pointer; }
+  .avatar-card.selected { border-color: var(--cyan); background: rgba(56, 189, 248, 0.14); box-shadow: 0 0 12px rgba(56, 189, 248, 0.4); }
+  .avatar-card span { display: block; font-size: 10px; color: var(--muted); margin-top: 4px; }
+  .nick-input { width: 100%; padding: 12px; border-radius: 10px; background: var(--panel); border: 1px solid var(--cyan); color: #fff; font-size: 15px; margin-bottom: 10px; outline: none; }
+  .topbar { position: sticky; top: 0; z-index: 40; background: rgba(6, 9, 19, 0.92); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; }
+  .player-badge { display: flex; align-items: center; gap: 10px; }
+  .mini-avatar { width: 40px; height: 40px; border-radius: 10px; background: var(--panel2); border: 1.5px solid var(--cyan); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .stats-pills { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+  .pill { background: var(--panel2); border: 1px solid var(--border); padding: 4px 8px; border-radius: 8px; font-size: 12px; font-weight: 700; }
+  .online-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--green); margin-right: 4px; box-shadow: 0 0 6px var(--green); }
+  .container { padding: 14px; max-width: 600px; margin: 0 auto; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin-bottom: 12px; }
+  .equip-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .slot-box { background: var(--panel2); border: 1.5px solid #263354; border-radius: 10px; padding: 8px; text-align: center; position: relative; cursor: pointer; }
+  .grade-badge { position: absolute; top: 4px; left: 5px; font-size: 10px; font-weight: 900; padding: 1px 5px; border-radius: 4px; }
+  .g-E { color: #9ca3af; border-color: #4b5563; }
+  .g-D { color: #60a5fa; border-color: #2563eb; }
+  .g-C { color: #38bdf8; border-color: #0284c7; }
+  .g-B { color: #a855f7; border-color: #7e22ce; }
+  .g-A { color: #c084fc; border-color: #9333ea; }
+  .g-S { color: #38bdf8; border-color: #38bdf8; }
+  .g-SS { color: #e879f9; border-color: #d946ef; }
+  .g-SSS { color: #fde047; border-color: #f59e0b; background: rgba(245,158,11,0.2); }
+  .dungeon-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px; }
+  .dng-btn { background: var(--panel2); border: 1px solid var(--border); color: var(--text); padding: 10px; border-radius: 10px; text-align: left; cursor: pointer; }
+  .dng-btn.active { border-color: var(--cyan); background: rgba(56,189,248,0.15); }
+  .arena { background: radial-gradient(circle at 50% 40%, #1e1b4b 0%, #090d1a 100%); border: 1.5px solid #312e81; border-radius: 14px; padding: 18px 14px; text-align: center; position: relative; overflow: hidden; }
+  .monster-sprite { font-size: 64px; display: inline-block; margin: 8px 0; filter: drop-shadow(0 0 16px rgba(168, 85, 247, 0.7)); }
+  .monster-hit { animation: shake 0.25s; filter: brightness(2) drop-shadow(0 0 20px #ef4444); }
+  .hp-bar-wrap { width: 100%; height: 12px; background: #1e293b; border-radius: 6px; overflow: hidden; margin: 8px 0; border: 1px solid #334155; }
+  .hp-bar-fill { height: 100%; background: linear-gradient(90deg, #dc2626, #f97316); transition: width 0.2s; }
+  .skills-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+  .skill-btn { background: var(--panel2); border: 1px solid var(--purple); color: #fff; padding: 10px 6px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .dmg-float { position: absolute; left: 50%; top: 38%; font-weight: 900; font-size: 20px; color: #fde047; text-shadow: 0 2px 8px #000; pointer-events: none; animation: dmgPop 0.75s forwards; }
+  .item-row { display: flex; justify-content: space-between; align-items: center; background: var(--panel2); border: 1px solid var(--border); padding: 10px; border-radius: 10px; margin-bottom: 8px; }
+  .btn-sm { background: var(--blue); color: #fff; border: none; padding: 6px 10px; border-radius: 7px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .btn-gold { background: var(--gold); color: #000; }
+  .chat-box { height: 280px; overflow-y: auto; background: #070b17; border: 1px solid var(--border); border-radius: 10px; padding: 10px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 6px; }
+  .chat-msg { font-size: 13px; line-height: 1.4; }
+  .chat-sys { color: var(--gold); font-style: italic; background: rgba(245,158,11,0.1); padding: 4px 8px; border-radius: 6px; }
+  .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 50; background: rgba(13, 19, 38, 0.96); backdrop-filter: blur(10px); border-top: 1px solid var(--border); display: grid; grid-template-columns: repeat(5, 1fr); padding: 6px 4px; }
+  .nav-btn { background: none; border: none; color: var(--muted); display: flex; flex-direction: column; align-items: center; font-size: 11px; gap: 3px; cursor: pointer; padding: 4px 0; }
+  .nav-btn.active { color: var(--cyan); font-weight: 700; }
+  .nav-icon { font-size: 18px; }
+</style>
 </head>
-<body class="min-h-screen flex flex-col justify-between pb-20">
+<body>
+    <div id="splash-screen">
+  <svg class="jinwoo-silhouette" viewBox="0 0 200 240">
+    <defs>
+      <radialGradient id="shadowAura" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#a855f7" stop-opacity="0.6"/>
+        <stop offset="60%" stop-color="#38bdf8" stop-opacity="0.2"/>
+        <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <circle cx="100" cy="120" r="95" fill="url(#shadowAura)"/>
+    <path d="M55,85 Q30,150 20,225 L75,210 L100,230 L125,210 L180,225 Q170,150 145,85 Z" fill="#090d16" stroke="#38bdf8" stroke-width="1.5"/>
+    <path d="M75,55 Q100,25 125,55 Q132,75 120,88 L80,88 Q68,75 75,55 Z" fill="#05070c"/>
+    <ellipse cx="90" cy="66" rx="5" ry="2.5" fill="#38bdf8" style="animation: eyeGlow 1.8s infinite;"/>
+    <ellipse cx="110" cy="66" rx="5" ry="2.5" fill="#38bdf8" style="animation: eyeGlow 1.8s infinite;"/>
+  </svg>
+  <div class="system-box">
+    <div class="system-title">[ УВЕДОМЛЕНИЕ СИСТЕМЫ ]</div>
+    <p style="font-size:14px; line-height:1.5; margin:0 0 10px;">Примите ли вы силу Монарха Теней?</p>
+    <button class="btn-system" onclick="enterCharacterSelect()">ПРИНЯТЬ ПРОБУЖДЕНИЕ</button>
+  </div>
+</div>
 
-    <!-- =====================================================================
-         1. ЭКРАН ЗАПУСКА (SPLASH SCREEN С СОН ДЖИН-ВУ И ОКНОМ СИСТЕМЫ)
-         ===================================================================== -->
-    <div id="splash-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center p-5 bg-[#04060c] overflow-hidden transition-opacity duration-700">
-        <!-- Контейнер для теневых частиц -->
-        <div id="particles-container" class="absolute inset-0 overflow-hidden pointer-events-none"></div>
+<div id="select-screen" class="hidden">
+  <h2 style="text-align:center; color:var(--cyan); margin:10px 0 4px;">ВЫБОР СОСУДА ДУШИ</h2>
+  <input type="text" id="player-nick" class="nick-input" placeholder="Имя Охотника..." maxlength="18">
+  <div id="classes-container"></div>
+  <button class="btn-system" onclick="confirmCharacter()">НАЧАТЬ ПУТЬ</button>
+</div>
 
-        <!-- Фоновое свечение Монарха Теней -->
-        <div class="absolute w-80 h-80 rounded-full bg-purple-700/20 blur-[90px] pointer-events-none"></div>
-        <div class="absolute w-64 h-64 rounded-full bg-cyan-500/15 blur-[70px] top-1/4 pointer-events-none"></div>
+<div id="game-ui" class="hidden">
+  <div class="topbar">
+    <div class="player-badge">
+      <div class="mini-avatar" id="top-avatar"></div>
+      <div>
+        <div style="font-weight:800; font-size:14px;" id="top-name">Охотник</div>
+        <div style="font-size:11px; color:var(--cyan);" id="top-class">Ур. 1 • Ранг E</div>
+      </div>
+    </div>
+    <div class="stats-pills">
+      <div class="pill" style="color:var(--gold);">💰 <span id="top-gold">500</span></div>
+      <div class="pill" style="color:#f472b6;">⚔️ <span id="top-power">100</span></div>
+    </div>
+  </div>
 
-        <!-- Анимированный SVG-арт Сон Джин-Ву со светящимися глазами и аурой теней -->
-        <div class="relative z-10 mb-4 animate-float">
-            <svg width="170" height="190" viewBox="0 0 200 220" fill="none" xmlns="http://www.w3.org/2000/svg" class="drop-shadow-[0_0_25px_rgba(157,78,221,0.75)]">
-                <!-- Аура теней вокруг силуэта -->
-                <path d="M100 15C65 15 35 45 30 85C25 125 15 160 5 195C35 185 55 205 100 205C145 205 165 185 195 195C185 160 175 125 170 85C165 45 135 15 100 15Z" fill="url(#shadowAura)" opacity="0.75"/>
-                
-                <!-- Воротник темного плаща Монарха Теней -->
-                <path d="M42 155L68 125L100 142L132 125L158 155L175 210H25L42 155Z" fill="#090b16" stroke="#7c3aed" stroke-width="2"/>
-                <path d="M68 125L100 165L132 125" stroke="#00f0ff" stroke-width="1.5" opacity="0.8"/>
-
-                <!-- Лицо и шея -->
-                <path d="M84 115H116V140L100 152L84 140V115Z" fill="#13172b"/>
-                <path d="M68 72C68 50 82 38 100 38C118 38 132 50 132 72C132 96 118 118 100 124C82 118 68 96 68 72Z" fill="#161b33" stroke="#4c1d95" stroke-width="1.5"/>
-
-                <!-- Волосы Сон Джин-Ву (острые теневые пряди) -->
-                <path d="M62 78C58 55 72 28 102 26C132 24 145 50 140 78C136 65 128 56 122 52C120 65 112 74 104 78C105 64 100 55 95 50C90 62 82 72 74 76C72 64 66 68 62 78Z" fill="#070913" stroke="#6d28d9" stroke-width="1.2"/>
-                <path d="M75 34L66 20L86 28L96 14L106 27L124 18L118 34" fill="#070913"/>
-
-                <!-- Светящиеся неоновые глаза -->
-                <g filter="url(#eyeGlow)">
-                    <path d="M77 77L92 81L79 84Z" fill="#00f0ff"/>
-                    <path d="M123 77L108 81L121 84Z" fill="#00f0ff"/>
-                    <!-- Эффект шлейфа энергии из глаз -->
-                    <path d="M77 79L52 72L78 82Z" fill="#00f0ff" opacity="0.85"/>
-                    <path d="M123 79L148 72L122 82Z" fill="#9d4edd" opacity="0.85"/>
-                </g>
-
-                <!-- Кинжал Касаки на фоне -->
-                <path d="M155 45L172 28L165 65L145 110L138 105L155 45Z" fill="url(#daggerGrad)" stroke="#00f0ff" stroke-width="1"/>
-
-                <defs>
-                    <radialGradient id="shadowAura" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(100 110) rotate(90) scale(100 95)">
-                        <stop stop-color="#9d4edd"/>
-                        <stop offset="0.6" stop-color="#3b0764"/>
-                        <stop offset="1" stop-color="#04060c" stop-opacity="0"/>
-                    </radialGradient>
-                    <linearGradient id="daggerGrad" x1="172" y1="28" x2="138" y2="110" gradientUnits="userSpaceOnUse">
-                        <stop stop-color="#00f0ff"/>
-                        <stop offset="1" stop-color="#5a189a"/>
-                    </linearGradient>
-                    <filter id="eyeGlow" x="35" y="55" width="130" height="45" filterUnits="userSpaceOnUse">
-                        <feGaussianBlur stdDeviation="3" result="blur"/>
-                        <feMerge>
-                            <feMergeNode in="blur"/>
-                            <feMergeNode in="SourceGraphic"/>
-                        </feMerge>
-                    </filter>
-                </defs>
-            </svg>
+  <div class="container">
+    <div id="tab-dungeon">
+      <div class="dungeon-list" id="dungeon-buttons"></div>
+      <div class="arena">
+        <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--muted);">
+          <span id="dng-rank-label">Врата E-Ранга</span>
+          <span>Волна: <b id="wave-num" style="color:#fff;">1</b></span>
         </div>
-
-        <!-- Классическое окно Системы -->
-        <div class="relative z-10 w-full max-w-md system-window rounded-xl p-5 text-center animate-glow">
-            <!-- Верхняя рамка уведомления -->
-            <div class="flex items-center justify-center gap-2 border-b border-cyan-500/40 pb-3 mb-4">
-                <span class="w-5 h-5 rounded-full border border-cyan-400 flex items-center justify-center text-cyan-400 font-bold text-xs animate-ping absolute opacity-40">!</span>
-                <span class="w-5 h-5 rounded-full border border-cyan-400 flex items-center justify-center text-cyan-400 font-bold text-xs">!</span>
-                <h2 class="font-system text-cyan-400 font-bold tracking-widest text-sm sm:text-base text-neon-cyan">УВЕДОМЛЕНИЕ СИСТЕМЫ</h2>
-            </div>
-
-            <p class="text-slate-200 text-sm sm:text-base leading-relaxed mb-3">
-                Вы успешно прошли скрытое испытание и получили квалификацию <span class="text-cyan-400 font-bold">«Игрока»</span>.
-            </p>
-            <p class="text-purple-300 text-xs sm:text-sm mb-5">
-                Ваше сердце готово вместить силу Монарха Теней. Примите ли вы пробуждение?
-            </p>
-
-            <!-- Прогресс-бар инициализации (скрыт до нажатия) -->
-            <div id="boot-progress-box" class="hidden mb-4">
-                <div class="flex justify-between text-xs font-system text-cyan-300 mb-1">
-                    <span id="boot-status-text">СИНХРОНИЗАЦИЯ ДУШИ...</span>
-                    <span id="boot-percent">0%</span>
-                </div>
-                <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden border border-cyan-500/30">
-                    <div id="boot-bar" class="h-full bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 w-0 transition-all duration-200"></div>
-                </div>
-            </div>
-
-            <!-- Кнопка входа в Систему -->
-            <button id="enter-system-btn" onclick="startSystemBoot()" class="w-full py-3.5 px-6 rounded-lg font-system font-bold text-sm sm:text-base tracking-wider text-white bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-700 hover:from-cyan-500 hover:to-purple-600 border border-cyan-300/60 shadow-[0_0_20px_rgba(0,240,255,0.4)] active:scale-95 transition-all cursor-pointer">
-                [ ВОЙТИ В СИСТЕМУ ]
-            </button>
+        <div id="monster-name" style="font-weight:800; font-size:16px; margin-top:6px;">Ликан</div>
+        <div id="monster-sprite" class="monster-sprite">🐺</div>
+        <div class="hp-bar-wrap"><div id="monster-hp-bar" class="hp-bar-fill" style="width:100%;"></div></div>
+        <div style="font-size:12px; color:var(--muted);">HP: <span id="monster-hp-text">100 / 100</span></div>
+        <button class="btn-system" style="margin-top:12px;" onclick="attackMonster()">⚔️ АТАКОВАТЬ</button>
+        <div class="skills-row">
+          <button class="skill-btn" onclick="useSkill('dash')">⚡ Рывок</button>
+          <button class="skill-btn" onclick="useSkill('blood')">🩸 Жажда</button>
+          <button class="skill-btn" onclick="useSkill('arise')">👥 Восстаньте</button>
         </div>
+        <button class="btn-sm" id="auto-btn" onclick="toggleAutoBattle()" style="width:100%; margin-top:10px; background:#1e293b; border:1px solid var(--cyan);">🤖 Авто-бой: ВЫКЛ</button>
+      </div>
+      <div class="card" style="margin-top:12px; font-size:12px; color:var(--muted);" id="battle-log">Система активна.</div>
     </div>
 
-    <!-- =====================================================================
-         2. ВЕРХНЯЯ ПАНЕЛЬ СТАТУСА ИГРОКА (HEADER)
-         ===================================================================== -->
-    <header class="sticky top-0 z-30 system-window border-x-0 border-t-0 px-3 py-2.5">
-        <div class="max-w-lg mx-auto flex items-center justify-between gap-2">
-            <!-- Аватар и Имя из Telegram -->
-            <div class="flex items-center gap-2.5 min-w-0">
-                <div class="relative shrink-0">
-                    <img id="player-avatar" src="https://placehold.co/80x80/1e1b4b/00f0ff?text=SJW" onerror="this.src='https://placehold.co/80x80/1e1b4b/00f0ff?text=SJW'" alt="Avatar" class="w-10 h-10 rounded-lg object-cover border border-cyan-400 shadow-[0_0_10px_rgba(0,240,255,0.4)]">
-                    <span id="player-rank-badge" class="absolute -bottom-1.5 -right-1.5 px-1.5 py-0.2 text-[10px] font-system font-black rounded bg-purple-950 border border-purple-400 text-purple-200">E</span>
-                </div>
-                <div class="truncate">
-                    <div class="flex items-center gap-1.5">
-                        <h1 id="player-name" class="font-bold text-sm text-white truncate">Сон Джин-Ву</h1>
-                        <span class="text-[10px] px-1.5 py-0.5 rounded bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 font-system">Ур.<span id="header-level">1</span></span>
-                    </div>
-                    <p id="player-title" class="text-[11px] text-purple-300 truncate">Слабейший охотник человечества</p>
-                </div>
-            </div>
+    <div id="tab-hero" class="hidden">
+      <div class="card">
+        <b style="color:var(--cyan);">ГРЕЙДЫ ПО СЛОТАМ (E → SSS)</b>
+        <div class="equip-grid" id="equip-grid" style="margin-top:10px;"></div>
+      </div>
+      <div class="card">
+        <b>Осколки Теней: <span id="shards-count" style="color:var(--purple);">0</span> 🔮</b>
+        <button class="btn-sm btn-gold" style="float:right;" onclick="openLootbox()">🎁 Сундук (300💰)</button>
+      </div>
+    </div>
 
-            <!-- Валюты (Золото и Кристаллы Маны) -->
-            <div class="flex items-center gap-2 shrink-0">
-                <div class="bg-slate-900/90 border border-amber-500/40 rounded-lg px-2 py-1 flex items-center gap-1">
-                    <span class="text-amber-400 text-xs">🪙</span>
-                    <span id="header-gold" class="font-system text-xs font-bold text-amber-300">500</span>
-                </div>
-                <div class="bg-slate-900/90 border border-purple-500/40 rounded-lg px-2 py-1 flex items-center gap-1">
-                    <span class="text-purple-400 text-xs">💎</span>
-                    <span id="header-crystals" class="font-system text-xs font-bold text-purple-300">10</span>
-                </div>
-            </div>
+    <div id="tab-inv" class="hidden">
+      <div class="card">
+        <b style="color:var(--cyan);">РЮКЗАК (<span id="inv-count">0</span>)</b>
+        <div id="inventory-list" style="margin-top:10px;"></div>
+      </div>
+    </div>
+
+    <div id="tab-market" class="hidden">
+      <div class="card">
+        <b style="color:var(--gold);">⚖️ АУКЦИОН</b>
+        <button class="btn-sm" style="float:right;" onclick="loadMarket()">🔄</button>
+        <div id="market-list" style="margin-top:10px;">Загрузка...</div>
+      </div>
+    </div>
+
+    <div id="tab-social" class="hidden">
+      <div class="card">
+        <b style="color:var(--cyan);">🏆 ТОП</b>
+        <div id="leaderboard-list" style="margin-top:8px;">Загрузка...</div>
+      </div>
+      <div class="card">
+        <b style="color:var(--purple);">💬 ЧАТ ГИЛЬДИИ</b>
+        <div class="chat-box" id="chat-box" style="margin-top:8px;"></div>
+        <div style="display:flex; gap:6px;">
+          <input type="text" id="chat-input" class="nick-input" style="margin:0; padding:9px;" placeholder="Сообщение...">
+          <button class="btn-sm" onclick="sendChat()">➤</button>
         </div>
+      </div>
+    </div>
+  </div>
 
-        <!-- Полоски HP, MP и Опыта (XP) -->
-        <div class="max-w-lg mx-auto mt-2 grid grid-cols-3 gap-2 text-[10px] font-system">
-            <div>
-                <div class="flex justify-between text-rose-300 mb-0.5">
-                    <span>HP</span>
-                    <span id="header-hp-text">150/150</span>
-                </div>
-                <div class="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden">
-                    <div id="header-hp-bar" class="h-full bg-gradient-to-r from-rose-600 to-red-400 transition-all duration-300" style="width: 100%"></div>
-                </div>
-            </div>
-            <div>
-                <div class="flex justify-between text-cyan-300 mb-0.5">
-                    <span>MP</span>
-                    <span id="header-mp-text">80/80</span>
-                </div>
-                <div class="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden">
-                    <div id="header-mp-bar" class="h-full bg-gradient-to-r from-blue-600 to-cyan-400 transition-all duration-300" style="width: 100%"></div>
-                </div>
-            </div>
-            <div>
-                <div class="flex justify-between text-purple-300 mb-0.5">
-                    <span>EXP</span>
-                    <span id="header-xp-text">0%</span>
-                </div>
-                <div class="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden">
-                    <div id="header-xp-bar" class="h-full bg-gradient-to-r from-purple-600 to-fuchsia-400 transition-all duration-300" style="width: 0%"></div>
-                </div>
-            </div>
-        </div>
-    </header>
+  <div class="bottom-nav">
+    <button class="nav-btn active" onclick="switchTab('dungeon', this)"><span class="nav-icon">⚔️</span>Врата</button>
+    <button class="nav-btn" onclick="switchTab('hero', this)"><span class="nav-icon">🛡️</span>Снаряжение</button>
+    <button class="nav-btn" onclick="switchTab('inv', this)"><span class="nav-icon">🎒</span>Рюкзак</button>
+    <button class="nav-btn" onclick="switchTab('market', this)"><span class="nav-icon">⚖️</span>Рынок</button>
+    <button class="nav-btn" onclick="switchTab('social', this)"><span class="nav-icon">🏆</span>Топ/Чат</button>
+  </div>
+</div>
 
-    <!-- =====================================================================
-         3. ОСНОВНОЙ КОНТЕНТ (ВКЛАДКИ ИГРЫ)
-         ===================================================================== -->
-    <main class="flex-1 w-full max-w-lg mx-auto p-3 space-y-3">
+<script>
+const SUPABASE_URL = "https://optytvvqevlzmzqlcgah.supabase.co";
+const SUPABASE_KEY = "sb_publishable_NrlPlzEcCy0SM9G5MXHvXQ_XDvs2RJM";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const tg = window.Telegram?.WebApp;
+if (tg) { tg.expand(); tg.ready(); }
 
-        <!-- Всплывающее системное уведомление (вместо alert) -->
-        <div id="toast-box" class="fixed top-24 left-1/2 -translate-x-1/2 z-50 pointer-events-none transition-all duration-300 opacity-0 -translate-y-4 w-[90%] max-w-sm">
-            <div class="system-window rounded-lg px-4 py-2.5 text-center border-cyan-400 shadow-2xl">
-                <p id="toast-message" class="text-xs sm:text-sm font-semibold text-cyan-200"></p>
-            </div>
-        </div>
+const CLASSES = [
+  { id: 'lich', name: 'Король-Лич', icon: '💀', color: '#a855f7' },
+  { id: 'returner', name: 'Возвращающийся', icon: '⏳', color: '#38bdf8' },
+  { id: 'dragon', name: 'Дракон', icon: '🐉', color: '#ef4444' }
+];
+const VARIANTS = ['Мужчина 1', 'Мужчина 2', 'Женщина 1', 'Женщина 2'];
+const SLOTS = [
+  { id: 'weapon', name: 'Оружие', icon: '🗡️' }, { id: 'helm', name: 'Шлем', icon: '🪖' },
+  { id: 'armor', name: 'Туловище', icon: '🦺' }, { id: 'pants', name: 'Штаны', icon: '👖' },
+  { id: 'boots', name: 'Ботинки', icon: '👢' }, { id: 'gloves', name: 'Перчатки', icon: '🧤' },
+  { id: 'neck', name: 'Ожерелье', icon: '📿' }, { id: 'ear', name: 'Серьга', icon: '💠' },
+  { id: 'ring', name: 'Кольцо', icon: '💍' }
+];
+const GRADES = ['E', 'D', 'C', 'B', 'A', 'S', 'SS', 'SSS'];
+const GRADE_MULT = { E: 1, D: 1.8, C: 3.2, B: 6, A: 11, S: 22, SS: 45, SSS: 95 };
+const DUNGEONS = [
+  { rank: 'E', name: 'Врата E', reqPower: 0, hp: 100, gold: 45, exp: 25, monsters: ['🐺 Ликан', '👺 Гоблин'] },
+  { rank: 'D', name: 'Врата D', reqPower: 250, hp: 450, gold: 130, exp: 70, monsters: ['🧟 Зомби', '🗿 Голем'] },
+  { rank: 'C', name: 'Врата C', reqPower: 800, hp: 1600, gold: 380, exp: 190, monsters: ['🐍 Василиск', '🧌 Огр'] },
+  { rank: 'B', name: 'Врата B', reqPower: 2500, hp: 5500, gold: 1100, exp: 520, monsters: ['❄️ Эльф', '⚔️ Рыцарь'] },
+  { rank: 'A', name: 'Врата A', reqPower: 8000, hp: 19000, gold: 3400, exp: 1500, monsters: ['👹 Орк', '🔥 Ифрит'] },
+  { rank: 'S', name: 'Врата S', reqPower: 25000, hp: 75000, gold: 12000, exp: 5000, monsters: ['🐜 Беру', '🐉 Камиш'] }
+];
 
-        <!-- -----------------------------------------------------------------
-             ВКЛАДКА 1: ПОДЗЕМЕЛЬЯ И БОЕВАЯ АРЕНА
-             ----------------------------------------------------------------- -->
-        <section id="tab-dungeon" class="tab-content active space-y-3">
-            
-            <!-- Селектор подземелий по рангам -->
-            <div class="system-window rounded-xl p-3">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="font-system text-xs text-cyan-400 tracking-wider">ВРАТА ПОДЗЕМЕЛИЙ</span>
-                    <span class="text-[11px] text-slate-400">Боевая мощь: <strong id="combat-power-display" class="text-amber-400 font-system">120</strong></span>
-                </div>
-                <div id="dungeon-selector" class="flex gap-2 overflow-x-auto pb-1.5">
-                    <!-- Кнопки врат генерируются через JS -->
-                </div>
-            </div>
+let state = {
+  id: tg?.initDataUnsafe?.user?.id ? String(tg.initDataUnsafe.user.id) : ('guest_' + Math.floor(Math.random()*900000)),
+  name: tg?.initDataUnsafe?.user?.first_name || '',
+  classId: 'lich', avatarIdx: 0, level: 1, exp: 0, gold: 500, shards: 5,
+  equip: {
+    weapon: { grade: 'E', name: 'Ржавый клинок', power: 15 }, helm: { grade: 'E', name: 'Капюшон', power: 10 },
+    armor: { grade: 'E', name: 'Нагрудник', power: 15 }, pants: { grade: 'E', name: 'Поножи', power: 10 },
+    boots: { grade: 'E', name: 'Сапоги', power: 10 }, gloves: { grade: 'E', name: 'Перчатки', power: 10 },
+    neck: { grade: 'E', name: 'Амулет', power: 10 }, ear: { grade: 'E', name: 'Серьга', power: 10 },
+    ring: { grade: 'E', name: 'Кольцо', power: 10 }
+  },
+  inventory: []
+};
 
-            <!-- Боевая Арена -->
-            <div id="battle-arena" class="relative system-window
+let currentDng = 0, wave = 1, monsterMaxHp = 100, monsterHp = 100, autoBattle = false;
+
+function getAvatarSVG(classId, idx) {
+  return `<svg viewBox="0 0 80 80" width="100%" height="100%"><rect width="80" height="80" rx="8" fill="#090e1d"/><circle cx="40" cy="40" r="32" fill="#3b82f6" opacity="0.4"/><path d="M22,75 Q40,52 58,75 Z" fill="#111827"/><circle cx="40" cy="36" r="14" fill="#1f2937"/><circle cx="35" cy="36" r="2" fill="#38bdf8"/><circle cx="45" cy="36" r="2" fill="#38bdf8"/></svg>`;
+}
+
+function init() {
+  const saved = localStorage.getItem('shadow_hunter_save_v2');
+  if (saved) { try { state = { ...state, ...JSON.parse(saved) }; document.getElementById('splash-screen').classList.add('hidden'); startGameUI(); return; } catch(e) {} }
+  renderCharacterSelect();
+}
+function enterCharacterSelect() { document.getElementById('splash-screen').classList.add('hidden'); document.getElementById('select-screen').classList.remove('hidden'); }
+function renderCharacterSelect() {
+  document.getElementById('classes-container').innerHTML = CLASSES.map(cls => `
+    <div class="class-section"><div class="class-header" style="color:${cls.color}">${cls.icon}${cls.name}</div>
+    <div class="avatars-grid">${VARIANTS.map((v, i) => `<div class="avatar-card ${state.classId===cls.id && state.avatarIdx===i ? 'selected' : ''}" onclick="pickAvatar('${cls.id}', ${i})"><div style="height:48px;">${getAvatarSVG(cls.id, i)}</div><span>${v}</span></div>`).join('')}</div></div>
+  `).join('');
+}
+function pickAvatar(clsId, idx) { state.classId = clsId; state.avatarIdx = idx; renderCharacterSelect(); }
+function confirmCharacter() {
+  const nick = document.getElementById('player-nick').value.trim();
+  state.name = nick || ('Охотник #' + Math.floor(Math.random()*999));
+  localStorage.setItem('shadow_hunter_save_v2', JSON.stringify(state));
+  document.getElementById('select-screen').classList.add('hidden');
+  startGameUI();
+}
+function calcTotalPower() {
+  let sum = state.level * 25;
+  for (let k in state.equip) sum += state.equip[k].power;
+  return sum;
+}
+function getHunterRank() {
+  const p = calcTotalPower();
+  if (p >= 50000) return 'SSS'; if (p >= 25000) return 'SS'; if (p >= 10000) return 'S';
+  if (p >= 4000) return 'A'; if (p >= 1500) return 'B'; if (p >= 600) return 'C'; if (p >= 250) return 'D'; return 'E';
+}
+function saveState() { localStorage.setItem('shadow_hunter_save_v2', JSON.stringify(state)); updateTopBar(); }
+function updateTopBar() {
+  document.getElementById('top-avatar').innerHTML = getAvatarSVG(state.classId, state.avatarIdx);
+  document.getElementById('top-name').textContent = state.name;
+  document.getElementById('top-class').textContent = `Ур. ${state.level} • Ранг ${getHunterRank()}`;
+  document.getElementById('top-gold').textContent = state.gold.toLocaleString();
+  document.getElementById('top-power').textContent = calcTotalPower().toLocaleString();
+  document.getElementById('shards-count').textContent = state.shards;
+  document.getElementById('inv-count').textContent = state.inventory.length;
+}
+function startGameUI() {
+  document.getElementById('game-ui').classList.remove('hidden');
+  updateTopBar(); renderDungeons(); spawnMonster(); renderEquipGrid(); renderInventory();
+  syncPlayerToSupabase(); loadLeaderboard(); loadMarket(); loadChat();
+  setInterval(syncPlayerToSupabase, 15000); setInterval(loadChat, 6000);
+}
+
+function renderDungeons() {
+  document.getElementById('dungeon-buttons').innerHTML = DUNGEONS.map((d, idx) => `
+    <button class="dng-btn ${currentDng === idx ? 'active' : ''}" onclick="selectDungeon(${idx})">
+      <div style="font-weight:800; font-size:13px;">${d.name}</div><div style="font-size:11px; color:var(--muted);">Рек: ${d.reqPower}</div>
+    </button>`).join('');
+}
+function selectDungeon(idx) { currentDng = idx; wave = 1; renderDungeons(); spawnMonster(); }
+function spawnMonster() {
+  const d = DUNGEONS[currentDng];
+  const m = d.monsters[Math.floor(Math.random() * d.monsters.length)].split(' ');
+  document.getElementById('dng-rank-label').textContent = d.name;
+  document.getElementById('wave-num').textContent = wave;
+  document.getElementById('monster-sprite').textContent = m[0];
+  document.getElementById('monster-name').textContent = m.slice(1).join(' ');
+  monsterMaxHp = Math.floor(d.hp * (1 + (wave - 1) * 0.25));
+  monsterHp = monsterMaxHp;
+  updateMonsterHP();
+}
+function updateMonsterHP() {
+  document.getElementById('monster-hp-bar').style.width = Math.max(0, (monsterHp / monsterMaxHp) * 100) + '%';
+  document.getElementById('monster-hp-text').textContent = `${Math.max(0, Math.floor(monsterHp))} / ${monsterMaxHp}`; } function showDmgFloat(text, color = '#fde047') { const el = document.createElement('div'); el.className = 'dmg-float'; el.style.color = color; el.textContent = text; document.querySelector('.arena').appendChild(el); setTimeout(() => el.remove(), 750); } function attackMonster(mult = 1) { let dmg = calcTotalPower() * mult; monsterHp -= dmg; showDmgFloat('-' + dmg); if (monsterHp <= 0) onMonsterDefeated(); else updateMonsterHP(); } function useSkill(type) { attackMonster(type === 'dash' ? 2.5 : type === 'blood' ? 4 : 6); } function toggleAutoBattle() { autoBattle = !autoBattle; document.getElementById('auto-btn').textContent = `🤖 Авто-бой: ${autoBattle ? 'ВКЛ' : 'ВЫКЛ'}`;
+}
+setInterval(() => { if (autoBattle) attackMonster(1); }, 1100);
+
+function onMonsterDefeated() {
+  const d = DUNGEONS[currentDng];
+  state.gold += d.gold; state.exp += d.exp;
+  if (Math.random() < 0.4) state.shards += 1;
+  if (state.exp >= state.level * 100) { state.exp -= state.level * 100; state.level++; }
+  if (Math.random() < 0.35) {
+    const drop = rollRandomLoot(currentDng);
+    state.inventory.push(drop);
+  }
+  wave++; saveState(); renderInventory(); spawnMonster();
+}
+function rollRandomLoot(dngIdx) {
+  const r = Math.random() * 100;
+  let grade = r < 2 ? 'SSS' : r < 6 ? 'SS' : r < 15 ? 'S' : r < 30 ? 'A' : 'B';
+  const slot = SLOTS[Math.floor(Math.random() * SLOTS.length)];
+  return { id: Date.now() + Math.random(), slot: slot.id, grade, name: `${slot.name} [${grade}]`, power: Math.floor(20 * GRADE_MULT[grade]) };
+}
+function renderEquipGrid() {
+  document.getElementById('equip-grid').innerHTML = SLOTS.map(s => {
+    const item = state.equip[s.id];
+    return `<div class="slot-box g-${item.grade}" onclick="upgradeSlot('${s.id}')"><span class="grade-badge g-${item.grade}">${item.grade}</span><div style="font-size:24px; margin:6px 0;">${s.icon}</div><div style="font-size:10px;">+${item.power}</div></div>`; }).join(''); } function upgradeSlot(slotId) { const item = state.equip[slotId]; const gIdx = GRADES.indexOf(item.grade); if (gIdx >= GRADES.length - 1) return alert('Максимум!'); const next = GRADES[gIdx + 1]; if (state.gold < 200 \vert{}\vert{} state.shards < 2) return alert('Нужно 200💰 и 2🔮!'); state.gold -= 200; state.shards -= 2; item.grade = next; item.power = Math.floor(15 * GRADE_MULT[next]); item.name = `${item.slot} [${next}]`; saveState(); renderEquipGrid(); } function openLootbox() { if (state.gold < 300) return alert('Нужно 300💰!'); state.gold -= 300; const item = rollRandomLoot(currentDng); state.inventory.push(item); saveState(); renderInventory(); alert(`Выпало: ${item.name}`);
+}
+function renderInventory() {
+  document.getElementById('inventory-list').innerHTML = state.inventory.length ? state.inventory.map((it, idx) => `
+    <div class="item-row"><div><b class="g-${it.grade}">${it.grade}</b> ${it.name} (+${it.power})</div>
+    <div><button class="btn-sm" onclick="equipFromInv(${idx})">Надеть</button> <button class="btn-sm btn-gold" onclick="sellToMarket(${idx})">Рынок</button></div></div>`).join('') : '<div style="color:var(--muted)">Пусто</div>';
+}
+function equipFromInv(idx) {
+  const item = state.inventory[idx]; const old = state.equip[item.slot];
+  state.equip[item.slot] = item; state.inventory[idx] = old; saveState(); renderEquipGrid(); renderInventory();
+}
+
+async function syncPlayerToSupabase() {
+  try { await sb.from('players').upsert({ id: state.id, name: state.name, class_id: state.classId, avatar_idx: state.avatarIdx, level: state.level, power: calcTotalPower(), gold: state.gold, updated_at: new Date().toISOString() }); } catch(e){}
+}
+async function sellToMarket(idx) {
+  const item = state.inventory[idx]; const price = parseInt(prompt('Цена в золоте:', '200'));
+  if (!price) return;
+  state.inventory.splice(idx, 1); saveState(); renderInventory();
+  await sb.from('market').insert({ seller_id: state.id, seller_name: state.name, slot: item.slot, grade: item.grade, item_name: item.name, power: item.power, price });
+  loadMarket();
+}
+async function loadMarket() {
+  const { data } = await sb.from('market').select('*').order('created_at', { ascending: false }).limit(20);
+  document.getElementById('market-list').innerHTML = data && data.length ? data.map(lot => `
+    <div class="item-row"><div><b class="g-${lot.grade}">${lot.grade}</b> ${lot.item_name} (+${lot.power})<div style="font-size:10px; color:var(--muted)">Продавец: ${lot.seller_name}</div></div>
+    <button class="btn-sm btn-gold" onclick='buyMarketLot(${JSON.stringify
+    
