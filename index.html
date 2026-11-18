@@ -3,111 +3,114 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>RichLife: Investor Tycoon</title>
+<title>RichLife: Ultimate Tycoon</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
   :root {
-    --bg: #0b0f19;
-    --card: #141c2f;
-    --card-border: #1e293b;
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --card-border: #e2e8f0;
+    --primary: #6366f1;
+    --primary-gradient: linear-gradient(135deg, #6366f1, #a855f7);
     --accent: #10b981;
-    --accent-glow: rgba(16, 185, 129, 0.3);
-    --text: #f8fafc;
-    --muted: #94a3b8;
+    --accent-gradient: linear-gradient(135deg, #10b981, #059669);
+    --gold: #f59e0b;
+    --text: #0f172a;
+    --muted: #64748b;
+    --shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.1);
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
   body {
     margin: 0; background: var(--bg); color: var(--text);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    min-height: 100vh; padding-bottom: 80px; overflow-x: hidden;
+    min-height: 100vh; padding-bottom: 90px; overflow-x: hidden;
   }
   .hidden { display: none !important; }
 
-  /* Верхняя шапка */
+  /* Шапка */
   .header {
     padding: 16px; display: flex; justify-content: space-between; align-items: center;
-    background: rgba(20, 28, 47, 0.8); backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--card-border);
+    background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--card-border); position: sticky; top: 0; z-index: 50;
   }
-  .balance-title { font-size: 13px; color: var(--muted); }
-  .balance-amount { font-size: 26px; font-weight: 800; color: #fff; margin-top: 2px; }
+  .balance-title { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .balance-amount { font-size: 24px; font-weight: 900; background: linear-gradient(135deg, #4f46e5, #9333ea); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-top: 2px; }
 
   .container { padding: 16px; max-width: 500px; margin: 0 auto; }
 
   /* Карточки */
   .card {
     background: var(--card); border: 1px solid var(--card-border);
-    border-radius: 20px; padding: 18px; margin-bottom: 16px;
-    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);
+    border-radius: 24px; padding: 20px; margin-bottom: 16px;
+    box-shadow: var(--shadow);
   }
 
-  /* Секция тапалки */
-  .earn-stats {
-    display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;
-  }
-  .stat-box { background: #0f172a; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--card-border); }
-  .stat-label { font-size: 11px; color: var(--muted); }
-  .stat-val { font-size: 14px; font-weight: 700; color: var(--accent); margin-top: 2px; }
+  /* Тапалка */
+  .earn-stats { display: flex; gap: 10px; margin-bottom: 16px; }
+  .stat-box { flex: 1; background: #f1f5f9; padding: 12px; border-radius: 16px; border: 1px solid var(--card-border); text-align: center; }
+  .stat-label { font-size: 11px; color: var(--muted); font-weight: 600; }
+  .stat-val { font-size: 15px; font-weight: 800; color: var(--primary); margin-top: 4px; }
 
-  .progress-container { margin: 12px 0 20px 0; }
-  .progress-info { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
-  .progress-bar-bg { width: 100%; height: 8px; background: #0f172a; border-radius: 4px; overflow: hidden; border: 1px solid var(--card-border); }
-  .progress-bar-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.2s; }
-
-  /* Большая кнопка тапа с отпечатком */
   .tap-zone {
-    height: 220px; background: linear-gradient(145deg, #0f172a, #141c2f);
-    border: 2px dashed var(--card-border); border-radius: 24px;
+    height: 240px; background: linear-gradient(145deg, #ffffff, #f8fafc);
+    border: 3px dashed #c7d2fe; border-radius: 28px;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    cursor: pointer; position: relative; overflow: hidden; transition: transform 0.05s;
-    box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+    cursor: pointer; position: relative; overflow: hidden; transition: transform 0.08s ease, border-color 0.2s;
+    box-shadow: inset 0 0 30px rgba(99, 102, 241, 0.05);
   }
-  .tap-zone:active { transform: scale(0.97); border-color: var(--accent); }
-  .fingerprint-icon { font-size: 56px; opacity: 0.8; filter: drop-shadow(0 0 10px var(--accent-glow)); margin-bottom: 10px; }
-  .tap-hint { font-size: 13px; color: var(--muted); font-weight: 500; }
+  .tap-zone:active { transform: scale(0.96); border-color: var(--primary); background: #e0e7ff; }
+  .tap-icon { font-size: 64px; animation: floatIcon 3s ease-in-out infinite; filter: drop-shadow(0 8px 12px rgba(99,102,241,0.2)); }
+  @keyframes floatIcon { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  .tap-hint { font-size: 13px; color: var(--muted); font-weight: 600; margin-top: 8px; }
 
-  /* Карточки недвижимости */
-  .property-card {
+  /* Сетки и списки */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .item-card {
     background: var(--card); border: 1px solid var(--card-border);
-    border-radius: 16px; overflow: hidden; margin-bottom: 16px;
+    border-radius: 20px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between;
+    box-shadow: var(--shadow); position: relative; overflow: hidden;
   }
-  .property-img { height: 140px; background-size: cover; background-position: center; position: relative; }
-  .property-income-badge {
-    position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7);
-    backdrop-filter: blur(5px); padding: 6px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; color: #fff;
-  }
-  .property-body { padding: 14px; display: flex; justify-content: space-between; align-items: center; }
-  .property-price { font-size: 18px; font-weight: 800; color: #fff; }
-  .property-loc { font-size: 12px; color: var(--muted); margin-top: 2px; }
-
+  .item-img { width: 100%; height: 100px; border-radius: 12px; background-size: cover; background-position: center; margin-bottom: 10px; }
+  
   /* Кнопки */
   .btn {
-    background: var(--accent); color: #000; border: none; padding: 10px 20px;
-    border-radius: 12px; font-weight: 800; font-size: 13px; cursor: pointer;
-    box-shadow: 0 4px 15px var(--accent-glow); transition: transform 0.1s;
+    background: var(--primary-gradient); color: #fff; border: none; padding: 10px 16px;
+    border-radius: 14px; font-weight: 800; font-size: 13px; cursor: pointer; width: 100%;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); transition: transform 0.1s, opacity 0.2s;
   }
   .btn:active { transform: scale(0.95); }
+  .btn-accent { background: var(--accent-gradient); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); }
+  .btn:disabled { background: #cbd5e1; box-shadow: none; cursor: not-allowed; opacity: 0.7; }
 
-  /* Навигация снизу */
+  /* Навигация */
   .nav {
-    position: fixed; bottom: 0; left: 0; right: 0; background: rgba(20, 28, 47, 0.95);
-    backdrop-filter: blur(12px); border-top: 1px solid var(--card-border);
-    display: grid; grid-template-columns: repeat(3, 1fr); padding: 8px; z-index: 100;
+    position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(15px); border-top: 1px solid var(--card-border);
+    display: grid; grid-template-columns: repeat(5, 1fr); padding: 8px 4px; z-index: 100;
   }
   .nav-item {
-    background: none; border: none; color: var(--muted); font-size: 11px; font-weight: 700;
-    display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; padding: 6px;
+    background: none; border: none; color: var(--muted); font-size: 10px; font-weight: 700;
+    display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; padding: 6px 0;
+    transition: color 0.2s;
   }
-  .nav-item.active { color: var(--accent); }
+  .nav-item.active { color: var(--primary); }
+  .nav-icon { font-size: 20px; }
 
-  /* Анимация вылетающих денег при тапе */
+  /* Анимация денег */
   .floating-num {
-    position: absolute; font-weight: 900; font-size: 20px; color: var(--accent);
-    pointer-events: none; animation: floatUp 0.6s forwards; text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+    position: absolute; font-weight: 900; font-size: 22px; color: var(--accent);
+    pointer-events: none; animation: floatUp 0.7s forwards; text-shadow: 0 2px 10px rgba(0,0,0,0.1);
   }
   @keyframes floatUp {
     0% { opacity: 1; transform: translateY(0) scale(0.8); }
-    100% { opacity: 0; transform: translateY(-55px) scale(1.2); }
+    100% { opacity: 0; transform: translateY(-65px) scale(1.3); }
+  }
+
+  /* Таблица лидеров */
+  .lb-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 16px; background: #f8fafc; border-radius: 14px; margin-bottom: 8px;
+    border: 1px solid var(--card-border); font-weight: 700; font-size: 13px;
   }
 </style>
 </head>
@@ -115,21 +118,21 @@
 
 <div class="header">
   <div>
-    <div class="balance-title">Баланс</div>
-    <div class="balance-amount">$<span id="main-balance">80,800.00</span></div>
+    <div class="balance-title">Ваш капитал</div>
+    <div class="balance-amount">$<span id="main-balance">5,000.00</span></div>
   </div>
-  <div style="background: var(--card); border: 1px solid var(--card-border); padding: 8px 12px; border-radius: 12px; font-size: 12px; font-weight: 700;">
-    💼 Ур. <span id="player-lvl">1</span>
+  <div style="background: #e0e7ff; color: #4338ca; padding: 8px 14px; border-radius: 14px; font-size: 12px; font-weight: 800;">
+    ⚡ Ур. <span id="player-lvl">1</span>
   </div>
 </div>
 
 <div class="container">
-  <!-- ВКЛАДКА 1: ЗАРАБОТОК (ТАПАЛКА) -->
+  <!-- 1. ВКЛАДКА: ЗАРАБОТОК (ТАПАЛКА) -->
   <div id="tab-earn" class="card">
     <div class="earn-stats">
       <div class="stat-box">
-        <div class="stat-label">Доход в час</div>
-        <div class="stat-val">$<span id="profit-hour">0</span></div>
+        <div class="stat-label">Пассив / час</div>
+        <div class="stat-val">+$<span id="profit-hour">0</span></div>
       </div>
       <div class="stat-box">
         <div class="stat-label">За тап</div>
@@ -137,46 +140,59 @@
       </div>
     </div>
 
-    <div class="progress-container">
-      <div class="progress-info">
-        <span>Прогресс уровня</span>
-        <span>$<span id="lvl-progress">0</span> / <span id="lvl-target">1,800</span></span>
-      </div>
-      <div class="progress-bar-bg">
-        <div id="progress-fill" class="progress-bar-fill"></div>
-      </div>
-    </div>
-
     <div class="tap-zone" id="tap-zone" onclick="handleTap(event)">
-      <div class="fingerprint-icon">🛡️</div>
-      <div class="tap-hint">Нажмите в этой области для заработка</div>
+      <div class="tap-icon">💎</div>
+      <div class="tap-hint">Тапайте для генерации капитала</div>
     </div>
-  </div>
 
-  <!-- ВКЛАДКА 2: НЕДВИЖИМОСТЬ -->
-  <div id="tab-realty" class="hidden">
-    <h3 style="margin: 0 0 16px 0; font-size: 18px;">Инвестиции в недвижимость</h3>
-    <div id="properties-list"></div>
-  </div>
-
-  <!-- ВКЛАДКА 3: ПРОКАЧКА -->
-  <div id="tab-upgrade" class="hidden card">
-    <h3 style="margin-top:0; font-size:18px;">Улучшение навыков</h3>
-    <div style="display:flex; justify-content:space-between; align-items:center; background:#0f172a; padding:14px; border-radius:14px; border:1px solid var(--card-border);">
-      <div>
-        <div style="font-weight:700; font-size:14px;">Сила клика (+1$)</div>
-        <div style="font-size:12px; color:var(--muted);">Стоимость: $<span id="upgrade-cost">50.00</span></div>
+    <div style="margin-top: 20px;">
+      <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700; color:var(--muted); margin-bottom:6px;">
+        <span>Прокачка силы тапа</span>
+        <span>Улучшений: <span id="tap-up-lvl">0</span></span>
       </div>
-      <button class="btn" onclick="buyTapUpgrade()">Улучшить</button>
+      <button class="btn" onclick="buyTapUpgrade()">Прокачать тап ($<span id="tap-up-cost">50</span>)</button>
     </div>
+  </div>
+
+  <!-- 2. ВКЛАДКА: БИЗНЕСЫ И НЕДВИЖИМОСТЬ -->
+  <div id="tab-business" class="hidden">
+    <h3 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 800;">Бизнес-империя</h3>
+    <div id="business-list"></div>
+  </div>
+
+  <!-- 3. ВКЛАДКА: РЫНОК (АКЦИИ И КРИПТА) -->
+  <div id="tab-market" class="hidden">
+    <h3 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 800;">Финансовый рынок</h3>
+    <div id="market-list"></div>
+  </div>
+
+  <!-- 4. ВКЛАДКА: БАНКИ И ДЕПОЗИТЫ -->
+  <div id="tab-bank" class="hidden">
+    <h3 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 800;">Центральный Банк</h3>
+    <div class="card" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff;">
+      <div style="font-size: 12px; opacity: 0.8; font-weight: 700;">ДЕПОЗИТНЫЙ СЧЕТ (10% ГОДОВЫХ / КАЖДУЮ МИНУТУ)</div>
+      <div style="font-size: 26px; font-weight: 900; margin: 8px 0;">$<span id="bank-depo">0.00</span></div>
+      <div style="display:flex; gap:10px; margin-top:14px;">
+        <button class="btn btn-accent" onclick="depositMoney()">Положить $1,000</button>
+        <button class="btn" style="background:rgba(255,255,255,0.2); color:#fff;" onclick="withdrawMoney()">Снять всё</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. ВКЛАДКА: ТАБЛИЦА ЛИДЕРОВ -->
+  <div id="tab-leaderboard" class="hidden">
+    <h3 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 800;">Топ инвесторов мира</h3>
+    <div id="leaderboard-list"></div>
   </div>
 </div>
 
 <!-- НИЖНЯЯ НАВИГАЦИЯ -->
 <div class="nav">
-  <button class="nav-item active" onclick="switchTab('earn', this)"><span>💸</span>Заработок</button>
-  <button class="nav-item" onclick="switchTab('realty', this)"><span>🏠</span>Недвижимость</button>
-  <button class="nav-item" onclick="switchTab('upgrade', this)"><span>⚡</span>Прокачка</button>
+  <button class="nav-item active" onclick="switchTab('earn', this)"><span class="nav-icon">💸</span>Тапать</button>
+  <button class="nav-item" onclick="switchTab('business', this)"><span class="nav-icon">🏢</span>Бизнес</button>
+  <button class="nav-item" onclick="switchTab('market', this)"><span class="nav-icon">📈</span>Рынок</button>
+  <button class="nav-item" onclick="switchTab('bank', this)"><span class="nav-icon">🏦</span>Банк</button>
+  <button class="nav-item" onclick="switchTab('leaderboard', this)"><span class="nav-icon">🏆</span>Топ</button>
 </div>
 
 <script>
@@ -184,17 +200,24 @@ const tg = window.Telegram?.WebApp;
 if (tg) { tg.expand(); tg.ready(); }
 
 let game = {
-  balance: 80800.00,
-  profitHour: 10800,
+  name: tg?.initDataUnsafe?.user?.first_name || 'Вы',
+  balance: 5000.00,
+  profitHour: 0,
   tapPower: 1.00,
+  tapLvl: 0,
+  tapCost: 50,
   level: 1,
-  exp: 0,
-  expTarget: 1800,
-  upgradeCost: 50,
-  properties: [
-    { id: 1, name: 'Семейный дом', loc: 'Икитос, Перу', price: 62000, income: 998, owned: false, img: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=500&auto=format&fit=crop&q=60' },
-    { id: 2, name: 'Особняк в пригороде', loc: 'Остин, Техас', price: 125000, income: 2150, owned: false, img: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=500&auto=format&fit=crop&q=60' },
-    { id: '3', name: 'Небоскреб Центр', loc: 'Майами, США', price: 450000, income: 8400, owned: false, img: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=500&auto=format&fit=crop&q=60' }
+  bankDeposit: 0,
+  businesses: [
+    { id: 1, name: 'Кофейня', cost: 500, income: 60, owned: 0, img: '☕' },
+    { id: 2, name: 'IT-Стартап', cost: 3500, income: 450, owned: 0, img: '💻' },
+    { id: 3, name: 'Автомойка', cost: 15000, income: 2100, owned: 0, img: '🚗' },
+    { id: 4, name: 'Небоскреб', cost: 75000, income: 10500, owned: 0, img: '🏢' }
+  ],
+  stocks: [
+    { id: 1, name: 'CyberCorp (AI)', price: 120, owned: 0, trend: 1 },
+    { id: 2, name: 'NeoOil (Energy)', price: 85, owned: 0, trend: -1 },
+    { id: 3, name: 'BitMoon (Crypto)', price: 310, owned: 0, trend: 1 }
   ]
 };
 
@@ -202,28 +225,20 @@ function updateUI() {
   document.getElementById('main-balance').textContent = game.balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
   document.getElementById('profit-hour').textContent = game.profitHour.toLocaleString();
   document.getElementById('tap-power').textContent = game.tapPower.toFixed(2);
+  document.getElementById('tap-up-lvl').textContent = game.tapLvl;
+  document.getElementById('tap-up-cost').textContent = game.tapCost.toLocaleString();
   document.getElementById('player-lvl').textContent = game.level;
-  document.getElementById('lvl-progress').textContent = Math.floor(game.exp).toLocaleString();
-  document.getElementById('lvl-target').textContent = game.expTarget.toLocaleString();
-  
-  let fillPercent = Math.min(100, (game.exp / game.expTarget) * 100);
-  document.getElementById('progress-fill').style.width = fillPercent + '%';
-  document.getElementById('upgrade-cost').textContent = game.upgradeCost.toLocaleString();
-  
-  renderProperties();
+  document.getElementById('bank-depo').textContent = game.bankDeposit.toLocaleString('en-US', {minimumFractionDigits: 2});
+
+  renderBusinesses();
+  renderMarket();
+  renderLeaderboard();
 }
 
+// Тапалка с анимацией
 function handleTap(e) {
   game.balance += game.tapPower;
-  game.exp += game.tapPower;
-  
-  if (game.exp >= game.expTarget) {
-    game.level++;
-    game.exp = 0;
-    game.expTarget = Math.floor(game.expTarget * 2.2);
-  }
 
-  // Анимация вылетающей суммы в месте клика
   const zone = document.getElementById('tap-zone');
   const rect = zone.getBoundingClientRect();
   const x = e.clientX - rect.left;
@@ -236,62 +251,140 @@ function handleTap(e) {
   floatEl.style.top = `${y}px`;
   zone.appendChild(floatEl);
 
-  setTimeout(() => floatEl.remove(), 600);
-
+  setTimeout(() => floatEl.remove(), 700);
   if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
   updateUI();
 }
 
+// Сбалансированная прокачка тапа
 function buyTapUpgrade() {
-  if (game.balance < game.upgradeCost) return alert('Недостаточно средств!');
-  game.balance -= game.upgradeCost;
-  game.tapPower += 1.0;
-  game.upgradeCost = Math.floor(game.upgradeCost * 1.6);
+  if (game.balance < game.tapCost) return alert('Недостаточно средств!');
+  game.balance -= game.tapCost;
+  game.tapLvl++;
+  game.tapPower += 1.2;
+  game.tapCost = Math.floor(game.tapCost * 1.55);
+  
+  if (game.tapLvl % 5 === 0) game.level++;
   updateUI();
 }
 
-function renderProperties() {
-  const list = document.getElementById('properties-list');
-  list.innerHTML = game.properties.map(p => `
-    <div class="property-card">
-      <div class="property-img" style="background-image: url('${p.img}')">
-        <div class="property-income-badge">$${p.income.toLocaleString()} income per hour</div>
-      </div>
-      <div class="property-body">
-        <div>
-          <div class="property-price">$${p.price.toLocaleString()}</div>
-          <div class="property-loc">📍 ${p.loc}</div>
+// Бизнесы
+function renderBusinesses() {
+  const list = document.getElementById('business-list');
+  list.innerHTML = game.businesses.map(b => {
+    let currentCost = Math.floor(b.cost * Math.pow(1.15, b.owned));
+    return `
+      <div class="card" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <div style="display:flex; align-items:center; gap:14px;">
+          <div style="font-size:36px; background:#f1f5f9; padding:10px; border-radius:16px;">${b.img}</div>
+          <div>
+            <div style="font-weight:800; font-size:15px;">${b.name} <span style="color:var(--muted); font-size:12px;">(x${b.owned})</span></div>
+            <div style="font-size:12px; color:var(--accent); font-weight:700; margin-top:2px;">+$${b.income}/ч за 1 шт.</div>
+          </div>
         </div>
-        <button class="btn" onclick="buyProperty(${p.id})" ${p.owned ? 'style="background:#334155; color:#94a3b8;" disabled' : ''}>
-          ${p.owned ? 'Куплено' : 'Купить'}
-        </button>
+        <button class="btn" style="width:auto; padding:10px 14px;" onclick="buyBusiness(${b.id})">$${currentCost.toLocaleString()}</button>
+      </div>
+    `;
+  }).join('');
+}
+
+function buyBusiness(id) {
+  const b = game.businesses.find(x => x.id === id);
+  let currentCost = Math.floor(b.cost * Math.pow(1.15, b.owned));
+  if (game.balance < currentCost) return alert('Не хватает капитала!');
+
+  game.balance -= currentCost;
+  b.owned++;
+  game.profitHour += b.income;
+  updateUI();
+}
+
+// Рынок акций
+function renderMarket() {
+  const list = document.getElementById('market-list');
+  list.innerHTML = game.stocks.map(s => `
+    <div class="card" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <div>
+        <div style="font-weight:800; font-size:15px;">${s.name}</div>
+        <div style="font-size:14px; font-weight:700; color:var(--primary); margin-top:2px;">$${s.price.toFixed(2)} <span style="font-size:11px; color:${s.trend > 0 ? '#10b981':'#ef4444'}">${s.trend > 0 ? '▲ Растет':'▼ Падает'}</span></div>
+        <div style="font-size:11px; color:var(--muted);">У вас в портфеле: ${s.owned} шт.</div>
+      </div>
+      <div style="display:flex; gap:6px;">
+        <button class="btn" style="width:auto; padding:8px 12px;" onclick="tradeStock(${s.id}, 1)">Купить</button>
+        <button class="btn" style="width:auto; padding:8px 12px; background:#ef4444;" onclick="tradeStock(${s.id}, -1)">Продать</button>
       </div>
     </div>
   `).join('');
 }
 
-function buyProperty(id) {
-  const prop = game.properties.find(p => p.id === id);
-  if (prop.owned) return;
-  if (game.balance < prop.price) return alert('Не хватает денег на балансе!');
-  
-  game.balance -= prop.price;
-  prop.owned = true;
-  game.profitHour += prop.income;
+function tradeStock(id, type) {
+  const s = game.stocks.find(x => x.id === id);
+  if (type === 1) {
+    if (game.balance < s.price) return alert('Недостаточно средств!');
+    game.balance -= s.price;
+    s.owned++;
+  } else {
+    if (s.owned <= 0) return alert нет акций для продажи!');
+    game.balance += s.price;
+    s.owned--;
+  }
   updateUI();
-  alert(`Поздравляем с покупкой: ${prop.name}!`);
 }
 
-// Пассивный доход каждую секунду
+// Банк
+function depositMoney() {
+  if (game.balance < 1000) return alert('Минимальный депозит $1,000');
+  game.balance -= 1000;
+  game.bankDeposit += 1000;
+  updateUI();
+}
+
+function withdrawMoney() {
+  if (game.bankDeposit <= 0) return;
+  game.balance += game.bankDeposit;
+  game.bankDeposit = 0;
+  updateUI();
+}
+
+// Таблица лидеров
+function renderLeaderboard() {
+  const list = document.getElementById('leaderboard-list');
+  const bots = [
+    { name: 'Elon Tusk', cap: 4500000 },
+    { name: 'Satoshi N.', cap: 2100000 },
+    { name: 'Jeff Bezoar', cap: 980000 },
+    { name: game.name + ' (Вы)', cap: game.balance + (game.profitHour * 10) },
+    { name: 'Warren Buff', cap: 450000 }
+  ].sort((a,b) => b.cap - a.cap);
+
+  list.innerHTML = bots.map((p, idx) => `
+    <div class="lb-row" style="${p.name.includes('Вы') ? 'background:#e0e7ff; border-color:#6366f1;' : ''}">
+      <div>#${idx + 1} ${p.name}</div>
+      <div style="color:var(--primary);">$${Math.floor(p.cap).toLocaleString()}</div>
+    </div>
+  `).join('');
+}
+
+// Пассивный доход и колебания рынка каждую секунду
 setInterval(() => {
   if (game.profitHour > 0) {
     game.balance += game.profitHour / 3600;
-    updateUI();
   }
+  // Начисление процентов банка раз в минуту (условно ускорено)
+  if (Math.random() < 0.2 && game.bankDeposit > 0) {
+    game.bankDeposit *= 1.002;
+  }
+  // Колебания акций
+  game.stocks.forEach(s => {
+    let change = (Math.random() - 0.48) * (s.price * 0.03);
+    s.price = Math.max(10, s.price + change);
+    s.trend = change >= 0 ? 1 : -1;
+  });
+  updateUI();
 }, 1000);
 
 function switchTab(id, btn) {
-  ['earn', 'realty', 'upgrade'].forEach(t => document.getElementById('tab-' + t).classList.add('hidden'));
+  ['earn', 'business', 'market', 'bank', 'leaderboard'].forEach(t => document.getElementById('tab-' + t).classList.add('hidden'));
   document.getElementById('tab-' + id).classList.remove('hidden');
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
