@@ -3,187 +3,105 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>RichLife: Live Tycoon & Market</title>
+<title>Простая Тапалка</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
     --bg: #f8fafc; --card: #ffffff; --border: #e2e8f0;
-    --primary: #6366f1; --primary-grad: linear-gradient(135deg, #6366f1, #a855f7);
-    --accent: #10b981; --accent-grad: linear-gradient(135deg, #10b981, #059669);
-    --red: #ef4444; --text: #0f172a; --muted: #64748b;
+    --primary: #3b82f6; --text: #0f172a; --muted: #64748b;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
   body {
     margin: 0; background: var(--bg); color: var(--text);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    min-height: 100vh; padding-bottom: 95px; overflow-x: hidden;
+    min-height: 100vh; padding-bottom: 80px; overflow-x: hidden;
   }
   .hidden { display: none !important; }
-
-  /* Шапка */
   .header {
-    padding: 14px 16px; display: flex; justify-content: space-between; align-items: center;
-    background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50;
+    padding: 14px 16px; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;
+    position: sticky; top: 0; z-index: 50; font-size: 12px; font-weight: 700; color: var(--muted);
   }
-  .balance-title { font-size: 11px; color: var(--muted); font-weight: 700; text-transform: uppercase; }
-  .balance-amount { font-size: 22px; font-weight: 900; background: var(--primary-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-
-  .container { padding: 16px; max-width: 500px; margin: 0 auto; }
+  .container { padding: 20px; max-width: 500px; margin: 0 auto; text-align: center; }
   .card {
     background: var(--card); border: 1px solid var(--border);
-    border-radius: 24px; padding: 18px; margin-bottom: 16px;
-    box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.08);
+    border-radius: 20px; padding: 20px; margin-bottom: 16px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
   }
-
-  /* Тапалка */
-  .tap-zone {
-    height: 220px; background: linear-gradient(145deg, #ffffff, #f1f5f9);
-    border: 3px dashed #cbd5e1; border-radius: 28px;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    cursor: pointer; position: relative; overflow: hidden; transition: transform 0.08s;
+  .score-display { font-size: 42px; font-weight: 900; color: var(--primary); margin: 10px 0; }
+  
+  /* Большая кнопка тапа */
+  .tap-btn {
+    width: 200px; height: 200px; background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    border: none; border-radius: 50%; color: white; font-size: 60px;
+    display: flex; align-items: center; justify-content: center; margin: 30px auto;
+    cursor: pointer; box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+    transition: transform 0.08s; position: relative; outline: none;
   }
-  .tap-zone:active { transform: scale(0.95); border-color: var(--primary); background: #e0e7ff; }
-  .tap-icon { font-size: 60px; animation: bounceIcon 2s ease-in-out infinite; }
-  @keyframes bounceIcon { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-
-  /* Кнопки */
-  .btn {
-    background: var(--primary-grad); color: #fff; border: none; padding: 12px 16px;
-    border-radius: 14px; font-weight: 800; font-size: 13px; cursor: pointer; width: 100%;
-    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); transition: transform 0.1s;
-  }
-  .btn:active { transform: scale(0.95); }
-  .btn-accent { background: var(--accent-grad); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
-  .btn-red { background: linear-gradient(135deg, #ef4444, #dc2626); }
+  .tap-btn:active { transform: scale(0.92); }
 
   /* Навигация */
   .nav {
-    position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(15px); border-top: 1px solid var(--border);
-    display: grid; grid-template-columns: repeat(6, 1fr); padding: 6px 2px; z-index: 100;
+    position: fixed; bottom: 0; left: 0; right: 0; background: #fff;
+    border-top: 1px solid var(--border); display: grid; grid-template-columns: repeat(3, 1fr); padding: 8px; z-index: 100;
   }
-  .nav-item {
-    background: none; border: none; color: var(--muted); font-size: 9px; font-weight: 700;
-    display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; padding: 4px 0;
-  }
+  .nav-item { background: none; border: none; color: var(--muted); font-size: 11px; font-weight: 700; cursor: pointer; padding: 8px; }
   .nav-item.active { color: var(--primary); }
-  .nav-icon { font-size: 18px; }
 
-  /* Анимация всплывающих чисел */
+  /* Чат и Топ */
+  .chat-box { height: 240px; overflow-y: auto; background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 10px; margin-bottom: 10px; text-align: left; font-size: 12px; display: flex; flexDirection: column; gap: 6px; }
+  .chat-msg { background: #fff; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border); }
+  .top-row { display: flex; justify-content: space-between; padding: 10px 14px; background: #f8fafc; border-radius: 10px; margin-bottom: 6px; font-weight: 700; font-size: 13px; border: 1px solid var(--border); }
+  
   .floating-num {
-    position: absolute; font-weight: 900; font-size: 20px; color: var(--accent);
+    position: absolute; font-weight: 900; font-size: 22px; color: #10b981;
     pointer-events: none; animation: floatUp 0.6s forwards;
   }
   @keyframes floatUp {
     0% { opacity: 1; transform: translateY(0) scale(0.8); }
-    100% { opacity: 0; transform: translateY(-60px) scale(1.3); }
+    100% { opacity: 0; transform: translateY(-50px) scale(1.2); }
   }
-
-  /* Чат */
-  .chat-box { height: 250px; overflow-y: auto; background: #f8fafc; border: 1px solid var(--border); border-radius: 14px; padding: 10px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; font-size: 12px; }
-  .chat-msg { background: #fff; padding: 6px 10px; border-radius: 10px; border: 1px solid var(--border); }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <div>
-    <div class="balance-title">Капитал (<span id="role-badge" style="color:var(--primary);">Игрок</span>)</div>
-    <div class="balance-amount">$<span id="main-balance">10,000.00</span></div>
-  </div>
-  <div style="display:flex; gap:6px;">
-    <button id="admin-btn" class="hidden btn" style="width:auto; padding:6px 10px; font-size:11px;" onclick="switchTab('admin', this)">🛡️ Админ</button>
-    <div style="background: #e0e7ff; color: #4338ca; padding: 6px 10px; border-radius: 12px; font-size: 11px; font-weight: 800;">⚡ Ур.<span id="player-lvl">1</span></div>
-  </div>
+  <div>👤 <span id="user-name">Игрок</span></div>
+  <div id="live-clock">00:00:00</div>
 </div>
 
 <div class="container">
   <!-- 1. ТАПАЛКА -->
-  <div id="tab-earn" class="card">
-    <div style="display:flex; gap:10px; margin-bottom:14px;">
-      <div style="flex:1; background:#f1f5f9; padding:10px; border-radius:14px; text-align:center;">
-        <div style="font-size:10px; color:var(--muted); font-weight:700;">Пассив / час</div>
-        <div style="font-size:14px; font-weight:800; color:var(--accent);">+$<span id="profit-hour">0</span></div>
-      </div>
-      <div style="flex:1; background:#f1f5f9; padding:10px; border-radius:14px; text-align:center;">
-        <div style="font-size:10px; color:var(--muted); font-weight:700;">Клик</div>
-        <div style="font-size:14px; font-weight:800; color:var(--primary);">+$<span id="tap-power">1.00</span></div>
-      </div>
-    </div>
-
-    <div class="tap-zone" id="tap-zone" onclick="handleTap(event)">
-      <div class="tap-icon">💎</div>
-      <div style="font-size:12px; color:var(--muted); font-weight:700; margin-top:6px;">Тапайте для генерации денег</div>
-    </div>
-
-    <button class="btn" style="margin-top:16px;" onclick="buyTapUpgrade()">Улучшить тап ($<span id="tap-cost">50</span>)</button>
+  <div id="tab-tap" class="card">
+    <div style="font-size: 12px; color: var(--muted); font-weight: 700; text-transform: uppercase;">Ваш баланс монеток</div>
+    <div class="score-display"><span id="score">0</span></div>
+    
+    <button class="tap-btn" id="tap-target" onclick="onTap(event)">🪙</button>
+    <div style="font-size: 12px; color: var(--muted);">1 тап = 1 монетка</div>
   </div>
 
-  <!-- 2. БИЗНЕСЫ -->
-  <div id="tab-business" class="hidden">
-    <h3 style="margin:0 0 14px 0; font-size:16px;">Ваш бизнес и активы</h3>
-    <div id="business-list"></div>
+  <!-- 2. ТОП ИГРОКОВ -->
+  <div id="tab-top" class="hidden card">
+    <h3 style="margin-top:0; font-size:16px;">🏆 Топ Таперов</h3>
+    <div id="top-list">Загрузка топа...</div>
   </div>
 
-  <!-- 3. РЫНОК И КУРСЫ ВАЛЮТ -->
-  <div id="tab-market" class="hidden">
-    <h3 style="margin:0 0 14px 0; font-size:16px;">Живая Биржа и Курсы</h3>
-    <div class="card" style="background:linear-gradient(135deg, #0f172a, #1e293b); color:#fff; margin-bottom:14px;">
-      <div style="font-size:11px; color:#94a3b8;">Индекс Доллара / Валюты</div>
-      <div style="font-size:20px; font-weight:900; margin:4px 0;" id="usd-index">$1.00 <span id="usd-trend" style="font-size:12px; color:#10b981;">▲ +0.02%</span></div>
-    </div>
-    <div id="market-list"></div>
-  </div>
-
-  <!-- 4. МИНИ-ИГРА (Угадай тренд) -->
-  <div id="tab-game" class="hidden card" style="text-align:center;">
-    <h3 style="margin-top:0; color:var(--primary);">📊 Мини-игра: Крипто-Прогноз</h3>
-    <p style="font-size:12px; color:var(--muted);">Угадай, куда пойдет курс Bitcoin через 5 секунд и удвой ставку!</p>
-    <div style="font-size:28px; font-weight:900; margin:16px 0;" id="mini-btc-price">$64,500.00</div>
-    <div style="display:flex; gap:10px; margin-bottom:14px;">
-      <input type="number" id="bet-amount" class="card" style="padding:10px; margin:0; text-align:center; font-weight:bold;" value="100" placeholder="Ставка">
-    </div>
-    <div style="display:flex; gap:10px;">
-      <button class="btn btn-accent" onclick="playGame('up')">🚀 Рост (UP)</button>
-      <button class="btn btn-red" onclick="playGame('down')">📉 Падение (DOWN)</button>
-    </div>
-    <div id="game-result" style="font-weight:800; font-size:14px; margin-top:12px; min-height:20px;"></div>
-  </div>
-
-  <!-- 5. ОБЩИЙ ЧАТ -->
+  <!-- 3. ОБЩИЙ ЧАТ -->
   <div id="tab-chat" class="hidden card">
-    <h3 style="margin:0 0 10px 0; font-size:16px;">💬 Общий Чат Инвесторов</h3>
+    <h3 style="margin-top:0; font-size:16px;">💬 Общий Чат</h3>
     <div class="chat-box" id="chat-box">Загрузка чата...</div>
     <div style="display:flex; gap:6px;">
       <input type="text" id="chat-input" class="card" style="margin:0; padding:10px; font-size:12px; flex:1;" placeholder="Сообщение...">
-      <button class="btn" style="width:auto; padding:10px 16px;" onclick="sendChatMessage()">Отправить</button>
-    </div>
-  </div>
-
-  <!-- 6. АДМИН-ПАНЕЛЬ (ТОЛЬКО ДЛЯ ТЕБЯ) -->
-  <div id="tab-admin" class="hidden card" style="border: 2px solid var(--primary);">
-    <h3 style="margin-top:0; color:var(--primary);">🛡️ Секретная Админ-Панель</h3>
-    <p style="font-size:12px; color:var(--muted);">Вы владелец системы. Управление правами игроков.</p>
-    <div style="margin-bottom:12px;">
-      <input type="text" id="admin-target-id" class="card" style="margin:0 0 8px 0; padding:10px; font-size:12px;" placeholder="Telegram ID игрока">
-      <button class="btn btn-accent" onclick="grantAdminPermission()">Выдать статус Администратора</button>
-    </div>
-    <div style="border-top:1px solid var(--border); padding-top:10px;">
-      <button class="btn btn-red" onclick="serverResetEconomy()">⚠️ Сбросить экономику сервера</button>
+      <button style="background:var(--primary); color:#fff; border:none; padding:10px 16px; border-radius:12px; font-weight:bold; cursor:pointer;" onclick="sendMessage()">➤</button>
     </div>
   </div>
 </div>
 
-<!-- НАВИГАЦИЯ -->
 <div class="nav">
-  <button class="nav-item active" onclick="switchTab('earn', this)"><span class="nav-icon">💸</span>Тап</button>
-  <button class="nav-item" onclick="switchTab('business', this)"><span class="nav-icon">🏢</span>Бизнес</button>
-  <button class="nav-item" onclick="switchTab('market', this)"><span class="nav-icon">📈</span>Биржа</button>
-  <button class="nav-item" onclick="switchTab('game', this)"><span class="nav-icon">🎮</span>Игры</button>
-  <button class="nav-item" onclick="switchTab('chat', this)"><span class="nav-icon">💬</span>Чат</button>
-  <button class="nav-item" onclick="switchTab('leaderboard', this)"><span class="nav-icon">🏆</span>Топ</button>
+  <button class="nav-item active" onclick="switchTab('tap', this)">🪙 Тапать</button>
+  <button class="nav-item" onclick="switchTab('top', this)">🏆 Топ</button>
+  <button class="nav-item" onclick="switchTab('chat', this)">💬 Чат</button>
 </div>
 
 <script>
@@ -194,151 +112,65 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const tg = window.Telegram?.WebApp;
 if (tg) { tg.expand(); tg.ready(); }
 
-// ⚠️ ВПИШИ СВОЙ TELEGRAM ID СЮДА (чтобы стать главным админом):
-const MY_TELEGRAM_ID = "YOUR_REAL_TELEGRAM_ID_HERE"; 
-
 let userId = tg?.initDataUnsafe?.user?.id ? String(tg.initDataUnsafe.user.id) : ('guest_' + Math.floor(Math.random()*90000));
-let userName = tg?.initDataUnsafe?.user?.first_name || 'Инвестор';
+let userName = tg?.initDataUnsafe?.user?.first_name || 'Игрок';
+document.getElementById('user-name').textContent = userName;
 
-let game = {
-  balance: 10000.00,
-  profitHour: 0,
-  tapPower: 1.00,
-  tapLvl: 0,
-  tapCost: 50,
-  level: 1,
-  isAdmin: false,
-  businesses: [
-    { id: 1, name: 'Кофейня', cost: 400, income: 50, owned: 0, icon: '☕' },
-    { id: 2, name: 'IT-Компания', cost: 3000, income: 400, owned: 0, icon: '💻' },
-    { id: 3, name: 'Небоскреб', cost: 25000, income: 3500, owned: 0, icon: '🏢' }
-  ],
-  stocks: [
-    { id: 1, name: 'Bitcoin (BTC)', price: 64500, trend: 1 },
-    { id: 2, name: 'Apple Inc.', price: 220, trend: -1 },
-    { id: 3, name: 'Индекс USD', price: 1.00, trend: 1 }
-  ]
-};
+let score = parseInt(localStorage.getItem('tap_score_' + userId)) || 0;
+document.getElementById('score').textContent = score;
 
-// Проверка прав администратора
-function checkAdminAccess() {
-  if (userId === MY_TELEGRAM_ID || localStorage.getItem('is_admin_' + userId) === 'true') {
-    game.isAdmin = true;
-    document.getElementById('admin-btn').classList.remove('hidden');
-    document.getElementById('role-badge').textContent = 'Администратор';
-    document.getElementById('role-badge').style.color = '#ef4444';
-  }
-}
+// Часы и дата
+setInterval(() => {
+  const now = new Date();
+  document.getElementById('live-clock').textContent = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
+}, 1000);
 
-function updateUI() {
-  document.getElementById('main-balance').textContent = game.balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-  document.getElementById('profit-hour').textContent = game.profitHour.toLocaleString();
-  document.getElementById('tap-power').textContent = game.tapPower.toFixed(2);
-  document.getElementById('tap-cost').textContent = game.tapCost.toLocaleString();
-  document.getElementById('player-lvl').textContent = game.level;
-  renderBusinesses();
-  renderMarket();
-}
+// Тап
+function onTap(e) {
+  score += 1;
+  document.getElementById('score').textContent = score;
+  localStorage.setItem('tap_score_' + userId, score);
 
-// Тапалка
-function handleTap(e) {
-  game.balance += game.tapPower;
-  const zone = document.getElementById('tap-zone');
-  const rect = zone.getBoundingClientRect();
+  // Анимация числа
+  const btn = document.getElementById('tap-target');
+  const rect = btn.getBoundingClientRect();
   const x = e.clientX - rect.left, y = e.clientY - rect.top;
 
   const floatEl = document.createElement('div');
   floatEl.className = 'floating-num';
-  floatEl.textContent = `+$${game.tapPower.toFixed(0)}`;
+  floatEl.textContent = '+1';
   floatEl.style.left = `${x}px`; floatEl.style.top = `${y}px`;
-  zone.appendChild(floatEl);
+  btn.appendChild(floatEl);
   setTimeout(() => floatEl.remove(), 600);
+
   if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
-  updateUI();
-}
-
-function buyTapUpgrade() {
-  if (game.balance < game.tapCost) return alert('Недостаточно средств!');
-  game.balance -= game.tapCost;
-  game.tapLvl++;
-  game.tapPower += 1.5;
-  game.tapCost = Math.floor(game.tapCost * 1.5);
-  if (game.tapLvl % 5 === 0) game.level++;
-  updateUI();
-}
-
-// Бизнесы
-function renderBusinesses() {
-  document.getElementById('business-list').innerHTML = game.businesses.map(b => {
-    let cost = Math.floor(b.cost * Math.pow(1.18, b.owned));
-    return `
-      <div class="card" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding:14px;">
-        <div style="display:flex; align-items:center; gap:12px;">
-          <div style="font-size:32px; background:#f1f5f9; padding:8px; border-radius:12px;">${b.icon}</div>
-          <div>
-            <div style="font-weight:800; font-size:14px;">${b.name} <span style="color:var(--muted); font-size:11px;">(x${b.owned})</span></div>
-            <div style="font-size:11px; color:var(--accent); font-weight:700;">+$${b.income}/ч</div>
-          </div>
-        </div>
-        <button class="btn" style="width:auto; padding:8px 12px;" onclick="buyBiz(${b.id})">$${cost.toLocaleString()}</button>
-      </div>`;
-  }).join('');
-}
-
-function buyBiz(id) {
-  const b = game.businesses.find(x => x.id === id);
-  let cost = Math.floor(b.cost * Math.pow(1.18, b.owned));
-  if (game.balance < cost) return alert('Не хватает денег!');
-  game.balance -= cost;
-  b.owned++;
-  game.profitHour += b.income;
-  updateUI();
-}
-
-// Рынок и курсы
-function renderMarket() {
-  document.getElementById('market-list').innerHTML = game.stocks.map(s => `
-    <div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:14px; margin-bottom:10px;">
-      <div>
-        <div style="font-weight:800; font-size:14px;">${s.name}</div>
-        <div style="font-size:16px; font-weight:900; color:var(--primary);">$${s.price.toFixed(2)}</div>
-      </div>
-      <div style="font-size:12px; font-weight:800; color:${s.trend > 0 ? '#10b981':'#ef4444'};">
-        ${s.trend > 0 ? '▲ РАСТЕТ' : '▼ ПАДАЕТ'}
-      </div>
-    </div>`).join('');
-}
-
-// Мини-игра прогноз
-let btcPriceVal = 64500;
-function playGame(type) {
-  let bet = parseFloat(document.getElementById('bet-amount').value);
-  if (isNaN(bet) || bet <= 0 || game.balance < bet) return alert('Некорректная ставка!');
-  game.balance -= bet;
   
-  let oldPrice = btcPriceVal;
-  setTimeout(() => {
-    let diff = (Math.random() - 0.48) * 500;
-    btcPriceVal += diff;
-    document.getElementById('mini-btc-price').textContent = `$${btcPriceVal.toFixed(2)}`;
-    let isUp = btcPriceVal > oldPrice;
-    let win = (type === 'up' && isUp) || (type === 'down' && !isUp);
-    
-    let res = document.getElementById('game-result');
-    if (win) {
-      let prize = bet * 2;
-      game.balance += prize;
-      res.style.color = '#10b981';
-      res.textContent = `🎉 Победа! Вы выиграли +$${prize.toFixed(2)}`;
-    } else {
-      res.style.color = '#ef4444';
-      res.textContent = `😢 Вы проиграли ставку $${bet}`;
-    }
-    updateUI();
-  }, 2000);
+  // Синхронизация с облаком (раз в 10 тапов или при смене)
+  if (score % 5 === 0) {
+    syncCloudScore();
+  }
 }
 
-// Чат через Supabase
+async function syncCloudScore() {
+  try {
+    await sb.from('players').upsert({
+      id: userId, name: userName, power: score, level: 1, gold: score, updated_at: new Date()
+    });
+  } catch(e){}
+}
+
+// Загрузка топа
+async function loadTop() {
+  let { data } = await sb.from('players').select('*').order('power', { ascending: false }).limit(10);
+  document.getElementById('top-list').innerHTML = data && data.length ? data.map((p, i) => `
+    <div class="top-row">
+      <div>#${i+1} ${p.name}</div>
+      <div style="color:var(--primary);">🪙 ${Number(p.power).toLocaleString()}</div>
+    </div>
+  `).join('') : 'Пока нет игроков в топе';
+}
+
+// Чат
 async function loadChat() {
   let { data } = await sb.from('chat').select('*').order('id', { ascending: false }).limit(20);
   if (data) {
@@ -349,7 +181,7 @@ async function loadChat() {
   }
 }
 
-async function sendChatMessage() {
+async function sendMessage() {
   let inp = document.getElementById('chat-input');
   if (!inp || !inp.value.trim()) return;
   let msg = inp.value; inp.value = '';
@@ -357,47 +189,17 @@ async function sendChatMessage() {
   loadChat();
 }
 
-// Админ функции
-function grantAdminPermission() {
-  if (!game.isAdmin) return;
-  let targetId = document.getElementById('admin-target-id').value;
-  if (!targetId) return;
-  localStorage.setItem('is_admin_' + targetId, 'true');
-  alert(`Игрок с ID ${targetId} успешно назначен администратором!`);
-}
-
-function serverResetEconomy() {
-  if (!game.isAdmin) return;
-  if (confirm('Сбросить всю экономику сервера?')) {
-    localStorage.clear();
-    location.reload();
-  }
-}
-
-// Циклы игры (курсы, пассивный доход)
-setInterval(() => {
-  if (game.profitHour > 0) game.balance += game.profitHour / 3600;
-  
-  // Колебания рынка (доллар и акции то растут, то пападают)
-  game.stocks.forEach(s => {
-    let change = (Math.random() - 0.49) * (s.price * 0.02);
-    s.price = Math.max(5, s.price + change);
-    s.trend = change >= 0 ? 1 : -1;
-  });
-  updateUI();
-}, 1000);
-
-// Переключение вкладок
 function switchTab(id, btn) {
-  ['earn', 'business', 'market', 'game', 'chat', 'admin', 'leaderboard'].forEach(t => document.getElementById('tab-' + t).classList.add('hidden'));
+  ['tap', 'top', 'chat'].forEach(t => document.getElementById('tab-' + t).classList.add('hidden'));
   document.getElementById('tab-' + id).classList.remove('hidden');
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
+  btn.classList.add('active');
+  if (id === 'top') loadTop();
   if (id === 'chat') loadChat();
 }
 
-checkAdminAccess();
-updateUI();
+// Первичная синхронизация при старте
+syncCloudScore();
 </script>
 </body>
 </html>
