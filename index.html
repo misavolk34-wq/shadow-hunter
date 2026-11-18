@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Кибер-Империя — Cyber Tycoon</title>
+    <title>Кибер-Империя 2.0</title>
     <style>
         :root {
             --bg-dark: #090d16;
-            --card-bg: rgba(19, 28, 49, 0.85);
-            --card-border: rgba(99, 102, 241, 0.22);
+            --card-bg: rgba(19, 28, 49, 0.92);
+            --card-border: rgba(99, 102, 241, 0.25);
             --accent-primary: #6366f1;
             --accent-secondary: #ec4899;
             --accent-cyan: #06b6d4;
@@ -30,8 +30,8 @@
         body {
             background-color: var(--bg-dark);
             background-image: 
-                radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.15) 0%, transparent 45%),
-                radial-gradient(circle at 85% 80%, rgba(236, 72, 153, 0.12) 0%, transparent 45%);
+                radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.16) 0%, transparent 45%),
+                radial-gradient(circle at 85% 80%, rgba(236, 72, 153, 0.14) 0%, transparent 45%);
             color: var(--text-main);
             height: 100vh;
             height: 100dvh;
@@ -42,14 +42,14 @@
 
         /* Верхняя панель баланса */
         .top-bar {
-            background: rgba(13, 19, 34, 0.92);
+            background: rgba(13, 19, 34, 0.95);
             backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--card-border);
-            padding: 12px 16px;
+            padding: 10px 14px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-shrink: 0;
             z-index: 20;
         }
 
@@ -59,50 +59,50 @@
         }
 
         .balance-label {
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             text-transform: uppercase;
-            letter-spacing: 0.08em;
+            letter-spacing: 0.06em;
             color: var(--text-muted);
         }
 
         .balance-value {
-            font-size: 1.45rem;
+            font-size: 1.4rem;
             font-weight: 800;
             color: var(--gold);
             text-shadow: 0 0 15px rgba(251, 191, 36, 0.35);
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            line-height: 1.2;
         }
 
         .stats-pill {
-            background: rgba(16, 185, 129, 0.12);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            padding: 6px 12px;
-            border-radius: 20px;
+            background: rgba(16, 185, 129, 0.14);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            padding: 6px 10px;
+            border-radius: 14px;
             text-align: right;
         }
 
         .income-rate {
             font-size: 0.85rem;
-            font-weight: 700;
+            font-weight: 800;
             color: var(--green);
         }
 
         .prestige-badge {
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             color: var(--accent-cyan);
             font-weight: 600;
         }
 
-        /* Переключатель множителя покупки */
-        .multiplier-bar {
-            background: rgba(15, 23, 42, 0.7);
-            padding: 8px 16px;
+        /* Панель заголовка и активного буста */
+        .sub-bar {
+            background: rgba(15, 23, 42, 0.85);
+            padding: 8px 14px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            flex-shrink: 0;
+            gap: 8px;
         }
 
         .section-title {
@@ -112,50 +112,62 @@
         }
 
         .mult-btn {
-            background: rgba(99, 102, 241, 0.2);
+            background: rgba(99, 102, 241, 0.25);
             border: 1px solid var(--accent-primary);
-            color: #a5b4fc;
-            padding: 4px 12px;
-            border-radius: 8px;
-            font-size: 0.8rem;
-            font-weight: 700;
+            color: #c7d2fe;
+            padding: 6px 14px;
+            border-radius: 10px;
+            font-size: 0.82rem;
+            font-weight: 800;
             cursor: pointer;
-            transition: all 0.15s;
+            flex-shrink: 0;
         }
 
         .mult-btn:active {
-            transform: scale(0.94);
+            transform: scale(0.95);
             background: var(--accent-primary);
             color: #fff;
+        }
+
+        /* Индикатор активного овердрайва */
+        .boost-banner {
+            background: linear-gradient(90deg, #ec4899, #8b5cf6);
+            color: white;
+            text-align: center;
+            font-size: 0.78rem;
+            font-weight: 800;
+            padding: 5px;
+            display: none;
+            flex-shrink: 0;
+            letter-spacing: 0.03em;
         }
 
         /* Основная область прокрутки */
         .content-area {
             flex: 1;
             overflow-y: auto;
-            padding: 12px 14px 20px;
+            padding: 12px 12px 24px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 14px;
             scroll-behavior: smooth;
         }
 
-        /* Карточка бизнеса */
+        /* Карточка бизнеса (исправлена высота и видимость кнопок) */
         .biz-card {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
             border-radius: 16px;
-            padding: 12px;
+            padding: 14px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
-            position: relative;
-            overflow: hidden;
+            gap: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            flex-shrink: 0;
         }
 
         .biz-card.locked {
-            opacity: 0.75;
+            opacity: 0.82;
             border-style: dashed;
         }
 
@@ -166,35 +178,35 @@
         }
 
         .biz-icon-btn {
-            width: 54px;
-            height: 54px;
+            width: 58px;
+            height: 58px;
             border-radius: 14px;
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(6, 182, 212, 0.2));
-            border: 1px solid rgba(99, 102, 241, 0.4);
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.28), rgba(6, 182, 212, 0.22));
+            border: 1px solid rgba(99, 102, 241, 0.45);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            font-size: 1.65rem;
+            font-size: 1.7rem;
             cursor: pointer;
             position: relative;
             flex-shrink: 0;
-            transition: transform 0.1s;
         }
 
         .biz-icon-btn:active {
-            transform: scale(0.92);
+            transform: scale(0.93);
         }
 
         .biz-lvl-tag {
             position: absolute;
-            bottom: -4px;
+            bottom: -5px;
             background: var(--accent-primary);
             color: white;
-            font-size: 0.65rem;
+            font-size: 0.68rem;
             font-weight: 800;
-            padding: 1px 6px;
+            padding: 2px 7px;
             border-radius: 6px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.5);
         }
 
         .biz-info {
@@ -206,11 +218,12 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
+            gap: 6px;
         }
 
         .biz-name {
-            font-size: 0.95rem;
+            font-size: 1rem;
             font-weight: 700;
             white-space: nowrap;
             overflow: hidden;
@@ -218,10 +231,11 @@
         }
 
         .manager-badge {
-            font-size: 0.65rem;
-            padding: 2px 6px;
-            border-radius: 6px;
+            font-size: 0.68rem;
+            padding: 3px 8px;
+            border-radius: 8px;
             font-weight: 700;
+            flex-shrink: 0;
         }
 
         .manager-badge.active {
@@ -231,18 +245,18 @@
         }
 
         .manager-badge.manual {
-            background: rgba(245, 158, 11, 0.15);
+            background: rgba(245, 158, 11, 0.16);
             color: #fbbf24;
-            border: 1px solid rgba(245, 158, 11, 0.3);
+            border: 1px solid rgba(245, 158, 11, 0.35);
         }
 
         /* Прогресс бар */
         .progress-wrapper {
             width: 100%;
-            height: 22px;
-            background: rgba(9, 13, 22, 0.8);
-            border-radius: 11px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            height: 26px;
+            background: rgba(9, 13, 22, 0.85);
+            border-radius: 13px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             position: relative;
             overflow: hidden;
             cursor: pointer;
@@ -252,7 +266,7 @@
             height: 100%;
             width: 0%;
             background: linear-gradient(90deg, #6366f1, #06b6d4);
-            border-radius: 10px;
+            border-radius: 12px;
             transition: width 0.05s linear;
         }
 
@@ -262,63 +276,82 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 10px;
-            font-size: 0.75rem;
-            font-weight: 700;
+            padding: 0 12px;
+            font-size: 0.8rem;
+            font-weight: 800;
             color: #fff;
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
         }
 
-        /* Кнопка покупки/улучшения бизнеса */
+        /* Крупная кнопка покупки бизнеса */
         .buy-btn {
             width: 100%;
-            padding: 9px 12px;
-            border-radius: 10px;
+            min-height: 44px;
+            padding: 10px 14px;
+            border-radius: 12px;
             border: none;
             background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
             color: white;
-            font-weight: 700;
-            font-size: 0.82rem;
+            font-weight: 800;
+            font-size: 0.9rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
-            transition: opacity 0.15s, transform 0.1s;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
+        }
+
+        .buy-btn .price-tag {
+            background: rgba(0, 0, 0, 0.25);
+            padding: 4px 10px;
+            border-radius: 8px;
+            color: var(--gold);
+            font-size: 0.92rem;
         }
 
         .buy-btn:disabled {
-            background: rgba(51, 65, 85, 0.5);
+            background: rgba(51, 65, 85, 0.55);
             color: var(--text-muted);
             box-shadow: none;
             cursor: not-allowed;
+        }
+
+        .buy-btn:disabled .price-tag {
+            color: var(--text-muted);
         }
 
         .buy-btn:not(:disabled):active {
             transform: scale(0.98);
         }
 
-        /* Карточки менеджеров и апгрейдов */
+        /* Карточки менеджеров, бустов и улучшений (вертикально с крупной кнопкой) */
         .item-card {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
-            border-radius: 14px;
-            padding: 12px;
+            border-radius: 16px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .item-top-row {
             display: flex;
             align-items: center;
             gap: 12px;
         }
 
         .item-icon {
-            width: 46px;
-            height: 46px;
-            border-radius: 12px;
-            background: rgba(236, 72, 153, 0.15);
+            width: 50px;
+            height: 50px;
+            border-radius: 14px;
+            background: rgba(236, 72, 153, 0.16);
             border: 1px solid rgba(236, 72, 153, 0.35);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            font-size: 1.6rem;
             flex-shrink: 0;
         }
 
@@ -327,60 +360,110 @@
         }
 
         .item-title {
-            font-size: 0.9rem;
+            font-size: 0.98rem;
             font-weight: 700;
-            margin-bottom: 2px;
+            margin-bottom: 3px;
         }
 
         .item-desc {
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             color: var(--text-muted);
+            line-height: 1.3;
         }
 
-        .action-pill-btn {
-            padding: 8px 12px;
-            border-radius: 10px;
+        .wide-action-btn {
+            width: 100%;
+            min-height: 42px;
+            padding: 10px 14px;
+            border-radius: 12px;
             border: none;
             background: linear-gradient(135deg, #10b981, #059669);
             color: white;
-            font-weight: 700;
-            font-size: 0.78rem;
+            font-weight: 800;
+            font-size: 0.88rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             cursor: pointer;
-            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
         }
 
-        .action-pill-btn:disabled {
-            background: rgba(51, 65, 85, 0.5);
+        .wide-action-btn:disabled {
+            background: rgba(51, 65, 85, 0.55);
             color: var(--text-muted);
+            box-shadow: none;
             cursor: not-allowed;
         }
 
-        .action-pill-btn.hired {
+        .wide-action-btn.hired {
             background: rgba(16, 185, 129, 0.15);
             color: var(--green);
-            border: 1px solid rgba(16, 185, 129, 0.3);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            justify-content: center;
+            box-shadow: none;
         }
+
+        .wide-action-btn.boost-style {
+            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+            box-shadow: 0 4px 14px rgba(236, 72, 153, 0.35);
+        }
+
+        /* Таблица лидеров */
+        .leader-row {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .leader-row.me {
+            border: 2px solid var(--gold);
+            background: rgba(251, 191, 36, 0.1);
+        }
+
+        .rank-badge {
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .rank-1 { background: linear-gradient(135deg, #fbbf24, #d97706); color: #000; }
+        .rank-2 { background: linear-gradient(135deg, #e2e8f0, #94a3b8); color: #000; }
+        .rank-3 { background: linear-gradient(135deg, #d97706, #92400e); color: #fff; }
 
         /* Блок престижа */
         .prestige-card {
-            background: linear-gradient(145deg, rgba(30, 27, 75, 0.9), rgba(88, 28, 135, 0.5));
-            border: 1px solid rgba(168, 85, 247, 0.4);
-            border-radius: 16px;
+            background: linear-gradient(145deg, rgba(30, 27, 75, 0.92), rgba(88, 28, 135, 0.55));
+            border: 1px solid rgba(168, 85, 247, 0.45);
+            border-radius: 18px;
             padding: 18px;
             text-align: center;
             display: flex;
             flex-direction: column;
             gap: 12px;
+            flex-shrink: 0;
         }
 
         .prestige-btn {
             background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
             border: none;
             color: white;
+            min-height: 46px;
             padding: 12px;
             border-radius: 12px;
             font-weight: 800;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
         }
@@ -391,14 +474,15 @@
             box-shadow: none;
         }
 
-        /* Нижняя навигация */
+        /* Нижняя навигация (5 вкладок) */
         .bottom-nav {
-            background: rgba(13, 19, 34, 0.95);
+            background: rgba(13, 19, 34, 0.96);
             backdrop-filter: blur(16px);
             border-top: 1px solid var(--card-border);
             display: flex;
             justify-content: space-around;
-            padding: 6px 4px env(safe-area-inset-bottom, 8px);
+            padding: 6px 2px env(safe-area-inset-bottom, 8px);
+            flex-shrink: 0;
             z-index: 20;
         }
 
@@ -410,9 +494,9 @@
             flex-direction: column;
             align-items: center;
             gap: 3px;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-weight: 600;
-            padding: 6px 10px;
+            padding: 6px 4px;
             border-radius: 12px;
             cursor: pointer;
             flex: 1;
@@ -420,18 +504,18 @@
         }
 
         .nav-tab .icon {
-            font-size: 1.25rem;
+            font-size: 1.2rem;
         }
 
         .nav-tab.active {
             color: #818cf8;
-            background: rgba(99, 102, 241, 0.14);
+            background: rgba(99, 102, 241, 0.16);
         }
 
         .notify-dot {
             position: absolute;
-            top: 5px;
-            right: 26%;
+            top: 4px;
+            right: 22%;
             width: 8px;
             height: 8px;
             background: var(--accent-secondary);
@@ -445,22 +529,45 @@
             pointer-events: none;
             color: var(--green);
             font-weight: 800;
-            font-size: 0.95rem;
-            text-shadow: 0 2px 6px rgba(0,0,0,0.8);
+            font-size: 1rem;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.85);
             animation: floatUp 0.85s ease-out forwards;
             z-index: 100;
         }
 
         @keyframes floatUp {
-            0% { opacity: 1; transform: translateY(0) scale(0.9); }
-            100% { opacity: 0; transform: translateY(-42px) scale(1.1); }
+            0% { opacity: 1; transform: translateY(0) scale(0.95); }
+            100% { opacity: 0; transform: translateY(-45px) scale(1.15); }
         }
 
-        /* Модальное окно оффлайн-дохода */
+        /* Падающий бонусный дрон */
+        .bonus-drone {
+            position: fixed;
+            top: 75px;
+            right: 16px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #000;
+            font-weight: 800;
+            font-size: 0.8rem;
+            padding: 8px 14px;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(251, 191, 36, 0.6);
+            cursor: pointer;
+            z-index: 90;
+            display: none;
+            animation: pulseDrone 1s infinite alternate;
+        }
+
+        @keyframes pulseDrone {
+            from { transform: scale(1); }
+            to { transform: scale(1.08); }
+        }
+
+        /* Модальное окно */
         .modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.78);
+            background: rgba(0, 0, 0, 0.8);
             backdrop-filter: blur(6px);
             display: none;
             align-items: center;
@@ -495,11 +602,17 @@
         </div>
     </header>
 
+    <!-- Полоса активного буста -->
+    <div class="boost-banner" id="ui-boost-banner">⚡ ОВЕРДРАЙВ ×2 АКТИВЕН: 30с</div>
+
     <!-- Панель заголовка и множителя -->
-    <div class="multiplier-bar">
+    <div class="sub-bar">
         <span class="section-title" id="ui-tab-title">🏭 Предприятия</span>
         <button class="mult-btn" id="ui-mult-btn" onclick="cycleMultiplier()">Купить: ×1</button>
     </div>
+
+    <!-- Бонусный дрон с наградой -->
+    <div class="bonus-drone" id="bonus-drone" onclick="claimBonusDrone()">🛸 Груз с монетами!</div>
 
     <!-- Рабочая область -->
     <main class="content-area" id="main-container"></main>
@@ -512,17 +625,21 @@
         </button>
         <button class="nav-tab" id="tab-managers" onclick="switchTab('managers')">
             <span class="icon">👔</span>
-            <span>Менеджеры</span>
+            <span>Кадры</span>
             <span class="notify-dot" id="dot-managers"></span>
         </button>
         <button class="nav-tab" id="tab-upgrades" onclick="switchTab('upgrades')">
             <span class="icon">⚡</span>
-            <span>Улучшения</span>
+            <span>Бусты</span>
             <span class="notify-dot" id="dot-upgrades"></span>
+        </button>
+        <button class="nav-tab" id="tab-leaders" onclick="switchTab('leaders')">
+            <span class="icon">🏆</span>
+            <span>Топ</span>
         </button>
         <button class="nav-tab" id="tab-prestige" onclick="switchTab('prestige')">
             <span class="icon">👑</span>
-            <span>Инвесторы</span>
+            <span>Инвест</span>
         </button>
     </nav>
 
@@ -534,7 +651,7 @@
             <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;">
                 Пока вас не было, ваши менеджеры продолжали работу и принесли прибыль:
             </p>
-            <div id="offline-reward-text" style="font-size: 1.4rem; font-weight: 800; color: var(--gold); margin-bottom: 18px;">
+            <div id="offline-reward-text" style="font-size: 1.45rem; font-weight: 800; color: var(--gold); margin-bottom: 18px;">
                 +0 🪙
             </div>
             <button class="buy-btn" style="justify-content: center; font-size: 0.95rem;" onclick="closeOfflineModal()">
@@ -554,23 +671,41 @@
             { id: 5, name: "Квантовый реактор", icon: "⚛️", baseCost: 4000000, costMult: 1.17, baseRev: 1400000, baseTime: 40.0, managerName: "Ядерный сверхразум", managerCost: 40000000 }
         ];
 
-        // Конфигурация глобальных улучшений
+        // Конфигурация улучшений
         const UPGRADES_CONFIG = [
-            { id: 0, name: "Турбо-кофемашины", desc: "Доход Кибер-кофейни ×3", targetId: 0, mult: 3, cost: 500, icon: "🔥" },
-            { id: 1, name: "Гипер-двигатели", desc: "Доход Доставки дронами ×3", targetId: 1, mult: 3, cost: 5000, icon: "🚀" },
-            { id: 2, name: "Крио-охлаждение", desc: "Доход Майнинг-фермы ×3", targetId: 2, mult: 3, cost: 60000, icon: "❄️" },
-            { id: 3, name: "Нано-сборка", desc: "Доход Фабрики имплантов ×3", targetId: 3, mult: 3, cost: 750000, icon: "🧬" },
-            { id: 4, name: "Глобальный маркетинг", desc: "Весь доход империи ×2", targetId: 'all', mult: 2, cost: 5000000, icon: "📡" },
-            { id: 5, name: "ИИ-Монополия", desc: "Весь доход империи ×5", targetId: 'all', mult: 5, cost: 100000000, icon: "🧠" }
+            { id: 0, name: "Турбо-кофемашины", desc: "Доход Кибер-кофейни ×3", targetId: 0, type: 'rev', mult: 3, cost: 500, icon: "🔥" },
+            { id: 1, name: "Гипер-двигатели", desc: "Доход Доставки дронами ×3", targetId: 1, type: 'rev', mult: 3, cost: 5000, icon: "🚀" },
+            { id: 2, name: "Крио-охлаждение", desc: "Доход Майнинг-фермы ×3", targetId: 2, type: 'rev', mult: 3, cost: 60000, icon: "❄️" },
+            { id: 3, name: "Квантовый разгон", desc: "Скорость всех предприятий +25%", targetId: 'all', type: 'speed', mult: 1.25, cost: 250000, icon: "⏱️" },
+            { id: 4, name: "Нано-сборка", desc: "Доход Фабрики имплантов ×3", targetId: 3, type: 'rev', mult: 3, cost: 750000, icon: "🧬" },
+            { id: 5, name: "Глобальный маркетинг", desc: "Весь доход империи ×2", targetId: 'all', type: 'rev', mult: 2, cost: 5000000, icon: "📡" },
+            { id: 6, name: "Космо-туризм VIP", desc: "Доход Орбитального отеля ×3", targetId: 4, type: 'rev', mult: 3, cost: 25000000, icon: "🌌" },
+            { id: 7, name: "ИИ-Монополия", desc: "Весь доход империи ×5", targetId: 'all', type: 'rev', mult: 5, cost: 150000000, icon: "🧠" }
+        ];
+
+        // Соперники для таблицы лидеров
+        const RIVALS = [
+            { name: "CryptoKing_99", avatar: "🦁", score: 500 },
+            { name: "NeonValkyrie", avatar: "🦊", score: 4500 },
+            { name: "CyberBaron", avatar: "🤖", score: 35000 },
+            { name: "QuantumLord", avatar: "🔮", score: 280000 },
+            { name: "Elon_MarsX", avatar: "🚀", score: 2500000 },
+            { name: "OmegaCorp", avatar: "💎", score: 45000000 },
+            { name: "ShadowSyndicate", avatar: "🐉", score: 850000000 },
+            { name: "GalacticEmperor", avatar: "👑", score: 25000000000 }
         ];
 
         // Состояние игры
         let game = {
+            playerName: "Вы (Босс)",
             money: 10,
             lifetimeEarnings: 10,
             shares: 0,
             activeTab: 'biz',
-            buyMult: 1, // 1, 10, 25
+            buyMult: 1,
+            overdriveTimer: 0,
+            overdriveCooldown: 0,
+            warpCooldown: 0,
             businesses: BIZ_CONFIG.map((b, idx) => ({
                 id: b.id,
                 level: idx === 0 ? 1 : 0,
@@ -582,7 +717,7 @@
             lastSave: Date.now()
         };
 
-        // Синтезатор звуков Web Audio API
+        // Синтезатор звуков
         let audioCtx = null;
         function playSound(type) {
             try {
@@ -614,7 +749,7 @@
             } catch (e) {}
         }
 
-        // Форматирование больших чисел
+        // Форматирование чисел
         function formatNum(num) {
             if (num < 1000) return Math.floor(num).toLocaleString('ru-RU');
             const suffixes = ["", "K", "M", "B", "T", "Qa", "Qi", "Sx"];
@@ -634,21 +769,21 @@
             return Math.floor(firstCost * (Math.pow(r, count) - 1) / (r - 1));
         }
 
-        // Расчет дохода за один цикл бизнеса
+        // Доход за один цикл
         function getCycleRevenue(bizIndex) {
             const cfg = BIZ_CONFIG[bizIndex];
             const state = game.businesses[bizIndex];
             if (state.level === 0) return 0;
 
-            let mult = 1 + (game.shares * 0.05); // +5% за каждую акцию престижа
-            // Бонусы за каждые 25 уровней
+            let mult = 1 + (game.shares * 0.05);
+            if (game.overdriveTimer > 0) mult *= 2;
+
             const milestones = Math.floor(state.level / 25);
             if (milestones > 0) mult *= Math.pow(2, milestones);
 
-            // Купленные апгрейды
             game.upgrades.forEach(upgId => {
                 const upg = UPGRADES_CONFIG.find(u => u.id === upgId);
-                if (upg && (upg.targetId === bizIndex || upg.targetId === 'all')) {
+                if (upg && upg.type === 'rev' && (upg.targetId === bizIndex || upg.targetId === 'all')) {
                     mult *= upg.mult;
                 }
             });
@@ -656,15 +791,24 @@
             return cfg.baseRev * state.level * mult;
         }
 
-        // Расчет времени цикла (ускоряется на каждых 50 уровнях)
+        // Время цикла
         function getCycleTime(bizIndex) {
             const cfg = BIZ_CONFIG[bizIndex];
             const lvl = game.businesses[bizIndex].level;
             const speedUps = Math.floor(lvl / 50);
-            return Math.max(0.25, cfg.baseTime / Math.pow(1.5, speedUps));
+            let time = cfg.baseTime / Math.pow(1.5, speedUps);
+
+            game.upgrades.forEach(upgId => {
+                const upg = UPGRADES_CONFIG.find(u => u.id === upgId);
+                if (upg && upg.type === 'speed' && (upg.targetId === bizIndex || upg.targetId === 'all')) {
+                    time /= upg.mult;
+                }
+            });
+
+            return Math.max(0.2, time);
         }
 
-        // Общий пассивный доход в секунду
+        // Общий доход в секунду
         function getTotalIncomePerSec() {
             let total = 0;
             game.businesses.forEach((b, idx) => {
@@ -684,7 +828,7 @@
             playSound('coin');
         }
 
-        // Покупка уровней бизнеса
+        // Покупка бизнеса
         function buyBusiness(idx) {
             const cost = getBulkCost(idx, game.buyMult);
             if (game.money < cost) return;
@@ -713,7 +857,7 @@
             updateHeader();
         }
 
-        // Покупка глобального улучшения
+        // Покупка технологии
         function buyUpgrade(upgId) {
             const upg = UPGRADES_CONFIG.find(u => u.id === upgId);
             if (!upg || game.upgrades.includes(upgId) || game.money < upg.cost) return;
@@ -725,13 +869,54 @@
             updateHeader();
         }
 
-        // Расчет доступных акций престижа
+        // Активные бусты
+        function activateOverdrive() {
+            if (game.overdriveCooldown > 0 || game.overdriveTimer > 0) return;
+            game.overdriveTimer = 30;
+            game.overdriveCooldown = 90;
+            playSound('buy');
+            renderCurrentTab();
+        }
+
+        function activateWarp() {
+            if (game.warpCooldown > 0) return;
+            const inc = getTotalIncomePerSec();
+            const reward = Math.max(250, inc * 180); // 3 минуты пассивного дохода
+            game.money += reward;
+            game.lifetimeEarnings += reward;
+            game.warpCooldown = 120;
+            playSound('coin');
+            alert(`🚀 Варп-прыжок завершен! Получено +${formatNum(reward)} 🪙`);
+            renderCurrentTab();
+            updateHeader();
+        }
+
+        // Бонусный дрон
+        function claimBonusDrone() {
+            document.getElementById('bonus-drone').style.display = 'none';
+            const inc = getTotalIncomePerSec();
+            const bonus = Math.max(100, inc * 45 + game.money * 0.15);
+            game.money += bonus;
+            game.lifetimeEarnings += bonus;
+            playSound('coin');
+            spawnFloatingText(window.innerWidth / 2, 120, `+${formatNum(bonus)} 🪙`);
+            updateHeader();
+        }
+
+        setInterval(() => {
+            const drone = document.getElementById('bonus-drone');
+            if (drone.style.display === 'none' && Math.random() < 0.35) {
+                drone.style.display = 'block';
+                setTimeout(() => { drone.style.display = 'none'; }, 12000);
+            }
+        }, 25000);
+
+        // Престиж
         function getClaimableShares() {
             const potential = Math.floor(Math.sqrt(game.lifetimeEarnings / 50000));
             return Math.max(0, potential - game.shares);
         }
 
-        // Сброс ради престижа
         function doPrestige() {
             const newShares = getClaimableShares();
             if (newShares <= 0) return;
@@ -754,7 +939,6 @@
             switchTab('biz');
         }
 
-        // Переключение множителя x1 -> x10 -> x25
         function cycleMultiplier() {
             const order = [1, 10, 25];
             const nextIdx = (order.indexOf(game.buyMult) + 1) % order.length;
@@ -763,7 +947,6 @@
             if (game.activeTab === 'biz') renderBusinesses();
         }
 
-        // Переключение вкладок
         function switchTab(tab) {
             game.activeTab = tab;
             document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
@@ -771,8 +954,9 @@
 
             const titles = {
                 biz: '🏭 Предприятия',
-                managers: '👔 Менеджеры (Автоматизация)',
-                upgrades: '⚡ Технологии и улучшения',
+                managers: '👔 Менеджеры (Авто)',
+                upgrades: '⚡ Бусты и технологии',
+                leaders: '🏆 Рейтинг магнатов',
                 prestige: '👑 Совет инвесторов'
             };
             document.getElementById('ui-tab-title').innerText = titles[tab];
@@ -785,10 +969,11 @@
             if (game.activeTab === 'biz') renderBusinesses();
             else if (game.activeTab === 'managers') renderManagers();
             else if (game.activeTab === 'upgrades') renderUpgrades();
+            else if (game.activeTab === 'leaders') renderLeaders();
             else if (game.activeTab === 'prestige') renderPrestige();
         }
 
-        // Рендер списка бизнесов
+        // Рендер бизнесов
         function renderBusinesses() {
             const container = document.getElementById('main-container');
             container.innerHTML = '';
@@ -812,7 +997,7 @@
                             <div class="biz-header-row">
                                 <span class="biz-name">${cfg.name}</span>
                                 <span class="manager-badge ${state.hasManager ? 'active' : 'manual'}">
-                                    ${state.hasManager ? '🤖 Авто' : '👆 Вручную'}
+                                    ${state.hasManager ? '🤖 Авто' : '👆 Тап'}
                                 </span>
                             </div>
                             <div class="progress-wrapper" onclick="startBusiness(${idx}, event)">
@@ -826,7 +1011,7 @@
                     </div>
                     <button class="buy-btn" id="buy-btn-${idx}" ${canAfford ? '' : 'disabled'} onclick="buyBusiness(${idx})">
                         <span>${state.level === 0 ? 'Открыть бизнес' : 'Улучшить ×' + game.buyMult}</span>
-                        <span>${formatNum(cost)} 🪙</span>
+                        <span class="price-tag">${formatNum(cost)} 🪙</span>
                     </button>
                 `;
                 container.appendChild(card);
@@ -851,19 +1036,58 @@
                         <div class="item-desc">Автоматизирует: ${cfg.name}</div>
                     </div>
                     ${state.hasManager 
-                        ? `<button class="action-pill-btn hired" disabled>Нанят ✓</button>`
-                        : `<button class="action-pill-btn" ${canHire ? '' : 'disabled'} onclick="hireManager(${idx})">${formatNum(cfg.managerCost)} 🪙</button>`
+                        ? `<button class="wide-action-btn hired" disabled>Менеджер нанят ✓</button>`
+                        : `<button class="wide-action-btn" ${canHire ? '' : 'disabled'} onclick="hireManager(${idx})">
+                               <span>Нанять специалиста</span>
+                               <span style="color: var(--gold);">${formatNum(cfg.managerCost)} 🪙</span>
+                           </button>`
                     }
                 `;
                 container.appendChild(card);
             });
         }
 
-        // Рендер улучшений
+        // Рендер бустов и улучшений
         function renderUpgrades() {
             const container = document.getElementById('main-container');
             container.innerHTML = '';
 
+            // Активные бусты сверху
+            const odCard = document.createElement('div');
+            odCard.className = 'item-card';
+            odCard.innerHTML = `
+                <div class="item-top-row">
+                    <div class="item-icon" style="background: rgba(236, 72, 153, 0.25);">⚡</div>
+                    <div class="item-details">
+                        <div class="item-title">Овердрайв ×2 (30 сек)</div>
+                        <div class="item-desc">Удваивает прибыль всех предприятий в реальном времени</div>
+                    </div>
+                </div>
+                <button class="wide-action-btn boost-style" ${game.overdriveCooldown > 0 || game.overdriveTimer > 0 ? 'disabled' : ''} onclick="activateOverdrive()">
+                    <span>${game.overdriveTimer > 0 ? 'Активен!' : (game.overdriveCooldown > 0 ? 'Перезарядка...' : 'Активировать бесплатно')}</span>
+                    <span>${game.overdriveTimer > 0 ? Math.ceil(game.overdriveTimer) + 'с' : (game.overdriveCooldown > 0 ? Math.ceil(game.overdriveCooldown) + 'с' : '⚡ СТАРТ')}</span>
+                </button>
+            `;
+            container.appendChild(odCard);
+
+            const warpCard = document.createElement('div');
+            warpCard.className = 'item-card';
+            warpCard.innerHTML = `
+                <div class="item-top-row">
+                    <div class="item-icon" style="background: rgba(6, 182, 212, 0.25);">🚀</div>
+                    <div class="item-details">
+                        <div class="item-title">Варп-прыжок времени</div>
+                        <div class="item-desc">Мгновенно начисляет пассивный доход за 3 минуты</div>
+                    </div>
+                </div>
+                <button class="wide-action-btn boost-style" ${game.warpCooldown > 0 ? 'disabled' : ''} onclick="activateWarp()">
+                    <span>${game.warpCooldown > 0 ? 'Перезарядка...' : 'Совершить прыжок'}</span>
+                    <span>${game.warpCooldown > 0 ? Math.ceil(game.warpCooldown) + 'с' : '🚀 ВПЕРЕД'}</span>
+                </button>
+            `;
+            container.appendChild(warpCard);
+
+            // Постоянные улучшения
             UPGRADES_CONFIG.forEach(upg => {
                 const bought = game.upgrades.includes(upg.id);
                 const canBuy = !bought && game.money >= upg.cost;
@@ -871,21 +1095,73 @@
                 const card = document.createElement('div');
                 card.className = 'item-card';
                 card.innerHTML = `
-                    <div class="item-icon">${upg.icon}</div>
-                    <div class="item-details">
-                        <div class="item-title">${upg.name}</div>
-                        <div class="item-desc">${upg.desc}</div>
+                    <div class="item-top-row">
+                        <div class="item-icon">${upg.icon}</div>
+                        <div class="item-details">
+                            <div class="item-title">${upg.name}</div>
+                            <div class="item-desc">${upg.desc}</div>
+                        </div>
                     </div>
                     ${bought 
-                        ? `<button class="action-pill-btn hired" disabled>Изучено ✓</button>`
-                        : `<button class="action-pill-btn" ${canBuy ? '' : 'disabled'} onclick="buyUpgrade(${upg.id})">${formatNum(upg.cost)} 🪙</button>`
+                        ? `<button class="wide-action-btn hired" disabled>Технология изучена ✓</button>`
+                        : `<button class="wide-action-btn" ${canBuy ? '' : 'disabled'} onclick="buyUpgrade(${upg.id})">
+                               <span>Изучить улучшение</span>
+                               <span style="color: var(--gold);">${formatNum(upg.cost)} 🪙</span>
+                           </button>`
                     }
                 `;
                 container.appendChild(card);
             });
         }
 
-        // Рендер экрана престижа
+        // Рендер таблицы лидеров
+        function renderLeaders() {
+            const container = document.getElementById('main-container');
+            container.innerHTML = '';
+
+            // Кнопка смены имени
+            const nameBtn = document.createElement('button');
+            nameBtn.className = 'buy-btn';
+            nameBtn.style.marginBottom = '4px';
+            nameBtn.innerHTML = `<span>✏️ Ваше имя: ${game.playerName}</span><span class="price-tag">Изменить</span>`;
+            nameBtn.onclick = () => {
+                const n = prompt("Введите ваше имя для таблицы лидеров:", game.playerName);
+                if (n && n.trim()) {
+                    game.playerName = n.trim();
+                    saveGame();
+                    renderLeaders();
+                }
+            };
+            container.appendChild(nameBtn);
+
+            // Объединяем соперников и игрока
+            const allPlayers = [
+                ...RIVALS.map(r => ({ ...r, isMe: false })),
+                { name: game.playerName, avatar: "👑", score: game.lifetimeEarnings, isMe: true }
+            ].sort((a, b) => b.score - a.score);
+
+            allPlayers.forEach((p, index) => {
+                const rank = index + 1;
+                const row = document.createElement('div');
+                row.className = 'leader-row' + (p.isMe ? ' me' : '');
+                row.innerHTML = `
+                    <div class="rank-badge ${rank <= 3 ? 'rank-' + rank : ''}">${rank}</div>
+                    <div style="font-size: 1.5rem;">${p.avatar}</div>
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-weight: 700; font-size: 0.92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            ${p.name}
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Состояние империи</div>
+                    </div>
+                    <div style="font-weight: 800; color: var(--gold); font-size: 0.92rem;">
+                        ${formatNum(p.score)} 🪙
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        // Рендер престижа
         function renderPrestige() {
             const container = document.getElementById('main-container');
             const claimable = getClaimableShares();
@@ -897,9 +1173,9 @@
                     <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">
                         Продайте текущие предприятия инвесторам, чтобы получить <b>Акции влияния</b>. Каждая акция навсегда увеличивает доход всей империи на <b>+5%</b>!
                     </p>
-                    <div style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 12px;">
-                        <div style="font-size: 0.8rem; color: var(--text-muted);">Текущий бонус: <b style="color: var(--accent-cyan);">+${game.shares * 5}%</b> (${game.shares} акций)</div>
-                        <div style="font-size: 1.1rem; font-weight: 800; color: var(--gold); margin-top: 6px;">
+                    <div style="background: rgba(0,0,0,0.35); padding: 14px; border-radius: 14px;">
+                        <div style="font-size: 0.85rem; color: var(--text-muted);">Текущий бонус: <b style="color: var(--accent-cyan);">+${game.shares * 5}%</b> (${game.shares} акций)</div>
+                        <div style="font-size: 1.15rem; font-weight: 800; color: var(--gold); margin-top: 6px;">
                             Доступно при сбросе: +${claimable} акций
                         </div>
                     </div>
@@ -910,7 +1186,6 @@
             `;
         }
 
-        // Анимация вылетающего текста
         function spawnFloatingText(x, y, text) {
             const el = document.createElement('div');
             el.className = 'floating-cash';
@@ -921,20 +1196,25 @@
             setTimeout(() => el.remove(), 850);
         }
 
-        // Обновление шапки и индикаторов доступности
         function updateHeader() {
             document.getElementById('ui-balance').innerText = formatNum(game.money) + ' 🪙';
             document.getElementById('ui-income').innerText = '+' + formatNum(getTotalIncomePerSec()) + ' 🪙/сек';
             document.getElementById('ui-prestige').innerText = `Акции: ${game.shares} (+${game.shares * 5}%)`;
 
-            // Точки уведомлений на вкладках
+            const banner = document.getElementById('ui-boost-banner');
+            if (game.overdriveTimer > 0) {
+                banner.style.display = 'block';
+                banner.innerText = `⚡ ОВЕРДРАЙВ ×2 АКТИВЕН: ${Math.ceil(game.overdriveTimer)}с`;
+            } else {
+                banner.style.display = 'none';
+            }
+
             const hasManager = BIZ_CONFIG.some((c, i) => !game.businesses[i].hasManager && game.money >= c.managerCost);
             document.getElementById('dot-managers').style.display = hasManager ? 'block' : 'none';
 
             const hasUpg = UPGRADES_CONFIG.some(u => !game.upgrades.includes(u.id) && game.money >= u.cost);
             document.getElementById('dot-upgrades').style.display = hasUpg ? 'block' : 'none';
 
-            // Обновление состояния кнопок покупки на лету
             if (game.activeTab === 'biz') {
                 BIZ_CONFIG.forEach((_, idx) => {
                     const btn = document.getElementById(`buy-btn-${idx}`);
@@ -943,12 +1223,16 @@
             }
         }
 
-        // Главный игровой цикл (20 кадров в секунду)
+        // Игровой цикл
         let lastTick = Date.now();
         setInterval(() => {
             const now = Date.now();
             const dt = (now - lastTick) / 1000;
             lastTick = now;
+
+            if (game.overdriveTimer > 0) game.overdriveTimer = Math.max(0, game.overdriveTimer - dt);
+            if (game.overdriveCooldown > 0) game.overdriveCooldown = Math.max(0, game.overdriveCooldown - dt);
+            if (game.warpCooldown > 0) game.warpCooldown = Math.max(0, game.warpCooldown - dt);
 
             let earnedThisTick = 0;
 
@@ -985,23 +1269,29 @@
             updateHeader();
         }, 50);
 
-        // Сохранение и загрузка прогресса + оффлайн-доход
+        // Обновление таймеров на вкладке бустов раз в секунду
+        setInterval(() => {
+            if (game.activeTab === 'upgrades' && (game.overdriveTimer > 0 || game.overdriveCooldown > 0 || game.warpCooldown > 0)) {
+                renderUpgrades();
+            }
+        }, 1000);
+
         function saveGame() {
             game.lastSave = Date.now();
-            localStorage.setItem('cyber_tycoon_save_v1', JSON.stringify(game));
+            localStorage.setItem('cyber_tycoon_save_v2', JSON.stringify(game));
         }
 
         function loadGame() {
-            const raw = localStorage.getItem('cyber_tycoon_save_v1');
+            const raw = localStorage.getItem('cyber_tycoon_save_v2') || localStorage.getItem('cyber_tycoon_save_v1');
             if (!raw) return;
             try {
                 const saved = JSON.parse(raw);
                 Object.assign(game, saved);
 
-                const offlineSec = Math.min(28800, (Date.now() - (game.lastSave || Date.now())) / 1000); // до 8 часов
+                const offlineSec = Math.min(28800, (Date.now() - (game.lastSave || Date.now())) / 1000);
                 const incomePerSec = getTotalIncomePerSec();
                 if (offlineSec > 10 && incomePerSec > 0) {
-                    const offlineEarned = Math.floor(offlineSec * incomePerSec * 0.75); // 75% эффективности оффлайн
+                    const offlineEarned = Math.floor(offlineSec * incomePerSec * 0.75);
                     if (offlineEarned > 0) {
                         game.money += offlineEarned;
                         game.lifetimeEarnings += offlineEarned;
@@ -1020,7 +1310,6 @@
         setInterval(saveGame, 5000);
         window.addEventListener('beforeunload', saveGame);
 
-        // Старт
         loadGame();
         updateHeader();
         renderCurrentTab();
