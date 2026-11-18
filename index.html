@@ -1,753 +1,1099 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Врата Хаоса</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    }
-
-    body {
-      background: #0f172a;
-      color: #e2e8f0;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-
-    /* ========== INTRO ========== */
-    #intro-screen {
-      position: fixed;
-      inset: 0;
-      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      transition: opacity 0.8s ease, visibility 0.8s;
-    }
-
-    #intro-screen.hide {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-    }
-
-    .intro-content {
-      text-align: center;
-      animation: introFadeIn 1.2s ease;
-    }
-
-    .intro-logo {
-      font-size: 78px;
-      animation: logoFloat 2.6s ease-in-out infinite;
-      margin-bottom: 14px;
-      filter: drop-shadow(0 0 18px rgba(168, 85, 247, 0.55));
-    }
-
-    .intro-title {
-      font-size: 36px;
-      font-weight: 800;
-      background: linear-gradient(90deg, #60a5fa, #a855f7, #f59e0b, #60a5fa);
-      background-size: 300% 100%;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: gradientMove 4s linear infinite;
-      margin-bottom: 8px;
-    }
-
-    .intro-subtitle {
-      color: #94a3b8;
-      font-size: 15px;
-      margin-bottom: 26px;
-    }
-
-    .intro-loader {
-      width: 44px;
-      height: 44px;
-      border: 4px solid #334155;
-      border-top-color: #a855f7;
-      border-radius: 50%;
-      margin: 0 auto;
-      animation: spin 0.85s linear infinite;
-    }
-
-    @keyframes introFadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes logoFloat {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-12px); }
-    }
-
-    @keyframes gradientMove {
-      0% { background-position: 0% 50%; }
-      100% { background-position: 300% 50%; }
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    /* ========== SCREENS ========== */
-    .screen {
-      display: none;
-      padding: 18px 14px 110px;
-      min-height: 100vh;
-    }
-
-    .screen.active {
-      display: block;
-      animation: screenIn 0.35s ease;
-    }
-
-    @keyframes screenIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* ========== HEADER ========== */
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 22px;
-      padding: 12px 14px;
-      background: rgba(30, 41, 59, 0.75);
-      border-radius: 16px;
-      backdrop-filter: blur(8px);
-    }
-
-    .player-info {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .player-name {
-      font-weight: 700;
-      font-size: 16px;
-    }
-
-    .player-level {
-      font-size: 13px;
-      color: #94a3b8;
-    }
-
-    .coins {
-      font-size: 15px;
-      font-weight: 600;
-      color: #fbbf24;
-    }
-
-    /* ========== GATES ========== */
-    .gates-title {
-      text-align: center;
-      font-size: 21px;
-      font-weight: 700;
-      margin-bottom: 18px;
-    }
-
-    .gates {
-      display: flex;
-      flex-direction: column;
-      gap: 13px;
-    }
-
-    .gate {
-      background: linear-gradient(145deg, #1e293b, #0f172a);
-      border: 2px solid #334155;
-      border-radius: 18px;
-      padding: 16px;
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-
-    .gate:active {
-      transform: scale(0.975);
-    }
-
-    .gate.easy { border-color: #22c55e; }
-    .gate.medium { border-color: #f59e0b; }
-    .gate.hard { border-color: #ef4444; }
-
-    .gate-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 6px;
-    }
-
-    .gate-name {
-      font-size: 17px;
-      font-weight: 700;
-    }
-
-    .gate-level {
-      font-size: 12px;
-      color: #94a3b8;
-    }
-
-    .gate-desc {
-      font-size: 13px;
-      color: #94a3b8;
-      margin-bottom: 8px;
-      line-height: 1.35;
-    }
-
-    .gate-reward {
-      font-size: 12px;
-      color: #a5b4fc;
-    }
-
-    /* ========== BATTLE ========== */
-    .battle-scene {
-      position: relative;
-      height: 230px;
-      display: flex;
-      align-items: center;
-      justify-content: space-around;
-      margin: 16px 0 24px;
-      background: radial-gradient(circle at center, #1e1b4b 0%, #0f172a 70%);
-      border-radius: 20px;
-      overflow: hidden;
-    }
-
-    .fighter {
-      font-size: 68px;
-      transition: transform 0.3s;
-      z-index: 2;
-    }
-
-    .fighter.attack {
-      animation: attackMove 0.42s ease;
-    }
-
-    .fighter.hit {
-      animation: hitShake 0.42s ease;
-    }
-
-    .fighter.victory {
-      animation: victoryJump 0.65s ease;
-    }
-
-    .fighter.dead {
-      animation: deadFade 0.55s forwards;
-    }
-
-    @keyframes attackMove {
-      0% { transform: translateX(0); }
-      40% { transform: translateX(48px) scale(1.12); }
-      100% { transform: translateX(0); }
-    }
-
-    @keyframes hitShake {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-11px) rotate(-5deg); }
-      75% { transform: translateX(11px) rotate(5deg); }
-    }
-
-    @keyframes victoryJump {
-      0%, 100% { transform: translateY(0) scale(1); }
-      50% { transform: translateY(-26px) scale(1.18); }
-    }
-
-    @keyframes deadFade {
-      to { opacity: 0; transform: scale(0.55) translateY(18px); }
-    }
-
-    .battle-log {
-      text-align: center;
-      min-height: 52px;
-      font-size: 14px;
-      color: #cbd5e1;
-      margin-bottom: 14px;
-      padding: 0 8px;
-    }
-
-    .hp-bars {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 10px;
-      padding: 0 6px;
-    }
-
-    .hp-bar {
-      width: 43%;
-    }
-
-    .hp-label {
-      font-size: 12px;
-      margin-bottom: 3px;
-      color: #94a3b8;
-    }
-
-    .hp-track {
-      height: 9px;
-      background: #1e293b;
-      border-radius: 20px;
-      overflow: hidden;
-    }
-
-    .hp-fill {
-      height: 100%;
-      border-radius: 20px;
-      transition: width 0.35s ease;
-    }
-
-    .hp-fill.player { background: linear-gradient(90deg, #22c55e, #4ade80); }
-    .hp-fill.monster { background: linear-gradient(90deg, #ef4444, #f87171); }
-
-    .battle-actions {
-      display: flex;
-      gap: 11px;
-      justify-content: center;
-    }
-
-    .btn {
-      padding: 13px 26px;
-      border: none;
-      border-radius: 14px;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform 0.15s;
-    }
-
-    .btn:active {
-      transform: scale(0.96);
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #7c3aed, #a855f7);
-      color: white;
-    }
-
-    .btn-secondary {
-      background: #1e293b;
-      color: #e2e8f0;
-      border: 1px solid #334155;
-    }
-
-    /* ========== LOOT ========== */
-    #loot-container {
-      display: none;
-      flex-wrap: wrap;
-      gap: 11px;
-      justify-content: center;
-      margin: 16px 0;
-      padding: 8px;
-    }
-
-    .loot-item {
-      background: #1e293b;
-      border-radius: 15px;
-      padding: 12px 14px;
-      text-align: center;
-      min-width: 100px;
-      opacity: 0;
-      transform: translateY(22px) scale(0.85);
-      animation: lootAppear 0.48s forwards;
-      border: 2px solid transparent;
-    }
-
-    @keyframes lootAppear {
-      to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
-    }
-
-    .loot-emoji {
-      font-size: 28px;
-      margin-bottom: 5px;
-    }
-
-    .loot-name {
-      font-weight: 600;
-      font-size: 12px;
-      margin-bottom: 2px;
-    }
-
-    .loot-amount {
-      font-size: 12px;
-      color: #94a3b8;
-    }
-
-    .rarity-simple {
-      border-color: #6b7280;
-      box-shadow: 0 0 9px rgba(156, 163, 175, 0.25);
-    }
-
-    .rarity-common {
-      border-color: #22c55e;
-      box-shadow: 0 0 11px rgba(34, 197, 94, 0.4);
-    }
-
-    .rarity-rare {
-      border-color: #3b82f6;
-      box-shadow: 0 0 13px rgba(59, 130, 246, 0.5);
-    }
-
-    .rarity-golden {
-      border-color: #f59e0b;
-      box-shadow: 0 0 15px rgba(245, 158, 11, 0.55);
-      animation: goldenPulse 2s infinite;
-    }
-
-    .rarity-legendary {
-      border-color: #a855f7;
-      box-shadow: 0 0 18px rgba(168, 85, 247, 0.65);
-      animation: legendaryGlow 1.7s infinite;
-    }
-
-    @keyframes goldenPulse {
-      0%, 100% { box-shadow: 0 0 11px rgba(245, 158, 11, 0.5); }
-      50% { box-shadow: 0 0 20px rgba(245, 158, 11, 0.85); }
-    }
-
-    @keyframes legendaryGlow {
-      0%, 100% { box-shadow: 0 0 13px rgba(168, 85, 247, 0.55); }
-      50% { box-shadow: 0 0 26px rgba(168, 85, 247, 0.95); }
-    }
-
-    /* ========== INVENTORY ========== */
-    .inventory-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-      gap: 11px;
-      margin-top: 14px;
-    }
-
-    .inv-item {
-      background: #1e293b;
-      border-radius: 14px;
-      padding: 13px;
-      text-align: center;
-      border: 2px solid #334155;
-    }
-
-    .inv-item .emoji {
-      font-size: 26px;
-      margin-bottom: 5px;
-    }
-
-    .inv-item .name {
-      font-size: 12px;
-      font-weight: 600;
-      margin-bottom: 3px;
-    }
-
-    .inv-item .count {
-      font-size: 12px;
-      color: #94a3b8;
-    }
-
-    .empty-inv {
-      text-align: center;
-      color: #64748b;
-      padding: 50px 20px;
-      font-size: 15px;
-      line-height: 1.5;
-    }
-
-    /* ========== BOTTOM NAV ========== */
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(15, 23, 42, 0.96);
-      backdrop-filter: blur(12px);
-      display: flex;
-      justify-content: space-around;
-      padding: 11px 0 18px;
-      border-top: 1px solid #1e293b;
-      z-index: 100;
-    }
-
-    .nav-btn {
-      background: none;
-      border: none;
-      color: #94a3b8;
-      font-size: 11px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 3px;
-      cursor: pointer;
-      padding: 5px 14px;
-    }
-
-    .nav-btn.active {
-      color: #a855f7;
-    }
-
-    .nav-btn span {
-      font-size: 21px;
-    }
-
-    /* ========== RESULT ========== */
-    .result-box {
-      text-align: center;
-      padding: 16px;
-      background: #1e293b;
-      border-radius: 16px;
-      margin: 12px 0;
-    }
-
-    .result-title {
-      font-size: 20px;
-      font-weight: 700;
-      margin-bottom: 6px;
-    }
-
-    .result-title.win { color: #4ade80; }
-    .result-title.lose { color: #f87171; }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#080a16">
+<title>Охотник за тенями</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#070914;--panel:#10152a;--panel2:#151d38;--line:#29375f;--cyan:#70eaff;--purple:#a875ff;--gold:#ffc96b;--text:#eef2ff;--muted:#91a0c4;--red:#ff667f;--green:#71f0b2}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 50% -20%,#22204e 0,#0a0d1c 45%,#050610 100%);color:var(--text);font-family:Inter,system-ui,Arial,sans-serif;min-height:100vh}
+button,input{font:inherit}
+button{cursor:pointer;color:inherit;border:1px solid #394a7b;background:linear-gradient(135deg,#202b50,#11182f);border-radius:12px;padding:10px 14px;transition:.18s}
+button:hover{border-color:var(--cyan);filter:brightness(1.15);transform:translateY(-1px)}
+button:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.hidden{display:none!important}
+.top{position:sticky;top:0;z-index:5;background:#090c19eF;border-bottom:1px solid #28365b;backdrop-filter:blur(14px);padding:12px max(14px,calc((100vw - 1250px)/2));display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font-weight:950;letter-spacing:2px;color:var(--cyan);text-shadow:0 0 18px #4ddcff88}
+.brand small{display:block;color:#a5b3d7;font-size:10px;letter-spacing:4px}
+.topstats{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.pill{border:1px solid #34436c;background:#131a30;border-radius:99px;padding:7px 11px;font-size:12px;color:#dce8ff}
+.wrap{max-width:1250px;margin:auto;padding:18px 14px 90px}
+.auth{max-width:460px;margin:8vh auto;padding:26px;background:#11172b;border:1px solid var(--line);border-radius:22px;box-shadow:0 25px 90px #0009}
+.auth h1{margin:0 0 8px;font-size:27px}
+.auth p{color:var(--muted);line-height:1.5}
+.field{width:100%;padding:13px;border-radius:10px;border:1px solid #34436c;background:#090e1e;color:white;margin:7px 0 12px}
+.primary{background:linear-gradient(110deg,#17617a,#5d35a2);border-color:#6edcf5;font-weight:800}
+.tabs{display:flex;gap:8px;overflow:auto;padding:5px 0 14px;position:sticky;top:60px;z-index:4;background:#090c19e8;backdrop-filter:blur(10px)}
+.tabs button{white-space:nowrap;font-size:13px}
+.tabs button.active{background:linear-gradient(120deg,#17647b,#57379a);border-color:var(--cyan);box-shadow:0 0 18px #53dfff33}
+.grid{display:grid;grid-template-columns:1.25fr .75fr;gap:14px}
+.panel{background:linear-gradient(145deg,#141b34ed,#0c1124f2);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 12px 35px #0004}
+.panel h2,.panel h3{margin:0 0 12px}
+.muted{color:var(--muted)}
+.hero{min-height:350px;position:relative;overflow:hidden;background:radial-gradient(ellipse at 50% 68%,#462a83 0,#1b1b49 30%,#0b1126 70%);text-align:center}
+.hero:before{content:"";position:absolute;inset:-50%;background:repeating-conic-gradient(from 0deg at 50% 50%,transparent 0 14deg,#9b8bff0b 15deg 16deg);animation:rotate 80s linear infinite}
+.hero:after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 55%,#080b18 100%);pointer-events:none}
+.hero>*{position:relative;z-index:1}
+.hero .classart{font-size:100px;filter:drop-shadow(0 0 25px #a77cff);margin:16px 0 4px;animation:float 3s ease-in-out infinite}
+.hero .enemy{font-size:82px;filter:drop-shadow(0 0 24px #a54dff);animation:monster 2s ease-in-out infinite}
+.hero .enemy.hit{animation:hit .28s}
+.bar{height:11px;border-radius:20px;background:#080c19;border:1px solid #34436c;overflow:hidden}
+.bar>i{display:block;height:100%;border-radius:20px;transition:width .35s}
+.hp{background:linear-gradient(90deg,#ed3e69,#ff8c87)}
+.xp{background:linear-gradient(90deg,#4d8dff,#b77aff)}
+.mana{background:linear-gradient(90deg,#24c5e8,#7778ff)}
+.statline{display:flex;justify-content:space-between;font-size:12px;color:#b6c4e7;margin:7px 0 4px}
+.actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.attack{background:linear-gradient(120deg,#8a2e9c,#4c3ab1);border-color:#d18aff;font-weight:900;padding:13px 25px;box-shadow:0 0 24px #9d4cff55}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px}
+.item{background:#0b1124;border:1px solid #2a3964;border-radius:13px;padding:12px;min-height:125px;position:relative}
+.item .ico{font-size:32px}
+.item b{display:block;margin:5px 0;font-size:13px}
+.item small{color:var(--muted)}
+.rarity-common{border-color:#71819d}
+.rarity-uncommon{border-color:#55d59c}
+.rarity-rare{border-color:#59aaff;box-shadow:inset 0 0 18px #328bff12}
+.rarity-epic{border-color:#b36cff;box-shadow:inset 0 0 18px #963dff19}
+.rarity-legendary{border-color:#ff9a46;box-shadow:0 0 13px #ff9a4622}
+.rarity-gold{border-color:#ffd34f;box-shadow:0 0 16px #ffd34f33}
+.rarity-mythic{border-color:#ff64d4;box-shadow:0 0 20px #ff64d455;animation:mythic 2.5s infinite}
+.rarity{font-size:10px;text-transform:uppercase;letter-spacing:1px}
+.rarity-common .rarity{color:#9eacc5}
+.rarity-uncommon .rarity{color:#65e6ac}
+.rarity-rare .rarity{color:#65b8ff}
+.rarity-epic .rarity{color:#c38aff}
+.rarity-legendary .rarity{color:#ffad63}
+.rarity-gold .rarity{color:#ffdf71}
+.rarity-mythic .rarity{color:#ff8fe1}
+.item button{font-size:11px;padding:6px 9px;margin-top:8px}
+.sectionhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:18px 0 10px}
+.classgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.classcard{text-align:center;padding:15px 8px;border-radius:14px;background:#0b1124;border:1px solid #34436c}
+.classcard.selected{border-color:var(--cyan);box-shadow:0 0 20px #56dfff33}
+.classcard .ico{font-size:45px}
+.classcard b{display:block;margin:7px 0}
+.classcard small{font-size:11px;color:var(--muted)}
+.dungeon{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:8px 0;padding:13px;background:#0b1124;border:1px solid #2a3964;border-radius:13px}
+.dungeon.locked{opacity:.48}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:20;background:#172445;border:1px solid var(--cyan);padding:12px 18px;border-radius:12px;box-shadow:0 8px 30px #0009;animation:fade .25s}
+.equipgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.slot{background:#0b1124;border:1px dashed #394a72;border-radius:12px;padding:12px;text-align:center;min-height:85px}
+.slot small{display:block;color:var(--muted);font-size:10px}
+.slot b{font-size:12px}
+.chatlog{height:220px;overflow:auto;background:#080d1b;border:1px solid #29385e;border-radius:12px;padding:10px;font-size:12px}
+.chatrow{display:flex;gap:7px;margin-top:8px}
+.chatrow input{flex:1;min-width:0}
+.leaderrow{display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #253252}
+.footer{text-align:center;color:#657395;font-size:11px;margin-top:30px}
+@keyframes float{50%{transform:translateY(-12px)}}
+@keyframes rotate{to{transform:rotate(360deg)}}
+@keyframes monster{50%{transform:translateY(-7px) scale(1.03)}}
+@keyframes hit{0%{transform:translateX(0);filter:brightness(3)}25%{transform:translateX(-12px)}50%{transform:translateX(10px)}100%{transform:translateX(0)}}
+@keyframes mythic{50%{box-shadow:0 0 25px #ff64d477}}
+@keyframes fade{from{opacity:0;bottom:0}to{opacity:1;bottom:20px}}
+@media(max-width:760px){.grid{grid-template-columns:1fr}.top{align-items:flex-start}.brand{font-size:13px}.topstats .pill{font-size:10px;padding:6px 8px}.tabs{top:56px}.classgrid{grid-template-columns:repeat(2,1fr)}.hero{min-height:320px}.equipgrid{grid-template-columns:repeat(2,1fr)}}
+</style>
 </head>
 <body>
+<header class="top"><div class="brand">⚔ ОХОТНИК ЗА ТЕНЯМИ<small>AWAKEN YOUR SHADOW</small></div><div class="topstats"><span class="pill">🪙 <b id="goldTop">0</b></span><span class="pill">💎 <b id="crystalTop">0</b></span><span class="pill">Ур. <b id="levelTop">1</b></span><button id="logoutBtn" class="hidden">Выйти</button></div></header>
+<main class="wrap">
+<section id="authView" class="auth"><h1>Врата открываются...</h1><p>Войди в свой аккаунт или создай охотника. Твой прогресс будет сохранён онлайн.</p><label>Email</label><input class="field" id="email" type="email" placeholder="name@example.com"><label>Пароль</label><input class="field" id="password" type="password" placeholder="Минимум 6 символов"><button class="primary" style="width:100%" id="loginBtn">Войти в игру</button><button style="width:100%;margin-top:8px" id="signupBtn">Создать аккаунт</button><p id="authMsg" aria-live="polite"></p><p class="muted" style="font-size:11px">Для онлайн-режима настрой Supabase по инструкции из файла README.</p></section>
+<section id="gameView" class="hidden">
+<nav class="tabs" id="tabs">
+<button class="active" data-tab="hunt">⚔ Охота</button><button data-tab="dungeons">🌀 Подземелья</button><button data-tab="inventory">🎒 Инвентарь</button><button data-tab="character">🧙 Персонаж</button><button data-tab="leaderboard">🏆 Рейтинг</button><button data-tab="chat">💬 Чат</button>
+</nav>
+<div id="tab-hunt">
+<div class="grid">
+<div class="panel hero">
+<div class="muted" id="zoneName">Тёмный лес · Ранг E</div><h2 id="enemyName">Теневой волк</h2><div class="enemy" id="enemyArt">🐺</div>
+<div class="statline"><span>Здоровье монстра</span><span id="enemyHpText">100 / 100</span></div><div class="bar"><i id="enemyHpBar" class="hp" style="width:100%"></i></div>
+<div class="actions"><button class="attack" id="attackBtn">⚔ АТАКОВАТЬ</button><button id="skillBtn">✨ Навык</button><button id="potionBtn">🧪 Зелье</button></div>
+<p class="muted" id="battleHint">Побеждай монстров, чтобы получать опыт и добычу.</p>
+</div>
+<div class="panel">
+<h2>Статус охотника</h2><div style="display:flex;justify-content:space-between;align-items:center"><div><b id="playerName">Новичок</b><div class="muted" id="classLabel">Класс не выбран</div></div><div style="font-size:42px" id="classIcon">❔</div></div>
+<div class="statline"><span>❤️ Здоровье</span><span id="hpText"></span></div><div class="bar"><i id="hpBar" class="hp"></i></div>
+<div class="statline"><span>🔷 Мана</span><span id="mpText"></span></div><div class="bar"><i id="mpBar" class="mana"></i></div>
+<div class="statline"><span>⭐ Опыт до уровня</span><span id="xpText"></span></div><div class="bar"><i id="xpBar" class="xp"></i></div>
+<div class="sectionhead"><b>Характеристики</b><span class="muted">Бонусы экипировки включены</span></div><div id="statsText" class="muted" style="line-height:1.9;font-size:13px"></div>
+</div></div>
+<div class="panel" style="margin-top:14px"><div class="sectionhead"><h3>Последние события</h3><span class="muted">Журнал охотника</span></div><div id="eventLog" class="muted" style="font-size:13px;line-height:1.8">Ты вошёл в мир теней.</div></div>
+</div>
+<div id="tab-dungeons" class="hidden"><div class="panel"><h2>🌀 Врата и подземелья</h2><p class="muted">Каждые врата требуют определённого уровня. Чем выше ранг, тем опаснее монстры и ценнее награда.</p><div id="dungeonList"></div></div></div>
+<div id="tab-inventory" class="hidden"><div class="panel"><div class="sectionhead"><h2>🎒 Инвентарь</h2><span id="invCount" class="muted"></span></div><div class="muted" style="margin-bottom:12px">Выбирай предмет, чтобы надеть его, улучшить или продать за золото.</div><div id="inventoryList" class="cards"></div></div></div>
+<div id="tab-character" class="hidden"><div class="panel"><h2>Пробуждение охотника</h2><p class="muted">Выбери класс. Сменить его после подтверждения нельзя — выбирай свой путь.</p><div class="classgrid" id="classChoices"></div><div class="sectionhead"><h3>Экипировка</h3><span class="muted">9 слотов</span></div><div id="equipmentGrid" class="equipgrid"></div><div class="sectionhead"><h3>Улучшение предмета</h3></div><p class="muted">Улучшение повышает силу предмета. При неудаче уровень улучшения не меняется.</p><div id="upgradeArea"></div></div></div>
+<div id="tab-leaderboard" class="hidden"><div class="panel"><h2>🏆 Лучшие охотники</h2><p class="muted">Рейтинг игроков по уровню и опыту.</p><div id="leaderList">Загрузка...</div><button id="refreshLeaders" style="margin-top:12px">Обновить рейтинг</button></div></div>
+<div id="tab-chat" class="hidden"><div class="panel"><h2>💬 Гильдейский канал</h2><p class="muted">Общайся с другими охотниками онлайн.</p><div id="chatLog" class="chatlog"></div><div class="chatrow"><input class="field" id="chatInput" placeholder="Напиши сообщение..." maxlength="240" style="margin:0"><button class="primary" id="sendChat">Отправить</button></div></div></div>
+</section>
+<div class="footer">ОХОТНИК ЗА ТЕНЯМИ · Версия 1.0 · Игровой прогресс сохраняется в Supabase</div>
+</main><div id="toast" class="toast hidden"></div><script>
+/* НАСТРОЙКИ SUPABASE */
+const SUPABASE_URL = "ВСТАВЬТЕ_ВАШ_SUPABASE_URL";
+const SUPABASE_ANON_KEY = "ВСТАВЬТЕ_ВАШ_PUBLISHABLE_KEY";
 
-  <!-- INTRO -->
-  <div id="intro-screen">
-    <div class="intro-content">
-      <div class="intro-logo">⚔️</div>
-      <h1 class="intro-title">Врата Хаоса</h1>
-      <p class="intro-subtitle">Загрузка мира...</p>
-      <div class="intro-loader"></div>
-    </div>
-  </div>
+const backendReady = window.supabase &&
+SUPABASE_URL.startsWith("https://") &&
+!SUPABASE_ANON_KEY.startsWith("ВСТАВЬТЕ");
 
-  <!-- MAIN SCREEN -->
-  <div id="screen-main" class="screen">
-    <div class="header">
-      <div class="player-info">
-        <div class="player-name" id="player-name">Герой</div>
-        <div class="player-level" id="player-level">Уровень 1</div>
-      </div>
-      <div class="coins" id="player-coins">🪙 0</div>
-    </div>
+const db = backendReady
+? window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY)
+: null;
 
-    <div class="gates-title">Выбери Врата</div>
+/* КЛАССЫ */
+const CLASSES = {
+ mage:{
+  name:"Маг",icon:"🧙",
+  desc:"Мощная магия и высокий запас маны",
+  hp:95,mp:150,atk:17,def:5,crit:12,
+  skill:"Метеорит"
+ },
+ fighter:{
+  name:"Боец",icon:"⚔️",
+  desc:"Сбалансированный ближний бой",
+  hp:130,mp:80,atk:15,def:10,crit:8,
+  skill:"Рывок клинка"
+ },
+ archer:{
+  name:"Стрелок",icon:"🏹",
+  desc:"Высокий критический урон",
+  hp:105,mp:100,atk:16,def:7,crit:22,
+  skill:"Залп стрел"
+ },
+ tank:{
+  name:"Танк",icon:"🛡️",
+  desc:"Огромная защита и здоровье",
+  hp:180,mp:70,atk:10,def:19,crit:4,
+  skill:"Сокрушение"
+ }
+};
 
-    <div class="gates">
-      <div class="gate easy" onclick="startBattle('easy')">
-        <div class="gate-header">
-          <div class="gate-name">🟢 Лёгкие Врата</div>
-          <div class="gate-level">Ур. 1–5</div>
-        </div>
-        <div class="gate-desc">Слабые монстры. Хорошо для фарма монет и простых предметов.</div>
-        <div class="gate-reward">Награда: монеты + простые/обычные предметы</div>
-      </div>
+/* СЛОТЫ СНАРЯЖЕНИЯ */
+const SLOTS = [
+ "Оружие","Шлем","Туловище",
+ "Штаны","Ботинки","Перчатки",
+ "Ожерелье","Серьга","Кольцо"
+];
 
-      <div class="gate medium" onclick="startBattle('medium')">
-        <div class="gate-header">
-          <div class="gate-name">🟡 Средние Врата</div>
-          <div class="gate-level">Ур. 6–12</div>
-        </div>
-        <div class="gate-desc">Опасные противники. Шанс на редкие и золотые предметы.</div>
-        <div class="gate-reward">Награда: редкие + шанс золотых</div>
-      </div>
+/* РЕДКОСТЬ ПРЕДМЕТОВ */
+const RARITIES = [
+ {id:"common",name:"Обычный",chance:45,mult:1,color:"#9eacc5"},
+ {id:"uncommon",name:"Необычный",chance:24,mult:1.25,color:"#65e6ac"},
+ {id:"rare",name:"Редкий",chance:15,mult:1.6,color:"#65b8ff"},
+ {id:"epic",name:"Эпический",chance:9,mult:2.2,color:"#c38aff"},
+ {id:"legendary",name:"Легендарный",chance:4,mult:3.2,color:"#ffad63"},
+ {id:"gold",name:"Золотой",chance:2,mult:4.2,color:"#ffdf71"},
+ {id:"mythic",name:"Мифический",chance:1,mult:6,color:"#ff8fe1"}
+];
 
-      <div class="gate hard" onclick="startBattle('hard')">
-        <div class="gate-header">
-          <div class="gate-name">🔴 Сложные Врата</div>
-          <div class="gate-level">Ур. 13+</div>
-        </div>
-        <div class="gate-desc">Элитные монстры. Высокий шанс легендарного лута.</div>
-        <div class="gate-reward">Награда: золотые + легендарные</div>
-      </div>
-    </div>
-  </div>
+/* НАЗВАНИЯ ПРЕДМЕТОВ */
+const ITEM_NAMES = {
+ Оружие:["Клинок охотника","Посох бездны","Лук сумрачной луны"],
+ Шлем:["Шлем стража","Корона теней"],
+ Туловище:["Доспех охотника","Мантия бездны"],
+ Штаны:["Поножи стража","Штаны ночи"],
+ Ботинки:["Сапоги стремительности","Шаги тени"],
+ Перчатки:["Перчатки силы","Хватка охотника"],
+ Ожерелье:["Амулет души","Ожерелье портала"],
+ Серьга:["Серьга древнего духа","Печать тьмы"],
+ Кольцо:["Кольцо силы","Перстень охотника"]
+};
 
-  <!-- BATTLE SCREEN -->
-  <div id="screen-battle" class="screen">
-    <div class="header">
-      <div class="player-info">
-        <div class="player-name" id="battle-player-name">Герой</div>
-        <div class="player-level" id="battle-player-level">Уровень 1</div>
-      </div>
-      <div class="coins" id="battle-coins">🪙 0</div>
-    </div>
+const ICONS = {
+ Оружие:"⚔️",
+ Шлем:"🪖",
+ Туловище:"🦺",
+ Штаны:"👖",
+ Ботинки:"🥾",
+ Перчатки:"🧤",
+ Ожерелье:"📿",
+ Серьга:"💠",
+ Кольцо:"💍",
+ Артефакт:"🔮"
+};
 
-    <div class="hp-bars">
-      <div class="hp-bar">
-        <div class="hp-label">Ты</div>
-        <div class="hp-track"><div class="hp-fill player" id="player-hp" style="width: 100%"></div></div>
-      </div>
-      <div class="hp-bar">
-        <div class="hp-label" id="monster-name-label">Монстр</div>
-        <div class="hp-track"><div class="hp-fill monster" id="monster-hp" style="width: 100%"></div></div>
-      </div>
-    </div>
+/* ПОДЗЕМЕЛЬЯ */
+const DUNGEONS = [
+ {name:"Забытый лес",rank:"E",level:1,enemy:"Теневой волк",art:"🐺",hp:75,atk:7,gold:20,xp:30},
+ {name:"Затонувшие руины",rank:"D",level:5,enemy:"Страж руин",art:"🗿",hp:170,atk:13,gold:55,xp:75},
+ {name:"Пещера пепла",rank:"C",level:10,enemy:"Пепельный голем",art:"👹",hp:330,atk:22,gold:100,xp:140},
+ {name:"Башня некроманта",rank:"B",level:18,enemy:"Костяной маг",art:"💀",hp:620,atk:34,gold:180,xp:250},
+ {name:"Замок демонов",rank:"A",level:28,enemy:"Демон-разрушитель",art:"😈",hp:1050,atk:48,gold:300,xp:420},
+ {name:"Разлом бездны",rank:"S",level:42,enemy:"Древний дракон",art:"🐉",hp:1900,atk:70,gold:520,xp:750},
+ {name:"Врата монарха",rank:"SS",level:60,enemy:"Повелитель теней",art:"👿",hp:3500,atk:100,gold:900,xp:1300},
+ {name:"Измерение хаоса",rank:"SSS",level:85,enemy:"Древний монарх",art:"👑",hp:6500,atk:150,gold:1800,xp:2600}
+];
 
-    <div class="battle-scene">
-      <div class="fighter player-fighter" id="player-fighter">🧙</div>
-      <div class="fighter monster-fighter" id="monster-fighter">👹</div>
-    </div>
+/* ИГРОВЫЕ ДАННЫЕ */
+const fresh = () => ({
+ name:"Охотник",
+ classId:null,
+ level:1,
+ xp:0,
+ gold:100,
+ crystals:5,
+ hp:100,
+ mp:100,
+ baseStats:{},
+ inventory:[],
+ equipment:{},
+ potions:3,
+ selectedDungeon:0,
+ kills:0,
+ createdAt:new Date().toISOString()
+});
 
-    <div class="battle-log" id="battle-log">Бой начинается...</div>
+let state=fresh();
+let user=null;
+let enemy=null;
+let enemyTimer=null;
+let saveTimer=null;
+let selectedUpgrade=null;
+let chatChannel=null;
 
-    <div id="loot-container"></div>
+/* ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ */
+const $ = id => document.getElementById(id);
 
-    <div class="result-box" id="result-box" style="display: none;">
-      <div class="result-title" id="result-title"></div>
-      <div id="result-text"></div>
-    </div>
+function toast(s){
+ $("toast").textContent=s;
+ $("toast").classList.remove("hidden");
+ setTimeout(()=>$("toast").classList.add("hidden"),2300);
+}
 
-    <div class="battle-actions" id="battle-actions">
-      <button class="btn btn-primary" onclick="playerAttack()">Атаковать</button>
-      <button class="btn btn-secondary" onclick="backToMain()">Сбежать</button>
-    </div>
+function log(s){
+ $("eventLog").innerHTML =
+ `<div>› ${new Date().toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"})} — ${s}</div>`+
+ $("eventLog").innerHTML;
+}
 
-    <div class="battle-actions" id="after-battle-actions" style="display: none;">
-      <button class="btn btn-primary" onclick="backToMain()">Вернуться</button>
-    </div>
-  </div>
+/* ТРЕБОВАНИЯ ДЛЯ УРОВНЯ */
+function xpNeed(l=state.level){
+ return Math.floor(100*Math.pow(l,1.55));
+}
 
-  <!-- INVENTORY SCREEN -->
-  <div id="screen-inventory" class="screen">
-    <div class="header">
-      <div class="player-info">
-        <div class="player-name">Инвентарь</div>
-        <div class="player-level" id="inv-level">Уровень 1</div>
-      </div>
-      <div class="coins" id="inv-coins">🪙 0</div>
-    </div>
+/* БОНУСЫ СНАРЯЖЕНИЯ */
+function equippedBonus(){
+ let b={atk:0,def:0,hp:0,mp:0,crit:0};
 
-    <div id="inventory-content">
-      <div class="empty-inv">Инвентарь пуст.<br>Побеждай монстров, чтобы получать лут!</div>
-    </div>
-  </div>
+ Object.values(state.equipment||{}).forEach(it=>{
+  if(it){
+   let m=RARITIES.find(r=>r.id===it.rarity)?.mult||1;
+   let v=(it.power||1)*(1+(it.upgrade||0)*.18)*m;
 
-  <!-- BOTTOM NAV -->
-  <div class="bottom-nav">
-    <button class="nav-btn active" onclick="showScreen('main')">
-      <span>⚔️</span>
-      Врата
+   b.atk+=Math.round(v*.8);
+   b.def+=Math.round(v*.35);
+   b.hp+=Math.round(v*2);
+
+   if(it.rarity==="mythic") b.crit+=2;
+  }
+ });
+
+ return b;
+}
+
+/* ХАРАКТЕРИСТИКИ ИГРОКА */
+function stats(){
+ let c=CLASSES[state.classId]||
+ {hp:100,mp:100,atk:10,def:5,crit:5};
+
+ let b=equippedBonus();
+
+ return {
+  maxHp:c.hp+state.level*12+b.hp,
+  maxMp:c.mp+state.level*7,
+  atk:c.atk+Math.floor(state.level*2.2)+b.atk,
+  def:c.def+Math.floor(state.level*.8)+b.def,
+  crit:c.crit+b.crit
+ };
+}
+
+/* ОБНОВЛЕНИЕ ИНТЕРФЕЙСА */
+function updateBars(){
+ let s=stats();
+
+ state.hp=Math.min(state.hp,s.maxHp);
+ state.mp=Math.min(state.mp,s.maxMp);
+
+ $("hpText").textContent=`${Math.ceil(state.hp)} / ${s.maxHp}`;
+ $("mpText").textContent=`${Math.ceil(state.mp)} / ${s.maxMp}`;
+ $("xpText").textContent=`${state.xp} / ${xpNeed()}`;
+
+ $("hpBar").style.width=100*state.hp/s.maxHp+"%";
+ $("mpBar").style.width=100*state.mp/s.maxMp+"%";
+ $("xpBar").style.width=100*state.xp/xpNeed()+"%";
+
+ $("statsText").innerHTML=
+ `⚔️ Атака: <b>${s.atk}</b><br>
+ 🛡️ Защита: <b>${s.def}</b><br>
+ 🎯 Критический шанс: <b>${s.crit}%</b><br>
+ 💚 Зелья: <b>${state.potions}</b>`;
+
+ $("goldTop").textContent=state.gold;
+ $("crystalTop").textContent=state.crystals;
+ $("levelTop").textContent=state.level;
+
+ $("playerName").textContent=state.name;
+ $("classLabel").textContent=state.classId?
+ CLASSES[state.classId].name:"Класс не выбран";
+
+ $("classIcon").textContent=state.classId?
+ CLASSES[state.classId].icon:"❔";
+}/* ВЫПАДЕНИЕ РЕДКОСТИ */
+function rollRarity(){
+ let n=Math.random()*100;
+
+ for(let r of RARITIES){
+  if(n<r.chance) return r;
+  n-=r.chance;
+ }
+
+ return RARITIES[0];
+}
+
+/* СОЗДАНИЕ ПРЕДМЕТА */
+function makeItem(force){
+ let r=force||rollRarity();
+
+ let slot=SLOTS[Math.floor(Math.random()*SLOTS.length)];
+ let names=ITEM_NAMES[slot];
+
+ return {
+  id:crypto.randomUUID(),
+  name:names[Math.floor(Math.random()*names.length)],
+  slot,
+  rarity:r.id,
+  power:Math.max(2,Math.floor((state.level+2)*(0.7+Math.random()*.6))),
+  upgrade:0,
+  icon:ICONS[slot],
+  created:Date.now()
+ };
+}
+
+/* ВЫДАЧА ДОБЫЧИ */
+function grantLoot(){
+ let item=makeItem();
+
+ state.inventory.unshift(item);
+
+ let extra=Math.random()<.13?
+ {
+  ...makeItem(),
+  slot:"Артефакт",
+  name:"Осколок древнего артефакта",
+  icon:"🔮"
+ }:null;
+
+ if(extra) state.inventory.unshift(extra);
+
+ toast(
+  `Добыча: ${item.name} · ${
+   RARITIES.find(x=>x.id===item.rarity).name
+  }`
+ );
+
+ log(
+  `Получен предмет: ${item.name} (${
+   RARITIES.find(x=>x.id===item.rarity).name
+  })`
+ );
+
+ renderInventory();
+}
+
+/* СОЗДАНИЕ МОНСТРА */
+function spawnEnemy(){
+ let d=DUNGEONS[state.selectedDungeon]||DUNGEONS[0];
+
+ enemy={
+  name:d.enemy,
+  art:d.art,
+  maxHp:Math.floor(
+   d.hp*(1+Math.max(0,state.level-d.level)*.09)
+  ),
+  hp:Math.floor(
+   d.hp*(1+Math.max(0,state.level-d.level)*.09)
+  ),
+  atk:d.atk,
+  base:d
+ };
+
+ $("enemyName").textContent=enemy.name;
+ $("enemyArt").textContent=enemy.art;
+ $("zoneName").textContent=`${d.name} · Ранг ${d.rank}`;
+
+ drawEnemy();
+}
+
+/* ЗДОРОВЬЕ МОНСТРА */
+function drawEnemy(){
+ $("enemyHpText").textContent=
+ `${Math.max(0,Math.ceil(enemy.hp))} / ${enemy.maxHp}`;
+
+ $("enemyHpBar").style.width=
+ Math.max(0,100*enemy.hp/enemy.maxHp)+"%";
+}
+
+/* АТАКА */
+function attack(mult=1){
+ if(!state.classId){
+  toast("Сначала выбери класс охотника");
+  showTab("character");
+  return;
+ }
+
+ if(!enemy||enemy.hp<=0) return;
+
+ let s=stats();
+
+ let crit=Math.random()*100<s.crit;
+
+ let dmg=Math.max(
+  1,
+  Math.floor(
+   s.atk*mult*(crit?2:1)*(0.85+Math.random()*.3)
+  )
+ );
+
+ enemy.hp-=dmg;
+
+ $("enemyArt").classList.remove("hit");
+ void $("enemyArt").offsetWidth;
+ $("enemyArt").classList.add("hit");
+
+ drawEnemy();
+
+ log(
+  `${crit?"КРИТ! ":""}Ты наносишь ${dmg} урона.`
+ );
+
+ if(enemy.hp<=0){
+  winEnemy();
+ }else{
+  setTimeout(enemyAttack,450);
+ }
+}
+
+/* АТАКА МОНСТРА */
+function enemyAttack(){
+ if(!enemy||enemy.hp<=0) return;
+
+ let s=stats();
+
+ let dmg=Math.max(1,enemy.atk-s.def);
+
+ state.hp-=dmg;
+
+ log(`${enemy.name} наносит ${dmg} урона.`);
+
+ if(state.hp<=0){
+  state.hp=1;
+
+  state.gold=Math.max(
+   0,
+   state.gold-Math.floor(state.gold*.05)
+  );
+
+  toast("Ты потерпел поражение. Потеряно 5% золота.");
+
+  log("Охотник отступил, восстановлено немного сил.");
+
+  state.hp=Math.floor(stats().maxHp*.35);
+ }
+
+ render();
+ save();
+}
+
+/* ПОБЕДА НАД МОНСТРОМ */
+function winEnemy(){
+ let d=enemy.base;
+
+ state.kills++;
+
+ state.gold+=d.gold;
+ state.xp+=d.xp;
+
+ state.mp=Math.min(stats().maxMp,state.mp+8);
+
+ log(
+  `Победа! +${d.xp} опыта, +${d.gold} золота.`
+ );
+
+ if(Math.random()<.78){
+  grantLoot();
+ }
+
+ if(Math.random()<.12){
+  state.crystals++;
+  toast("Найден кристалл портала!");
+ }
+
+ /* ПОВЫШЕНИЕ УРОВНЯ */
+ while(state.xp>=xpNeed()){
+  state.xp-=xpNeed();
+
+  state.level++;
+
+  state.hp=stats().maxHp;
+  state.mp=stats().maxMp;
+
+  toast(
+   `✨ УРОВЕНЬ ПОВЫШЕН! Теперь ${state.level} уровень`
+  );
+
+  log(
+   `Пробуждение! Достигнут ${state.level} уровень.`
+  );
+ }
+
+ spawnEnemy();
+
+ render();
+ save();
+}
+
+/* ОСОБЫЙ НАВЫК */
+function useSkill(){
+ if(!state.classId){
+  return toast("Выбери класс");
+ }
+
+ if(state.mp<25){
+  return toast("Недостаточно маны");
+ }
+
+ state.mp-=25;
+
+ attack(2.4);
+
+ render();
+}
+
+/* ЗЕЛЬЕ ЗДОРОВЬЯ */
+function usePotion(){
+ if(state.potions<=0){
+  return toast("Зелья закончились");
+ }
+
+ let s=stats();
+
+ if(state.hp>=s.maxHp){
+  return toast("Здоровье уже полное");
+ }
+
+ state.potions--;
+
+ state.hp=Math.min(
+  s.maxHp,
+  state.hp+Math.floor(s.maxHp*.4)
+ );
+
+ toast("Зелье восстановило здоровье");
+
+ render();
+ save();
+}function render() {
+  updateBars();
+
+  const attackBtn = document.getElementById("attackBtn");
+  const skillBtn = document.getElementById("skillBtn");
+  const potionBtn = document.getElementById("potionBtn");
+
+  if (attackBtn) attackBtn.disabled = !state.enemy || state.hp <= 0;
+  if (skillBtn) skillBtn.disabled = !state.enemy || state.mana < 25 || state.hp <= 0;
+  if (potionBtn) potionBtn.disabled = state.potions <= 0 || state.hp <= 0;
+
+  renderClasses();
+  renderDungeons();
+  renderInventory();
+  renderEquipment();
+}
+
+function renderClasses() {
+  const container = document.getElementById("classList");
+  if (!container) return;
+
+  container.innerHTML = Object.entries(CLASSES).map(([id, c]) => `
+    <button class="class-card ${state.classId === id ? "selected" : ""}"
+      onclick="chooseClass('${id}')">
+      <strong>${c.name}</strong>
+      <span>${c.description}</span>
+      <small>❤️ ${c.hp} · ⚔️ ${c.attack} · 🔮 ${c.mana}</small>
     </button>
-    <button class="nav-btn" onclick="showScreen('inventory')">
-      <span>🎒</span>
-      Инвентарь
-    </button>
-  </div>
+  `).join("");
+}
 
-  <script>
-    // ====================== НАСТРОЙКИ ======================
-    // ВСТАВЬ СВОИ ДАННЫЕ ОТ SUPABASE
-    const SUPABASE_URL = "https://optytvvqevlzmzqlcgah.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_NrlPlzEcCy0SM9G5MXHvXQ_XDvs2RJM";
+function chooseClass(id) {
+  if (!CLASSES[id]) return;
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  if (state.classId && state.classId !== id) {
+    showToast("Класс уже выбран. Изменить его нельзя.");
+    return;
+  }
 
-    // ====================== ПРЕДМЕТЫ ======================
-    const ITEMS = {
-      "Монеты":                { rarity: "simple",    emoji: "🪙", color: "#9ca3af", chance: 50 },
-      "Малое зелье лечения":  { rarity: "simple",    emoji: "🧪", color: "#9ca3af", chance: 28 },
-      "Малое зелье маны":     { rarity: "simple",    emoji: "💧", color: "#9ca3af", chance: 22 },
+  state.classId = id;
+  const c = CLASSES[id];
 
-      "Зелье лечения":        { rarity: "common",    emoji: "❤️", color: "#22c55e", chance: 16 },
-      "Деревянный щит":       { rarity: "common",    emoji: "🛡️", color: "#22c55e", chance: 11 },
-      "Кольцо силы":          { rarity: "common",    emoji: "💍", color: "#22c55e", chance: 9 },
+  state.hp = c.hp;
+  state.mana = c.mana;
+  state.enemy = null;
 
-      "Стальной меч":         { rarity: "rare",      emoji: "⚔️", color: "#3b82f6", chance: 6.5 },
-      "Кольчуга":             { rarity: "rare",      emoji: "🛡️", color: "#3b82f6", chance: 5.5 },
-      "Редкий камень":        { rarity: "rare",      emoji: "💎", color: "#3b82f6", chance: 4.5 },
+  save();
+  render();
+  showToast("Класс выбран: " + c.name);
+}
 
-      "Золотой меч":          { rarity: "golden",    emoji: "🗡️", color: "#f59e0b", chance: 2.2 },
-      "Золотая броня":        { rarity: "golden",    emoji: "✨", color: "#f59e0b", chance: 1.8 },
-      "Мешок золота":         { rarity: "golden",    emoji: "💰", color: "#f59e0b", chance: 1.5 },
+function renderDungeons() {
+  const container = document.getElementById("dungeonList");
+  if (!container) return;
 
-      "Клинок Дракона":       { rarity: "legendary", emoji: "🔥", color: "#a855f7", chance: 0.6 },
-      "Корона Вечности":      { rarity: "legendary", emoji: "👑", color: "#a855f7", chance: 0.35 },
-      "Камень Бога":          { rarity: "legendary", emoji: "🌌", color: "#a855f7", chance: 0.25 }
-    };
+  container.innerHTML = DUNGEONS.map(d => {
+    const unlocked = state.level >= d.level;
 
-    // ====================== МОНСТРЫ ======================
-    const MONSTERS = {
-      easy: [
-        { name: "Гоблин",     emoji: "👺", hp: 40,  atk: 6,  level: 2 },
-        { name: "Скелет",     emoji: "💀", hp: 55,  atk: 8,  level: 3 },
-        { name: "Слайм",      emoji: "🟢", hp: 70,  atk: 5,  level: 4 },
-        { name: "Волк",       emoji: "🐺", hp: 65,  atk: 10, level: 5 }
-      ],
-      medium: [
-        { name: "Орк",        emoji: "👹", hp: 120, atk: 14, level: 8 },
-        { name: "Тролль",     emoji: "🧌", hp: 160, atk: 12, level: 9 },
-        { name: "Тёмный маг", emoji: "🧙‍♂️", hp: 100, atk: 18, level: 10 },
-        { name: "Минотавр",   emoji: "🐂", hp: 180, atk: 16, level: 11 }
-      ],
-      hard: [
-        { name: "Дракон",     emoji: "🐉", hp: 280, atk: 22, level: 15 },
-        { name: "Лич",        emoji: "☠️", hp: 220, atk: 26, level: 16 },
-        { name: "Демон",      emoji: "😈", hp: 300, atk: 24, level: 17 },
-        { name: "Титан",      emoji: "🗿", hp: 350, atk: 20, level: 18 }
-      ]
-    };
+    return `
+      <div class="dungeon-card">
+        <div>
+          <strong>${d.name}</strong>
+          <p>${d.description}</p>
+          <small>Требуемый уровень: ${d.level}</small>
+        </div>
+        <button ${!unlocked ? "disabled" : ""}
+          onclick="enterDungeon('${d.id}')">
+          ${unlocked ? "Войти" : "Закрыто"}
+        </button>
+      </div>
+    `;
+  }).join("");
+}
 
-    // ====================== СОСТОЯНИЕ ======================
-    let character = null;
-    let currentMonster = null;
-    let playerHp = 100;
-    let monsterHp = 0;
-    let battleOver = false;
+function enterDungeon(id) {
+  const dungeon = DUNGEONS.find(d => d.id === id);
+  if (!dungeon) return;
 
-    // ====================== ИНИЦИАЛИЗАЦИЯ ======================
-    async function init() {
-      try {
-        // Telegram WebApp
-        if (window.Telegram && window.Telegram.WebApp) {
-          window.Telegram.WebApp.ready();
-          window.Telegram.WebApp.expand();
-        }
+  if (state.level < dungeon.level) {
+    showToast("Недостаточный уровень!");
+    return;
+  }
 
-        // Получаем telegram_id
-        let telegramId = null;
+  if (state.enemy) {
+    showToast("Сначала закончи текущий бой!");
+    return;
+  }
 
-        if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe?.user?.id) {
-          telegramId = window.Telegram.WebApp.initDataUnsafe.user.id.toString();
-        } else {
-          telegramId = localStorage.getItem("telegram_id");
-        }
+  state.dungeon = id;
+  spawnEnemy(dungeon.enemyLevel);
+  showToast("Ты вошёл в подземелье!");
+  save();
+}
 
-        if (!telegramId) {
-          telegramId = "123456789"; // тестовый ID, чтобы не зависало
-          localStorage.setItem("telegram_id", telegramId);
-        }
+function renderInventory() {
+  const container = document.getElementById("inventoryList");
+  if (!container) return;
 
-        // Загружаем персонажа
-        const { data, error } = await supabase
-          .from("characters1")
-          .select("*")
-          .eq("telegram_id", telegramId)
-          .maybeSingle();
+  if (!state.inventory.length) {
+    container.innerHTML = "<p>Инвентарь пуст. Побеждай монстров и получай добычу!</p>";
+    return;
+  }
 
-        if (data) {
-          character = data;
-          if (!character.inventory) character.inventory = {};
-        } else {
-          // Создаём нового
-          const { data: newChar, error: createError } = await supabase
-            .from("characters1")
-            .insert({
-              telegram_id: telegramId,
-              name: "Герой",
-              level: 1,
-              exp: 0,
-              coins: 50,
-              inventory: {}
-            })
-            .select()
-            .maybeSingle();
+  container.innerHTML = state.inventory.map((item, index) => `
+    <div class="item-card rarity-${item.rarity}">
+      <div>
+        <strong>${item.name}</strong>
+        <small>${item.type} · ${item.rarityName}</small>
+        <p>⚔️ ${item.attack || 0} · 🛡️ ${item.defense || 0}</p>
+        <small>Цена продажи: ${item.price} золота</small>
+      </div>
+      <div class="item-actions">
+        <button onclick="equip(${index})">Надеть</button>
+        <button onclick="sell(${index})">Продать</button>
+      </div>
+    </div>
+  `).join("");
+}
 
-          if (newChar) {
-            character = newChar;
-          } else {
-            // Если Supabase не ответил — созд
+function equip(index) {
+  const item = state.inventory[index];
+  if (!item) return;
+
+  const slot = item.type;
+  if (!["weapon", "armor", "accessory"].includes(slot)) {
+    showToast("Этот предмет нельзя экипировать.");
+    return;
+  }
+
+  const previous = state.equipment[slot];
+
+  if (previous) {
+    state.inventory.push(previous);
+  }
+
+  state.equipment[slot] = item;
+  state.inventory.splice(index, 1);
+
+  save();
+  render();
+  showToast("Экипировка обновлена!");
+}
+
+function sell(index) {
+  const item = state.inventory[index];
+  if (!item) return;
+
+  state.gold += item.price || 1;
+  state.inventory.splice(index, 1);
+
+  save();
+  render();
+  showToast("Предмет продан!");
+}
+
+function renderEquipment() {
+  const container = document.getElementById("equipmentList");
+  if (!container) return;
+
+  const slots = [
+    ["weapon", "⚔️ Оружие"],
+    ["armor", "🛡️ Броня"],
+    ["accessory", "💍 Аксессуар"]
+  ];
+
+  container.innerHTML = slots.map(([slot, label]) => {
+    const item = state.equipment[slot];
+
+    return `
+      <div class="equipment-slot">
+        <strong>${label}</strong>
+        <span>${item ? item.name : "Пусто"}</span>
+        ${item ? `<small>⚔️ ${item.attack || 0} · 🛡️ ${item.defense || 0}</small>` : ""}
+      </div>
+    `;
+  }).join("");
+}
+
+function upgrade() {
+  const cost = 100 + state.level * 50;
+
+  if (state.gold < cost) {
+    showToast("Не хватает золота! Нужно " + cost);
+    return;
+  }
+
+  state.gold -= cost;
+  state.upgradeLevel = (state.upgradeLevel || 0) + 1;
+
+  save();
+  render();
+
+  showToast("Улучшение куплено! Уровень усиления: " + state.upgradeLevel);
+}
+
+function showTab(tabName) {
+  document.querySelectorAll(".tab-content").forEach(el => {
+    el.classList.remove("active");
+  });
+
+  document.querySelectorAll(".nav-btn").forEach(el => {
+    el.classList.remove("active");
+  });
+
+  const target = document.getElementById(tabName);
+  if (target) target.classList.add("active");
+
+  const button = document.querySelector(`[data-tab="${tabName}"]`);
+  if (button) button.classList.add("active");
+
+  render();
+}
+
+document.querySelectorAll(".nav-btn").forEach(button => {
+  button.addEventListener("click", () => {
+    showTab(button.dataset.tab);
+  });
+});
+
+document.querySelectorAll("[data-action]").forEach(button => {
+  button.addEventListener("click", () => {
+    const action = button.dataset.action;
+
+    if (action === "upgrade") upgrade();
+    if (action === "attack") attack();
+    if (action === "skill") useSkill();
+    if (action === "potion") usePotion();
+  });
+});// =====================================
+// СОХРАНЕНИЕ И ЗАГРУЗКА ИГРЫ
+// =====================================
+
+let saveTimer = null;
+
+async function save() {
+  clearTimeout(saveTimer);
+
+  saveTimer = setTimeout(async () => {
+    if (!currentUser || !supabaseClient) return;
+
+    try {
+      await supabaseClient
+        .from("game_states")
+        .upsert({
+          user_id: currentUser.id,
+          game_data: state,
+          updated_at: new Date().toISOString()
+        }, { onConflict: "user_id" });
+
+      await supabaseClient
+        .from("profiles")
+        .upsert({
+          id: currentUser.id,
+          username: currentUser.email.split("@")[0],
+          level: state.level,
+          power: getStats().attack,
+          updated_at: new Date().toISOString()
+        }, { onConflict: "id" });
+
+    } catch (error) {
+      console.error("Ошибка сохранения:", error);
+    }
+  }, 500);
+}
+
+async function loadState() {
+  if (!currentUser || !supabaseClient) return;
+
+  const { data, error } = await supabaseClient
+    .from("game_states")
+    .select("game_data")
+    .eq("user_id", currentUser.id)
+    .maybeSingle();
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  if (data && data.game_data) {
+    state = { ...state, ...data.game_data };
+  }
+
+  render();
+}
+
+function getStats() {
+  const c = CLASSES[state.classId] || CLASSES.fighter;
+  const bonus = equippedBonus();
+
+  return {
+    attack: c.attack + bonus.attack + (state.upgradeLevel || 0) * 5,
+    defense: c.defense + bonus.defense,
+    maxHp: c.hp + (state.level - 1) * 10,
+    maxMana: c.mana + (state.level - 1) * 5
+  };
+}
+
+// =====================================
+// ВХОД В ИГРУ
+// =====================================
+
+async function enterGame(user) {
+  currentUser = user;
+
+  const loginScreen = document.getElementById("loginScreen");
+  const gameScreen = document.getElementById("gameScreen");
+
+  if (loginScreen) loginScreen.style.display = "none";
+  if (gameScreen) gameScreen.style.display = "block";
+
+  await loadState();
+
+  if (!state.classId) {
+    showTab("classes");
+  }
+
+  render();
+  loadLeaderboard();
+  loadChat();
+}
+
+async function auth(mode) {
+  if (!supabaseClient) {
+    showToast("Сначала настрой Supabase в начале кода!");
+    return;
+  }
+
+  const email = document.getElementById("emailInput")?.value.trim();
+  const password = document.getElementById("passwordInput")?.value;
+
+  if (!email || !password) {
+    showToast("Введи почту и пароль!");
+    return;
+  }
+
+  let result;
+
+  if (mode === "signup") {
+    result = await supabaseClient.auth.signUp({
+      email,
+      password
+    });
+  } else {
+    result = await supabaseClient.auth.signInWithPassword({
+      email,
+      password
+    });
+  }
+
+  if (result.error) {
+    showToast(result.error.message);
+    return;
+  }
+
+  if (result.data.user) {
+    await enterGame(result.data.user);
+  }
+}
+
+async function logout() {
+  if (!supabaseClient) return;
+
+  await save();
+  await supabaseClient.auth.signOut();
+
+  currentUser = null;
+
+  document.getElementById("gameScreen").style.display = "none";
+  document.getElementById("loginScreen").style.display = "block";
+}
+
+// =====================================
+// ТАБЛИЦА ЛИДЕРОВ
+// =====================================
+
+async function loadLeaderboard() {
+  const container = document.getElementById("leaderboardList");
+  if (!container || !supabaseClient) return;
+
+  const { data, error } = await supabaseClient
+    .from("leaderboard")
+    .select("*")
+    .order("level", { ascending: false })
+    .limit(20);
+
+  if (error) {
+    container.innerHTML = "<p>Не удалось загрузить рейтинг.</p>";
+    return;
+  }
+
+  container.innerHTML = (data || []).map((player, index) => `
+    <div class="leader-row">
+      <strong>#${index + 1}</strong>
+      <span>${player.username || "Охотник"}</span>
+      <span>Уровень ${player.level || 1}</span>
+    </div>
+  `).join("");
+}
+
+// =====================================
+// ОНЛАЙН-ЧАТ
+// =====================================
+
+async function loadChat() {
+  const container = document.getElementById("chatMessages");
+  if (!container || !supabaseClient) return;
+
+  const { data, error } = await supabaseClient
+    .from("chat_messages")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(30);
+
+  if (error) return;
+
+  container.innerHTML = (data || []).reverse().map(message => `
+    <div class="chat-message">
+      <strong>${escapeHTML(message.username || "Охотник")}</strong>
+      <span>${escapeHTML(message.message)}</span>
+    </div>
+  `).join("");
+
+  container.scrollTop = container.scrollHeight;
+}
+
+function escapeHTML(value) {
+  return String(value).replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[char]);
+}
+
+async function sendChat() {
+  const input = document.getElementById("chatInput");
+  if (!input || !currentUser || !supabaseClient) return;
+
+  const message = input.value.trim();
+
+  if (!message) return;
+
+  if (message.length > 300) {
+    showToast("Сообщение слишком длинное!");
+    return;
+  }
+
+  const username = currentUser.email.split("@")[0];
+
+  const { error } = await supabaseClient
+    .from("chat_messages")
+    .insert({
+      user_id: currentUser.id,
+      username,
+      message
+    });
+
+  if (error) {
+    showToast("Не удалось отправить сообщение.");
+    return;
+  }
+
+  input.value = "";
+  loadChat();
+}
+
+// =====================================
+// КНОПКИ АВТОРИЗАЦИИ
+// =====================================
+
+document.getElementById("loginBtn")?.addEventListener("click", () => auth("login"));
+document.getElementById("signupBtn")?.addEventListener("click", () => auth("signup"));
+document.getElementById("logoutBtn")?.addEventListener("click", logout);
+document.getElementById("sendChatBtn")?.addEventListener("click", sendChat);
+
+// =====================================
+// ПРОВЕРКА СЕССИИ SUPABASE
+// =====================================
+
+if (supabaseClient) {
+  supabaseClient.auth.getSession().then(({ data }) => {
+    if (data.session?.user) {
+      enterGame(data.session.user);
+    }
+  });
+
+  supabaseClient.auth.onAuthStateChange((event, session) => {
+    if (session?.user && event === "SIGNED_IN") {
+      enterGame(session.user);
+    }
+  });
+}
+
+render();
+
+// =====================================
+// КОНЕЦ ИГРЫ
+// =====================================
+</script>
+</body>
+</html>
