@@ -3,152 +3,180 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Cyber Hunter: Awakening</title>
+<title>RichLife: Investor Tycoon</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
   :root {
-    --bg: #030712; --card: #0f172a; --border: #1e293b;
-    --neon-blue: #06b6d4; --neon-purple: #8b5cf6; --gold: #fbbf24; --red: #f43f5e; --text: #f8fafc; --muted: #64748b;
+    --bg: #0b0f19;
+    --card: #141c2f;
+    --card-border: #1e293b;
+    --accent: #10b981;
+    --accent-glow: rgba(16, 185, 129, 0.3);
+    --text: #f8fafc;
+    --muted: #94a3b8;
   }
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
   body {
     margin: 0; background: var(--bg); color: var(--text);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    min-height: 100vh; padding-bottom: 75px; overflow-x: hidden;
+    min-height: 100vh; padding-bottom: 80px; overflow-x: hidden;
   }
   .hidden { display: none !important; }
-  
-  /* Верхняя панель */
+
+  /* Верхняя шапка */
   .header {
-    background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--border); padding: 10px 16px;
-    display: flex; justify-content: space-between; align-items: center;
-    position: sticky; top: 0; z-index: 50;
+    padding: 16px; display: flex; justify-content: space-between; align-items: center;
+    background: rgba(20, 28, 47, 0.8); backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--card-border);
   }
-  .stat-badge { background: #1e293b; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; border: 1px solid var(--border); }
+  .balance-title { font-size: 13px; color: var(--muted); }
+  .balance-amount { font-size: 26px; font-weight: 800; color: #fff; margin-top: 2px; }
 
   .container { padding: 16px; max-width: 500px; margin: 0 auto; }
-  
+
   /* Карточки */
-  .panel {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 16px; padding: 16px; margin-bottom: 16px;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+  .card {
+    background: var(--card); border: 1px solid var(--card-border);
+    border-radius: 20px; padding: 18px; margin-bottom: 16px;
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);
   }
 
-  /* Арена */
-  .arena { text-align: center; position: relative; }
-  .boss-avatar {
-    font-size: 80px; margin: 15px 0; display: inline-block;
-    filter: drop-shadow(0 0 15px rgba(139, 92, 246, 0.6));
-    transition: transform 0.1s;
+  /* Секция тапалки */
+  .earn-stats {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;
   }
-  .boss-hit { transform: scale(0.9) rotate(-5deg); filter: brightness(2) drop-shadow(0 0 20px var(--red)); }
-  
-  .progress-bg { width: 100%; height: 12px; background: #1e293b; border-radius: 6px; overflow: hidden; margin: 12px 0; border: 1px solid #334155; }
-  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple)); width: 100%; transition: width 0.1s; }
+  .stat-box { background: #0f172a; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--card-border); }
+  .stat-label { font-size: 11px; color: var(--muted); }
+  .stat-val { font-size: 14px; font-weight: 700; color: var(--accent); margin-top: 2px; }
+
+  .progress-container { margin: 12px 0 20px 0; }
+  .progress-info { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+  .progress-bar-bg { width: 100%; height: 8px; background: #0f172a; border-radius: 4px; overflow: hidden; border: 1px solid var(--card-border); }
+  .progress-bar-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.2s; }
+
+  /* Большая кнопка тапа с отпечатком */
+  .tap-zone {
+    height: 220px; background: linear-gradient(145deg, #0f172a, #141c2f);
+    border: 2px dashed var(--card-border); border-radius: 24px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    cursor: pointer; position: relative; overflow: hidden; transition: transform 0.05s;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+  }
+  .tap-zone:active { transform: scale(0.97); border-color: var(--accent); }
+  .fingerprint-icon { font-size: 56px; opacity: 0.8; filter: drop-shadow(0 0 10px var(--accent-glow)); margin-bottom: 10px; }
+  .tap-hint { font-size: 13px; color: var(--muted); font-weight: 500; }
+
+  /* Карточки недвижимости */
+  .property-card {
+    background: var(--card); border: 1px solid var(--card-border);
+    border-radius: 16px; overflow: hidden; margin-bottom: 16px;
+  }
+  .property-img { height: 140px; background-size: cover; background-position: center; position: relative; }
+  .property-income-badge {
+    position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(5px); padding: 6px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; color: #fff;
+  }
+  .property-body { padding: 14px; display: flex; justify-content: space-between; align-items: center; }
+  .property-price { font-size: 18px; font-weight: 800; color: #fff; }
+  .property-loc { font-size: 12px; color: var(--muted); margin-top: 2px; }
 
   /* Кнопки */
   .btn {
-    background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
-    color: white; border: none; padding: 14px; border-radius: 12px;
-    font-weight: 800; font-size: 15px; width: 100%; cursor: pointer;
-    box-shadow: 0 4px 15px rgba(6, 182, 212, 0.4); transition: transform 0.1s;
+    background: var(--accent); color: #000; border: none; padding: 10px 20px;
+    border-radius: 12px; font-weight: 800; font-size: 13px; cursor: pointer;
+    box-shadow: 0 4px 15px var(--accent-glow); transition: transform 0.1s;
   }
-  .btn:active { transform: scale(0.96); }
-  .btn-gold { background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4); }
+  .btn:active { transform: scale(0.95); }
 
-  /* Лут и сетка */
-  .item-card {
-    background: #1e293b; border: 1px solid var(--border);
-    border-radius: 12px; padding: 10px 14px; margin-bottom: 8px;
-    display: flex; justify-content: space-between; align-items: center; font-size: 13px;
-  }
-  .rarity-S { border-color: var(--gold); color: var(--gold); }
-  .rarity-A { border-color: var(--neon-purple); color: var(--neon-purple); }
-  
-  /* Навигация */
+  /* Навигация снизу */
   .nav {
-    position: fixed; bottom: 0; left: 0; right: 0; background: #0f172a;
-    border-top: 1px solid var(--border); display: grid; grid-template-columns: repeat(3, 1fr);
-    padding: 8px; z-index: 100;
+    position: fixed; bottom: 0; left: 0; right: 0; background: rgba(20, 28, 47, 0.95);
+    backdrop-filter: blur(12px); border-top: 1px solid var(--card-border);
+    display: grid; grid-template-columns: repeat(3, 1fr); padding: 8px; z-index: 100;
   }
   .nav-item {
-    background: none; border: none; color: var(--muted);
-    font-size: 11px; font-weight: 700; display: flex; flex-direction: column;
-    align-items: center; gap: 4px; cursor: pointer; padding: 6px;
+    background: none; border: none; color: var(--muted); font-size: 11px; font-weight: 700;
+    display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; padding: 6px;
   }
-  .nav-item.active { color: var(--neon-blue); }
-  
-  .floating-dmg {
-    position: absolute; left: 50%; top: 30%; font-weight: 900; font-size: 22px;
-    color: var(--gold); pointer-events: none; animation: floatUp 0.6s forwards;
+  .nav-item.active { color: var(--accent); }
+
+  /* Анимация вылетающих денег при тапе */
+  .floating-num {
+    position: absolute; font-weight: 900; font-size: 20px; color: var(--accent);
+    pointer-events: none; animation: floatUp 0.6s forwards; text-shadow: 0 2px 10px rgba(0,0,0,0.8);
   }
   @keyframes floatUp {
-    0% { opacity: 1; transform: translate(-50%, 0) scale(0.8); }
-    100% { opacity: 0; transform: translate(-50%, -40px) scale(1.2); }
+    0% { opacity: 1; transform: translateY(0) scale(0.8); }
+    100% { opacity: 0; transform: translateY(-55px) scale(1.2); }
   }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <div><b id="player-name">Хантер</b> <span style="font-size:11px; color:var(--neon-blue);" id="player-lvl">Ур. 1</span></div>
-  <div style="display:flex; gap:8px;">
-    <span class="stat-badge">⚡ <span id="stat-atk">15</span></span>
-    <span class="stat-badge" style="color:var(--gold);">🪙 <span id="stat-gold">100</span></span>
+  <div>
+    <div class="balance-title">Баланс</div>
+    <div class="balance-amount">$<span id="main-balance">80,800.00</span></div>
+  </div>
+  <div style="background: var(--card); border: 1px solid var(--card-border); padding: 8px 12px; border-radius: 12px; font-size: 12px; font-weight: 700;">
+    💼 Ур. <span id="player-lvl">1</span>
   </div>
 </div>
 
 <div class="container">
-  <!-- ВКЛАДКА 1: БОЙ -->
-  <div id="tab-fight" class="panel arena">
-    <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--muted);">
-      <span>Сектор: <b id="sector-name" style="color:#fff;">Альфа-1</b></span>
-      <span>Волна: <b id="wave-count" style="color:var(--neon-blue);">1</b>/10</span>
+  <!-- ВКЛАДКА 1: ЗАРАБОТОК (ТАПАЛКА) -->
+  <div id="tab-earn" class="card">
+    <div class="earn-stats">
+      <div class="stat-box">
+        <div class="stat-label">Доход в час</div>
+        <div class="stat-val">$<span id="profit-hour">0</span></div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">За тап</div>
+        <div class="stat-val">+$<span id="tap-power">1.00</span></div>
+      </div>
     </div>
-    
-    <div id="boss-icon" class="boss-avatar">👾</div>
-    <h3 id="boss-name" style="margin: 0 0 5px 0;">Кибер-Зомби</h3>
-    
-    <div class="progress-bg">
-      <div id="boss-hp-bar" class="progress-fill"></div>
-    </div>
-    <div style="font-size: 11px; color: var(--muted); margin-bottom: 15px;">HP: <span id="boss-hp-text">100/100</span></div>
 
-    <button class="btn" onclick="hitBoss()">АТАКОВАТЬ СЕТЬ</button>
+    <div class="progress-container">
+      <div class="progress-info">
+        <span>Прогресс уровня</span>
+        <span>$<span id="lvl-progress">0</span> / <span id="lvl-target">1,800</span></span>
+      </div>
+      <div class="progress-bar-bg">
+        <div id="progress-fill" class="progress-bar-fill"></div>
+      </div>
+    </div>
+
+    <div class="tap-zone" id="tap-zone" onclick="handleTap(event)">
+      <div class="fingerprint-icon">🛡️</div>
+      <div class="tap-hint">Нажмите в этой области для заработка</div>
+    </div>
   </div>
 
-  <!-- ВКЛАДКА 2: ИВЕНТЫ И ЛУТ -->
-  <div id="tab-inventory" class="panel hidden">
-    <h3 style="margin-top:0; color:var(--neon-blue); font-size:16px;">ИНВЕНТАРЬ И БУСТЫ</h3>
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; background:#1e293b; padding:10px; border-radius:10px;">
-      <div>
-        <div style="font-weight:700; font-size:13px;">Квантовый контейнер</div>
-        <div style="font-size:11px; color:var(--muted);">Шанс найти редкий кибер-модуль</div>
-      </div>
-      <button class="btn btn-gold" style="width:auto; padding:8px 14px; font-size:12px;" onclick="openBox()">Открыть (50🪙)</button>
-    </div>
-    <div id="inventory-list"><div style="color:var(--muted); font-size:13px; text-align:center; padding:20px;">Инвентарь пуст</div></div>
+  <!-- ВКЛАДКА 2: НЕДВИЖИМОСТЬ -->
+  <div id="tab-realty" class="hidden">
+    <h3 style="margin: 0 0 16px 0; font-size: 18px;">Инвестиции в недвижимость</h3>
+    <div id="properties-list"></div>
   </div>
 
   <!-- ВКЛАДКА 3: ПРОКАЧКА -->
-  <div id="tab-upgrades" class="panel hidden">
-    <h3 style="margin-top:0; color:var(--neon-purple); font-size:16px;">МОДУЛИ УСИЛЕНИЯ</h3>
-    <div class="item-row" style="background:#1e293b; border-radius:12px; padding:12px; display:flex; justify-content:space-between; align-items:center;">
+  <div id="tab-upgrade" class="hidden card">
+    <h3 style="margin-top:0; font-size:18px;">Улучшение навыков</h3>
+    <div style="display:flex; justify-content:space-between; align-items:center; background:#0f172a; padding:14px; border-radius:14px; border:1px solid var(--card-border);">
       <div>
-        <b>Нейро-клинок v1</b>
-        <div style="font-size:11px; color:var(--muted);">Урон за клик: +10</div>
+        <div style="font-weight:700; font-size:14px;">Сила клика (+1$)</div>
+        <div style="font-size:12px; color:var(--muted);">Стоимость: $<span id="upgrade-cost">50.00</span></div>
       </div>
-      <button class="btn" style="width:auto; padding:8px 14px; font-size:12px;" onclick="upgradeAtk()">Улучшить (<span id="up-cost">75</span>🪙)</button>
+      <button class="btn" onclick="buyTapUpgrade()">Улучшить</button>
     </div>
   </div>
 </div>
 
+<!-- НИЖНЯЯ НАВИГАЦИЯ -->
 <div class="nav">
-  <button class="nav-item active" onclick="switchTab('fight', this)"><span>⚔️</span>Битва</button>
-  <button class="nav-item" onclick="switchTab('inventory', this)"><span>📦</span>Лут</button>
-  <button class="nav-item" onclick="switchTab('upgrades', this)"><span>⚡</span>Прокачка</button>
+  <button class="nav-item active" onclick="switchTab('earn', this)"><span>💸</span>Заработок</button>
+  <button class="nav-item" onclick="switchTab('realty', this)"><span>🏠</span>Недвижимость</button>
+  <button class="nav-item" onclick="switchTab('upgrade', this)"><span>⚡</span>Прокачка</button>
 </div>
 
 <script>
@@ -156,122 +184,120 @@ const tg = window.Telegram?.WebApp;
 if (tg) { tg.expand(); tg.ready(); }
 
 let game = {
-  name: tg?.initDataUnsafe?.user?.first_name || 'Охотник',
-  lvl: 1, gold: 150, atk: 15,
-  wave: 1, sector: 1,
-  inventory: []
+  balance: 80800.00,
+  profitHour: 10800,
+  tapPower: 1.00,
+  level: 1,
+  exp: 0,
+  expTarget: 1800,
+  upgradeCost: 50,
+  properties: [
+    { id: 1, name: 'Семейный дом', loc: 'Икитос, Перу', price: 62000, income: 998, owned: false, img: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=500&auto=format&fit=crop&q=60' },
+    { id: 2, name: 'Особняк в пригороде', loc: 'Остин, Техас', price: 125000, income: 2150, owned: false, img: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=500&auto=format&fit=crop&q=60' },
+    { id: '3', name: 'Небоскреб Центр', loc: 'Майами, США', price: 450000, income: 8400, owned: false, img: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=500&auto=format&fit=crop&q=60' }
+  ]
 };
 
-let bossMaxHp = 100, bossHp = 100;
-const bosses = [
-  {name: 'Кибер-Зомби', icon: '👾'},
-  {name: 'Дрон-Убийца', icon: '🛸'},
-  {name: 'ИИ-Мутант', icon: '🤖'},
-  {name: 'Кибер-Дракон', icon: '🐉'}
-];
-
 function updateUI() {
-  document.getElementById('player-name').textContent = game.name;
-  document.getElementById('player-lvl').textContent = 'Ур. ' + game.lvl;
-  document.getElementById('stat-atk').textContent = game.atk;
-  document.getElementById('stat-gold').textContent = game.gold;
-  document.getElementById('wave-count').textContent = game.wave;
-  document.getElementById('sector-name').textContent = 'Сектор-' + game.sector;
-  document.getElementById('boss-hp-bar').style.width = Math.max(0, (bossHp / bossMaxHp) * 100) + '%';
-  document.getElementById('boss-hp-text').textContent = Math.max(0, Math.floor(bossHp)) + '/' + bossMaxHp;
-}
-
-function showDmg(txt) {
-  const arena = document.querySelector('.arena');
-  const el = document.createElement('div');
-  el.className = 'floating-dmg'; el.textContent = '-' + txt;
-  arena.appendChild(el);
-  setTimeout(() => el.remove(), 600);
-}
-
-function hitBoss() {
-  bossHp -= game.atk;
-  showDmg(game.atk);
+  document.getElementById('main-balance').textContent = game.balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  document.getElementById('profit-hour').textContent = game.profitHour.toLocaleString();
+  document.getElementById('tap-power').textContent = game.tapPower.toFixed(2);
+  document.getElementById('player-lvl').textContent = game.level;
+  document.getElementById('lvl-progress').textContent = Math.floor(game.exp).toLocaleString();
+  document.getElementById('lvl-target').textContent = game.expTarget.toLocaleString();
   
-  const avatar = document.getElementById('boss-icon');
-  avatar.classList.add('boss-hit');
-  setTimeout(() => avatar.classList.remove('boss-hit'), 100);
+  let fillPercent = Math.min(100, (game.exp / game.expTarget) * 100);
+  document.getElementById('progress-fill').style.width = fillPercent + '%';
+  document.getElementById('upgrade-cost').textContent = game.upgradeCost.toLocaleString();
+  
+  renderProperties();
+}
 
-  if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
-
-  if (bossHp <= 0) {
-    game.gold += 25 * game.sector;
-    game.wave++;
-    if (game.wave > 10) {
-      game.wave = 1; game.sector++;
-      game.lvl++;
-      game.atk += 10;
-    }
-    nextBoss();
+function handleTap(e) {
+  game.balance += game.tapPower;
+  game.exp += game.tapPower;
+  
+  if (game.exp >= game.expTarget) {
+    game.level++;
+    game.exp = 0;
+    game.expTarget = Math.floor(game.expTarget * 2.2);
   }
+
+  // Анимация вылетающей суммы в месте клика
+  const zone = document.getElementById('tap-zone');
+  const rect = zone.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  const floatEl = document.createElement('div');
+  floatEl.className = 'floating-num';
+  floatEl.textContent = `+$${game.tapPower.toFixed(0)}`;
+  floatEl.style.left = `${x}px`;
+  floatEl.style.top = `${y}px`;
+  zone.appendChild(floatEl);
+
+  setTimeout(() => floatEl.remove(), 600);
+
+  if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
   updateUI();
 }
 
-function nextBoss() {
-  bossMaxHp = 100 + (game.sector * 50) + (game.wave * 15);
-  bossHp = bossMaxHp;
-  const b = bosses[Math.floor(Math.random() * bosses.length)];
-  document.getElementById('boss-name').textContent = b.name;
-  document.getElementById('boss-icon').textContent = b.icon;
-}
-
-function upgradeAtk() {
-  let cost = 75 * Math.floor(game.atk / 10);
-  if (game.gold < cost) return alert('Недостаточно кредитов!');
-  game.gold -= cost;
-  game.atk += 12;
-  document.getElementById('up-cost').textContent = 75 * Math.floor(game.atk / 10);
+function buyTapUpgrade() {
+  if (game.balance < game.upgradeCost) return alert('Недостаточно средств!');
+  game.balance -= game.upgradeCost;
+  game.tapPower += 1.0;
+  game.upgradeCost = Math.floor(game.upgradeCost * 1.6);
   updateUI();
 }
 
-function openBox() {
-  if (game.gold < 50) return alert('Нужно 50 кредитов!');
-  game.gold -= 50;
-  const rarities = ['E', 'D', 'C', 'B', 'A', 'S'];
-  const r = rarities[Math.floor(Math.random() * rarities.length)];
-  const item = { name: `Модуль #${Math.floor(Math.random()*900+100)}`, rarity: r, bonus: r === 'S' ? 50 : 10 };
-  game.inventory.push(item);
-  renderInv();
-  updateUI();
-  alert(`Найдено устройство редкости [${r}]!`);
-}
-
-function renderInv() {
-  const list = document.getElementById('inventory-list');
-  if (!game.inventory.length) {
-    list.innerHTML = '<div style="color:var(--muted); font-size:13px; text-align:center; padding:20px;">Инвентарь пуст</div>';
-    return;
-  }
-  list.innerHTML = game.inventory.map((it, idx) => `
-    <div class="item-card rarity-${it.rarity}">
-      <div><b>[${it.rarity}]</b> ${it.name}</div>
-      <button class="btn" style="width:auto; padding:4px 8px; font-size:11px;" onclick="sellItem(${idx})")>Продать</button>
+function renderProperties() {
+  const list = document.getElementById('properties-list');
+  list.innerHTML = game.properties.map(p => `
+    <div class="property-card">
+      <div class="property-img" style="background-image: url('${p.img}')">
+        <div class="property-income-badge">$${p.income.toLocaleString()} income per hour</div>
+      </div>
+      <div class="property-body">
+        <div>
+          <div class="property-price">$${p.price.toLocaleString()}</div>
+          <div class="property-loc">📍 ${p.loc}</div>
+        </div>
+        <button class="btn" onclick="buyProperty(${p.id})" ${p.owned ? 'style="background:#334155; color:#94a3b8;" disabled' : ''}>
+          ${p.owned ? 'Куплено' : 'Купить'}
+        </button>
+      </div>
     </div>
   `).join('');
 }
 
-function sellItem(idx) {
-  game.inventory.splice(idx, 1);
-  game.gold += 30;
-  renderInv();
+function buyProperty(id) {
+  const prop = game.properties.find(p => p.id === id);
+  if (prop.owned) return;
+  if (game.balance < prop.price) return alert('Не хватает денег на балансе!');
+  
+  game.balance -= prop.price;
+  prop.owned = true;
+  game.profitHour += prop.income;
   updateUI();
+  alert(`Поздравляем с покупкой: ${prop.name}!`);
 }
 
+// Пассивный доход каждую секунду
+setInterval(() => {
+  if (game.profitHour > 0) {
+    game.balance += game.profitHour / 3600;
+    updateUI();
+  }
+}, 1000);
+
 function switchTab(id, btn) {
-  ['fight', 'inventory', 'upgrades'].forEach(t => document.getElementById('tab-' + t).classList.add('hidden'));
+  ['earn', 'realty', 'upgrade'].forEach(t => document.getElementById('tab-' + t).classList.add('hidden'));
   document.getElementById('tab-' + id).classList.remove('hidden');
-  document.querySelectorAll('.nav').forEach(n => {}); // reset
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
 }
 
 updateUI();
-nextBoss();
 </script>
 </body>
 </html>
