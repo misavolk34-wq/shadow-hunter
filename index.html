@@ -2,154 +2,430 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>МирЧат Онлайн</title>
     <style>
         :root {
-            --bg-color: #0f172a;
-            --panel-color: #1e293b;
+            --bg-color: #0b0f19;
+            --panel-color: #131b2e;
+            --panel-glass: rgba(19, 27, 46, 0.85);
+            --accent-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
             --accent-color: #6366f1;
             --accent-hover: #4f46e5;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
-            --border-color: #334155;
+            --border-color: rgba(255, 255, 255, 0.08);
             --danger-color: #ef4444;
             --success-color: #22c55e;
             --gold-color: #fbbf24;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-main); height: 100vh; display: flex; overflow: hidden; }
-        
-        /* Боковая панель */
-        .sidebar { width: 280px; background: var(--panel-color); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; flex-shrink: 0; }
-        .sidebar-header { padding: 20px; border-bottom: 1px solid var(--border-color); }
-        .sidebar-header h2 { color: var(--accent-color); font-size: 1.2rem; display: flex; align-items: center; gap: 8px; }
-        
-        .user-preview { margin-top: 15px; display: flex; align-items: center; gap: 10px; }
-        .avatar { width: 40px; height: 40px; background: var(--accent-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
-        .user-info { overflow: hidden; }
-        .user-name { font-weight: 600; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .user-coins { font-size: 0.75rem; color: var(--text-muted); }
 
-        .nav-menu { padding: 15px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
-        .nav-btn { background: transparent; border: none; color: var(--text-muted); text-align: left; padding: 10px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: all 0.2s; }
-        .nav-btn:hover { background: rgba(99, 102, 241, 0.1); color: var(--text-main); }
-        .nav-btn.active { background: var(--accent-color); color: var(--text-main); }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            background-color: var(--bg-color); 
+            color: var(--text-main); 
+            height: 100vh; 
+            height: 100dvh;
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden; 
+        }
+
+        /* Верхняя шапка */
+        .app-header {
+            background: var(--panel-glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .user-mini-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .avatar {
+            width: 38px;
+            height: 38px;
+            background: var(--accent-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .user-details .name {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .user-details .coins {
+            font-size: 0.75rem;
+            color: var(--gold-color);
+            font-weight: 600;
+        }
+
+        .header-title {
+            font-size: 1rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
 
         /* Основной контент */
-        .main-content { flex: 1; display: flex; flex-direction: column; background: var(--bg-color); overflow: hidden; }
-        
-        .header { padding: 15px 20px; background: var(--panel-color); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
-        .header h3 { font-size: 1.1rem; }
-        
-        .chat-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        .chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
-        
-        .message-card { background: var(--panel-color); padding: 12px 15px; border-radius: 8px; border: 1px solid var(--border-color); }
-        .message-header { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; }
-        .message-sender-wrap { display: flex; align-items: center; gap: 5px; }
-        .clan-tag { color: var(--accent-color); font-weight: bold; }
-        .sender-name { color: var(--text-main); font-weight: 600; }
-        .message-text { font-size: 0.95rem; word-break: break-word; line-height: 1.4; }
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            background: radial-gradient(circle at 50% 0%, #1e1b4b 0%, var(--bg-color) 70%);
+        }
 
-        .chat-input-area { padding: 15px 20px; background: var(--panel-color); border-top: 1px solid var(--border-color); display: flex; gap: 10px; flex-shrink: 0; }
-        
-        input, select, button { background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 15px; border-radius: 8px; outline: none; font-size: 0.9rem; }
-        input:focus { border-color: var(--accent-color); }
-        button { background: var(--accent-color); border: none; cursor: pointer; font-weight: 600; transition: background 0.2s; }
-        button:hover { background: var(--accent-hover); }
+        /* Лента сообщений */
+        .chat-messages {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            scroll-behavior: smooth;
+        }
 
-        /* Разделы */
-        .section-view { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
-        .card-box { background: var(--panel-color); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); }
-        .card-box h3 { margin-bottom: 15px; font-size: 1.1rem; color: var(--accent-color); }
-        
-        .gift-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
-        .gift-item { background: var(--panel-color); padding: 15px; border-radius: 10px; border: 1px solid var(--border-color); text-align: center; display: flex; flex-direction: column; justify-content: space-between; }
-        .gift-icon { font-size: 2.5rem; margin-bottom: 10px; }
-        .gift-price { font-weight: bold; color: var(--gold-color); margin: 8px 0; }
+        .message-card {
+            background: var(--panel-glass);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border-color);
+            padding: 12px 14px;
+            border-radius: 14px;
+            animation: fadeIn 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
 
-        .clan-list-container { display: flex; flex-direction: column; gap: 10px; }
-        .clan-item { background: var(--panel-color); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
-        
-        .badge-tag { background: rgba(99, 102, 241, 0.15); color: var(--accent-color); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+            font-size: 0.75rem;
+        }
+
+        .sender-info {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .clan-badge {
+            background: rgba(99, 102, 241, 0.2);
+            color: #818cf8;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 0.7rem;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+
+        .sender-name {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .message-time {
+            color: var(--text-muted);
+        }
+
+        .message-text {
+            font-size: 0.95rem;
+            line-height: 1.4;
+            word-break: break-word;
+            color: #e2e8f0;
+        }
+
+        /* Поле ввода сообщения */
+        .chat-input-area {
+            padding: 12px 16px;
+            background: var(--panel-glass);
+            backdrop-filter: blur(12px);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        input, select {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 10px 14px;
+            border-radius: 12px;
+            outline: none;
+            font-size: 0.95rem;
+            width: 100%;
+            transition: all 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+        }
+
+        .send-btn {
+            background: var(--accent-gradient);
+            border: none;
+            color: white;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+            transition: transform 0.1s;
+        }
+
+        .send-btn:active {
+            transform: scale(0.92);
+        }
+
+        /* Экраны разделов */
+        .section-view {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .card-box {
+            background: var(--panel-glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            padding: 18px;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+        }
+
+        .card-box h3 {
+            font-size: 1.05rem;
+            margin-bottom: 12px;
+            color: #818cf8;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Нижнее меню (Bottom Navigation) */
+        .bottom-nav {
+            background: var(--panel-glass);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 6px env(safe-area-inset-bottom, 8px);
+            z-index: 10;
+        }
+
+        .nav-item {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 12px;
+            transition: all 0.2s;
+            flex: 1;
+        }
+
+        .nav-item .icon {
+            font-size: 1.3rem;
+            transition: transform 0.2s;
+        }
+
+        .nav-item.active {
+            color: #818cf8;
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .nav-item.active .icon {
+            transform: scale(1.1);
+        }
+
+        /* Кнопки общие */
+        .btn-action {
+            background: var(--accent-gradient);
+            border: none;
+            color: white;
+            padding: 10px 16px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            width: 100%;
+            transition: opacity 0.2s;
+        }
+
+        .btn-action:active {
+            opacity: 0.85;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        /* Сетка подарков */
+        .gift-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .gift-item {
+            background: var(--panel-glass);
+            border: 1px solid var(--border-color);
+            padding: 14px;
+            border-radius: 14px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .gift-icon {
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+            animation: floatGift 3s ease-in-out infinite;
+        }
+
+        @keyframes floatGift {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+
+        .gift-price {
+            font-weight: 700;
+            color: var(--gold-color);
+            font-size: 0.9rem;
+            margin: 8px 0;
+        }
+
+        /* Список кланов */
+        .clan-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .clan-card {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid var(--border-color);
+            padding: 12px 14px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
 
-    <!-- Боковая панель -->
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <h2>🌍 МирЧат Онлайн</h2>
-            <div class="user-preview">
-                <div class="avatar" id="my-avatar">👑</div>
-                <div class="user-info">
-                    <div class="user-name" id="my-name">Игрок</div>
-                    <div class="user-coins">Монет: <span id="my-coins">1500</span> 🪙</div>
-                </div>
+    <!-- Шапка телефона -->
+    <header class="app-header">
+        <div class="user-mini-profile">
+            <div class="avatar">👑</div>
+            <div class="user-details">
+                <div class="name" id="my-name">Игрок</div>
+                <div class="coins"><span id="my-coins">1500</span> 🪙</div>
             </div>
         </div>
-
-        <div class="nav-menu">
-            <button class="nav-btn active" id="btn-tab-world" onclick="switchTab('world')">💬 Всемирный чат</button>
-            <button class="nav-btn" id="btn-tab-clan" onclick="switchTab('clan')">🛡️ Клановый чат</button>
-            <button class="nav-btn" id="btn-tab-clans-hub" onclick="switchTab('clans-hub')">🏰 Управление кланами</button>
-            <button class="nav-btn" id="btn-tab-gifts" onclick="switchTab('gifts')">🎁 Магазин подарков</button>
-        </div>
-    </div>
+        <div class="header-title" id="current-section-title">Всемирный чат</div>
+    </header>
 
     <!-- Основная рабочая область -->
     <div class="main-content">
-        <!-- Шапка -->
-        <div class="header">
-            <h3 id="current-section-title">Всемирный чат</h3>
-            <div style="display: flex; gap: 15px; align-items: center;">
-                <span id="clan-status-badge" class="badge-tag">Клантэг: [Нет]</span>
-                <button onclick="switchTab('gifts')" style="padding: 6px 12px; font-size: 0.85rem;">🎁 Подарить</button>
-            </div>
-        </div>
-
-        <!-- Раздел чатов (Всемирный / Клановый) -->
-        <div id="section-chat" class="chat-container">
-            <div class="chat-messages" id="messages-list">
-                <!-- Динамические сообщения -->
-            </div>
+        
+        <!-- Чат (Всемирный / Клановый) -->
+        <div id="section-chat" class="chat-container" style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
+            <div class="chat-messages" id="messages-list"></div>
             <div class="chat-input-area">
-                <input type="text" id="message-input" placeholder="Введите сообщение..." style="flex: 1;" onkeypress="handleKeyPress(event)">
-                <button onclick="sendMessage()">Отправить</button>
+                <input type="text" id="message-input" placeholder="Написать сообщение..." onkeypress="handleKeyPress(event)">
+                <button class="send-btn" onclick="sendMessage()">➤</button>
             </div>
         </div>
 
-        <!-- Раздел управления кланами -->
+        <!-- Управление кланами -->
         <div id="section-clans-hub" class="section-view" style="display: none;">
             <div class="card-box">
                 <h3>🛡️ Ваш клан</h3>
-                <div id="my-clan-info">
-                    <!-- Заполняется JS -->
-                </div>
+                <div id="my-clan-info"></div>
             </div>
             <div class="card-box">
-                <h3>📋 Список всех кланов</h3>
-                <div class="clan-list-container" id="clans-list">
-                    <!-- Список кланов -->
-                </div>
+                <h3>🏰 Список кланов</h3>
+                <div class="clan-list" id="clans-list"></div>
             </div>
         </div>
 
-        <!-- Раздел магазина подарков -->
+        <!-- Магазин подарков -->
         <div id="section-gifts" class="section-view" style="display: none;">
-            <div>
-                <h3>🎁 Премиум каталог подарков</h3>
-                <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 5px;">Отправляйте подарки в чат, чтобы порадовать участников и украсить общую ленту.</p>
+            <div style="margin-bottom: 4px;">
+                <h3 style="color: #818cf8; font-size: 1.1rem; margin-bottom: 4px;">🎁 Магазин подарков</h3>
+                <p style="color: var(--text-muted); font-size: 0.85rem;">Дарите подарки прямо в чат, чтобы порадовать участников!</p>
             </div>
-            <div class="gift-grid" id="gift-store-grid">
-                <!-- Карточки подарков -->
-            </div>
+            <div class="gift-grid" id="gift-store-grid"></div>
         </div>
+
     </div>
 
+    <!-- Нижняя навигация (Bottom Bar) -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" id="nav-world" onclick="switchTab('world')">
+            <span class="icon">💬</span>
+            <span>Мир</span>
+        </button>
+        <button class="nav-item" id="nav-clan" onclick="switchTab('clan')">
+            <span class="icon">🛡️</span>
+            <span>Клан</span>
+        </button>
+        <button class="nav-item" id="nav-clans-hub" onclick="switchTab('clans-hub')">
+            <span class="icon">🏰</span>
+            <span>База</span>
+        </button>
+        <button class="nav-item" id="nav-gifts" onclick="switchTab('gifts')">
+            <span class="icon">🎁</span>
+            <span>Подарки</span>
+        </button>
+    </nav>
+
     <script>
-        // Состояние пользователя
         let state = {
             username: "Игрок_" + Math.floor(Math.random() * 900 + 100),
             coins: 1500,
@@ -157,26 +433,22 @@
             activeTab: 'world'
         };
 
-        // Каталог подарков
         const giftStore = [
-            { id: 1, name: "🌟 Звезда", price: 100, icon: "🌟", desc: "Яркий знак внимания" },
-            { id: 2, name: "🏆 Кубок", price: 300, icon: "🏆", desc: "Символ победы и успеха" },
-            { id: 3, name: "👑 Корона", price: 750, icon: "👑", desc: "Для истинных лидеров чата" },
-            { id: 4, name: "🚀 Ракета", price: 1500, icon: "🚀", desc: "Эпический буст к настроению" }
+            { id: 1, name: "🌟 Звезда", price: 100, icon: "🌟", desc: "Знак внимания" },
+            { id: 2, name: "🏆 Кубок", price: 300, icon: "🏆", desc: "Символ успеха" },
+            { id: 3, name: "👑 Корона", price: 750, icon: "👑", desc: "Для лидера" },
+            { id: 4, name: "🚀 Ракета", price: 1500, icon: "🚀", desc: "Эпический буст" }
         ];
 
-        // Список кланов
         let clans = [
             { id: 1, name: "Cyber Dragons", tag: "DRGN", treasury: 2500, level: 2, members: 3 },
             { id: 2, name: "Phoenix Legion", tag: "PHNX", treasury: 1200, level: 1, members: 1 }
         ];
 
-        // История сообщений
         let messages = [
-            { id: 1, type: 'world', sender: "Система", text: "Добро пожаловать в МирЧат Онлайн! Общайтесь, создавайте кланы, вносите пожертвования и дарите подарки.", time: "12:00", badge: "[Admin]" }
+            { id: 1, type: 'world', sender: "Система", text: "Добро пожаловать в МирЧат Онлайн! Интерфейс оптимизирован под телефон.", time: "12:00", badge: "ADMIN" }
         ];
 
-        // Инициализация
         window.onload = function() {
             document.getElementById('my-name').innerText = state.username;
             updateUI();
@@ -186,34 +458,21 @@
             renderMyClanInfo();
         };
 
-        // Обновление интерфейса (монеты, теги)
         function updateUI() {
             document.getElementById('my-coins').innerText = state.coins;
-            const badge = document.getElementById('clan-status-badge');
-            if (state.clanId) {
-                const clan = clans.find(c => c.id === state.clanId);
-                badge.innerText = `[${clan ? clan.tag : 'CLAN'}]`;
-                badge.style.display = 'inline-block';
-            } else {
-                badge.innerText = "Клантэг: [Нет]";
-            }
         }
 
-        // Переключение вкладок
         function switchTab(tabName) {
             state.activeTab = tabName;
             
-            // Скрыть все экраны
             document.getElementById('section-chat').style.display = 'none';
             document.getElementById('section-clans-hub').style.display = 'none';
             document.getElementById('section-gifts').style.display = 'none';
 
-            // Сбросить активный класс кнопок меню
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-            const activeBtn = document.getElementById('btn-tab-' + tabName);
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+            const activeBtn = document.getElementById('nav-' + tabName);
             if (activeBtn) activeBtn.classList.add('active');
 
-            // Заголовки
             const titles = {
                 'world': 'Всемирный чат',
                 'clan': 'Клановый чат',
@@ -222,7 +481,6 @@
             };
             document.getElementById('current-section-title').innerText = titles[tabName];
 
-            // Показать нужный раздел
             if (tabName === 'world' || tabName === 'clan') {
                 document.getElementById('section-chat').style.display = 'flex';
                 renderMessages();
@@ -235,14 +493,13 @@
             }
         }
 
-        // Отправка текстового сообщения
         function sendMessage() {
             const input = document.getElementById('message-input');
             const text = input.value.trim();
             if (!text) return;
 
             if (state.activeTab === 'clan' && !state.clanId) {
-                alert('Вы не состоите в клане! Сначала вступите в клан в разделе «Управление кланами».');
+                alert('Вы не состоите в клане! Вступите в клан во вкладке «База».');
                 return;
             }
 
@@ -253,11 +510,10 @@
                 sender: state.username,
                 text: text,
                 time: timeNow,
-                badge: state.clanId ? `[${getClanTag(state.clanId)}]` : ''
+                badge: state.clanId ? getClanTag(state.clanId) : ''
             });
 
-            // Награда за активность (+5 монет)
-            state.coins += 5;
+            state.coins += 5; // бонус за активность
             updateUI();
 
             input.value = '';
@@ -268,7 +524,6 @@
             if (e.key === 'Enter') sendMessage();
         }
 
-        // Рендер ленты сообщений
         function renderMessages() {
             const list = document.getElementById('messages-list');
             list.innerHTML = '';
@@ -276,7 +531,7 @@
             const filtered = messages.filter(m => m.type === state.activeTab);
 
             if (filtered.length === 0) {
-                list.innerHTML = `<div style="text-align: center; color: var(--text-muted); margin-top: 40px;">Здесь пока нет сообщений. Напишите первыми!</div>`;
+                list.innerHTML = `<div style="text-align: center; color: var(--text-muted); margin-top: 40px; font-size: 0.9rem;">Здесь пока пусто. Напишите первое сообщение!</div>`;
                 return;
             }
 
@@ -285,11 +540,11 @@
                 div.className = 'message-card';
                 div.innerHTML = `
                     <div class="message-header">
-                        <div class="message-sender-wrap">
-                            <span class="clan-tag">${msg.badge || ''}</span>
+                        <div class="sender-info">
+                            ${msg.badge ? `<span class="clan-badge">${msg.badge}</span>` : ''}
                             <span class="sender-name">${msg.sender}</span>
                         </div>
-                        <span>${msg.time}</span>
+                        <span class="message-time">${msg.time}</span>
                     </div>
                     <div class="message-text">${msg.text}</div>
                 `;
@@ -298,7 +553,6 @@
             list.scrollTop = list.scrollHeight;
         }
 
-        // Магазин подарков
         function renderGiftStore() {
             const grid = document.getElementById('gift-store-grid');
             grid.innerHTML = '';
@@ -308,12 +562,12 @@
                 card.innerHTML = `
                     <div>
                         <div class="gift-icon">${gift.icon}</div>
-                        <h4 style="font-size: 1rem; margin-bottom: 5px;">${gift.name}</h4>
-                        <p style="font-size: 0.8rem; color: var(--text-muted);">${gift.desc}</p>
+                        <h4 style="font-size: 0.95rem; margin-bottom: 2px;">${gift.name}</h4>
+                        <p style="font-size: 0.75rem; color: var(--text-muted);">${gift.desc}</p>
                     </div>
                     <div>
                         <div class="gift-price">${gift.price} 🪙</div>
-                        <button onclick="buyGift(${gift.id})" style="width: 100%; padding: 8px;">Подарить</button>
+                        <button class="btn-action" style="padding: 6px; font-size: 0.8rem;" onclick="buyGift(${gift.id})">Отправить</button>
                     </div>
                 `;
                 grid.appendChild(card);
@@ -323,27 +577,25 @@
         function buyGift(giftId) {
             const gift = giftStore.find(g => g.id === giftId);
             if (state.coins < gift.price) {
-                alert('Недостаточно монет! Общайтесь в чатах, чтобы заработать.');
+                alert('Недостаточно монет! Пишите сообщения в чате, чтобы заработать.');
                 return;
             }
             state.coins -= gift.price;
             updateUI();
 
-            // Трансляция подарка в текущий чат
             messages.push({
                 id: Date.now(),
                 type: state.activeTab,
-                sender: "🎁 Подарок от " + state.username,
-                text: `Отправил великолепный подарок ${gift.icon} <b>${gift.name}</b> в эфир!`,
+                sender: "🎁 Подарок",
+                text: `<b>${state.username}</b> отправил в чат подарок ${gift.icon} <b>${gift.name}</b>!`,
                 time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                badge: state.clanId ? `[${getClanTag(state.clanId)}]` : ''
+                badge: state.clanId ? getClanTag(state.clanId) : ''
             });
-            
+
             switchTab(state.activeTab);
-            alert(`Вы успешно отправили ${gift.name}!`);
+            alert(`Подарок ${gift.name} успешно отправлен в эфир!`);
         }
 
-        // Логика кланов
         function getClanTag(id) {
             const clan = clans.find(c => c.id === id);
             return clan ? clan.tag : '';
@@ -355,13 +607,13 @@
             clans.forEach(clan => {
                 const isMyClan = state.clanId === clan.id;
                 const div = document.createElement('div');
-                div.className = 'clan-item';
+                div.className = 'clan-card';
                 div.innerHTML = `
                     <div>
-                        <h4 style="color: var(--accent-color);">[${clan.tag}] ${clan.name} <span style="font-size: 0.8rem; color: var(--text-muted);">(Уровень ${clan.level})</span></h4>
-                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 3px;">Казна: ${clan.treasury} 🪙 | Участников: ${clan.members}</p>
+                        <h4 style="color: #818cf8; font-size: 0.95rem;">[${clan.tag}] ${clan.name}</h4>
+                        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Казна: ${clan.treasury} 🪙 | Ур. ${clan.level}</p>
                     </div>
-                    ${isMyClan ? '<span style="color: var(--success-color); font-weight: bold;">Ваш клан</span>' : `<button onclick="joinClan(${clan.id})" style="padding: 6px 12px; font-size: 0.85rem;">Вступить</button>`}
+                    ${isMyClan ? '<span style="color: var(--success-color); font-weight: bold; font-size: 0.85rem;">Ваш</span>' : `<button class="btn-action" style="padding: 5px 10px; font-size: 0.75rem; width: auto;" onclick="joinClan(${clan.id})">Вступить</button>`}
                 `;
                 list.appendChild(div);
             });
@@ -371,30 +623,30 @@
             const container = document.getElementById('my-clan-info');
             if (!state.clanId) {
                 container.innerHTML = `
-                    <p style="color: var(--text-muted); margin-bottom: 15px;">Вы еще не состоите ни в одном клане. Создайте свой собственный или выберите из списка ниже.</p>
-                    <button onclick="showCreateClanModal()">Создать клан (500 🪙)</button>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 12px;">Вы не состоите в клане. Создайте свой или вступите в готовый.</p>
+                    <button class="btn-action" onclick="showCreateClanModal()">Создать клан (500 🪙)</button>
                 `;
                 return;
             }
             const clan = clans.find(c => c.id === state.clanId);
             container.innerHTML = `
-                <h4 style="color: var(--accent-color); font-size: 1.2rem; margin-bottom: 5px;">[${clan.tag}] ${clan.name}</h4>
-                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 15px;">Казна клана: <b style="color: var(--gold-color);">${clan.treasury} 🪙</b> | Уровень: <b>${clan.level}</b></p>
-                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <button onclick="donateToClan(100)" style="padding: 8px 14px; font-size: 0.85rem;">Внести 100 🪙 в казну</button>
-                    <button onclick="leaveClan()" style="background: var(--danger-color); padding: 8px 14px; font-size: 0.85rem;">Покинуть клан</button>
+                <h4 style="color: #818cf8; font-size: 1.1rem; margin-bottom: 4px;">[${clan.tag}] ${clan.name}</h4>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">Казна: <b style="color: var(--gold-color);">${clan.treasury} 🪙</b> | Уровень: <b>${clan.level}</b></p>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn-action" style="padding: 8px; font-size: 0.8rem;" onclick="donateToClan(100)">Внести 100 🪙</button>
+                    <button class="btn-action btn-danger" style="padding: 8px; font-size: 0.8rem;" onclick="leaveClan()">Выйти</button>
                 </div>
             `;
         }
 
         function showCreateClanModal() {
-            const name = prompt("Введите название нового клана:");
+            const name = prompt("Название клана:");
             if (!name) return;
-            const tag = prompt("Введите тег клана (латиницей, до 4 символов):", "TEAM").toUpperCase();
+            const tag = prompt("Тег клана (до 4 символов):", "TEAM").toUpperCase();
             if (!tag) return;
 
             if (state.coins < 500) {
-                alert('Для создания клана нужно 500 монет!');
+                alert('Нужно 500 монет!');
                 return;
             }
 
@@ -414,42 +666,29 @@
             
             renderClansList();
             renderMyClanInfo();
-            updateUI();
-            alert('Клан успешно создан!');
+            alert('Клан создан!');
         }
 
         function joinClan(clanId) {
-            // Если уже где-то состоял, уменьшим участников старого
-            if (state.clanId) {
-                const oldClan = clans.find(c => c.id === state.clanId);
-                if (oldClan) oldClan.members = Math.max(1, oldClan.members - 1);
-            }
-
             state.clanId = clanId;
             const clan = clans.find(c => c.id === clanId);
             if (clan) clan.members++;
 
             renderClansList();
             renderMyClanInfo();
-            updateUI();
-            alert(`Вы успешно вступили в клан [${clan.tag}] ${clan.name}!`);
+            alert(`Вы вступили в [${clan.tag}]!`);
         }
 
         function leaveClan() {
-            const clan = clans.find(c => c.id === state.clanId);
-            if (clan) {
-                clan.members = Math.max(1, clan.members - 1);
-            }
             state.clanId = null;
             renderClansList();
             renderMyClanInfo();
-            updateUI();
-            alert('Вы покинули клан.');
+            alert('Вы вышли из клана.');
         }
 
         function donateToClan(amount) {
             if (state.coins < amount) {
-                alert('У вас недостаточно монет!');
+                alert('Недостаточно монет!');
                 return;
             }
             state.coins -= amount;
@@ -458,16 +697,15 @@
             const clan = clans.find(c => c.id === state.clanId);
             if (clan) {
                 clan.treasury += amount;
-                // Простая система повышения уровня клана при накоплении казны
                 if (clan.treasury >= clan.level * 2000) {
                     clan.level++;
-                    alert(`Поздравляем! Ваш клан [${clan.tag}] поднялся до ${clan.level} уровня!`);
+                    alert(`Клан повысил уровень до ${clan.level}! 🎉`);
                 }
             }
 
             renderMyClanInfo();
             renderClansList();
-            alert(`Вы успешно пополнили казну клана на ${amount} 🪙!`);
+            alert('Пожертвование зачислено!');
         }
     </script>
 </body>
