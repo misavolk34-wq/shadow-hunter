@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Кибер-Империя — Ultimate Admin Edition</title>
+    <title>Кибер-Империя — Ultimate Creator Edition</title>
     <style>
         :root {
             --bg-dark: #070a14;
-            --card-bg: rgba(17, 24, 39, 0.92);
-            --card-border: rgba(99, 102, 241, 0.28);
+            --card-bg: rgba(17, 24, 39, 0.94);
+            --card-border: rgba(99, 102, 241, 0.3);
             --accent-primary: #6366f1;
             --accent-secondary: #ec4899;
             --accent-cyan: #06b6d4;
@@ -31,7 +31,7 @@
             display: flex; flex-direction: column; overflow: hidden;
         }
 
-        /* Экран логина */
+        /* Экран авторизации */
         #auth-screen {
             position: fixed; inset: 0; background: var(--bg-dark); z-index: 1000;
             display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
@@ -39,7 +39,7 @@
         .auth-card {
             background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px;
             padding: 24px; width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 14px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6); text-align: center;
         }
         .auth-input {
             background: rgba(15, 23, 42, 0.8); border: 1px solid var(--card-border); color: #fff;
@@ -59,6 +59,7 @@
         .admin-trigger-btn {
             background: linear-gradient(135deg, #ec4899, #8b5cf6); border: none; color: white;
             padding: 6px 10px; border-radius: 10px; font-size: 0.75rem; font-weight: 800; cursor: pointer; display: none;
+            box-shadow: 0 0 12px rgba(236,72,153,0.5);
         }
         .stats-pill {
             background: rgba(16, 185, 129, 0.14); border: 1px solid rgba(16, 185, 129, 0.35);
@@ -86,30 +87,16 @@
             flex: 1; overflow-y: auto; padding: 12px 12px 24px; display: flex; flex-direction: column; gap: 14px;
         }
 
-        /* Карточка профиля / аватара с рамками */
-        .profile-card {
+        /* Игровые карточки */
+        .biz-card, .item-card, .case-card, .storage-item, .profile-card, .player-card-modal {
             background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 18px; padding: 16px;
-            display: flex; flex-direction: column; gap: 14px; box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-        }
-        .avatar-container {
-            width: 76px; height: 76px; border-radius: 50%; position: relative; margin: 0 auto;
-            display: flex; align-items: center; justify-content: center; font-size: 2.2rem; background: #1e293b;
-        }
-        /* Рамки для аватарок */
-        .avatar-frame-gold { box-shadow: 0 0 0 3px #fbbf24, 0 0 15px rgba(251,191,36,0.6); }
-        .avatar-frame-neon { box-shadow: 0 0 0 3px #ec4899, 0 0 15px rgba(236,72,153,0.6); }
-        .avatar-frame-cyber { box-shadow: 0 0 0 3px #06b6d4, 0 0 15px rgba(6,182,212,0.6); }
-
-        /* Карточки бизнеса, складов, кейсов */
-        .biz-card, .item-card, .case-card, .storage-item {
-            background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 14px;
-            display: flex; flex-direction: column; gap: 12px; flex-shrink: 0; box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+            display: flex; flex-direction: column; gap: 12px; flex-shrink: 0; box-shadow: 0 8px 25px rgba(0,0,0,0.3);
         }
         .biz-card.locked { opacity: 0.8; border-style: dashed; }
         .biz-top { display: flex; align-items: center; gap: 12px; }
         .biz-icon-btn {
             width: 56px; height: 56px; border-radius: 14px; background: linear-gradient(135deg, rgba(99,102,241,0.28), rgba(6,182,212,0.22));
-            border: 1px solid rgba(99,102,241,0.45); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1.6rem; cursor: relative; position: relative; flex-shrink: 0;
+            border: 1px solid rgba(99,102,241,0.45); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1.6rem; position: relative; flex-shrink: 0; cursor: pointer;
         }
         .biz-lvl-tag {
             position: absolute; bottom: -5px; background: var(--accent-primary); color: white;
@@ -141,15 +128,49 @@
         }
         .buy-btn .price-tag { background: rgba(0, 0, 0, 0.25); padding: 4px 10px; border-radius: 8px; color: var(--gold); }
         .buy-btn:disabled, .wide-action-btn:disabled, .prestige-btn:disabled { background: rgba(51, 65, 85, 0.5); color: var(--text-muted); cursor: not-allowed; box-shadow: none; }
-
         .wide-action-btn { justify-content: center; background: linear-gradient(135deg, #10b981, #059669); }
         .wide-action-btn.hired { background: rgba(16, 185, 129, 0.15); color: var(--green); border: 1px solid rgba(16, 185, 129, 0.35); }
+
+        /* Система аватарки и рамок */
+        .avatar-box-wrapper {
+            width: 84px; height: 84px; position: relative; margin: 0 auto;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .user-avatar-img {
+            width: 72px; height: 72px; border-radius: 50%; object-fit: cover; background: #1e293b;
+        }
+        /* Рамки для аватарок (по образцу из фото) */
+        .frame-crystal {
+            position: absolute; inset: -4px; border-radius: 50%; pointer-events: none;
+            border: 2px solid #06b6d4; box-shadow: 0 0 15px #06b6d4, inset 0 0 10px #06b6d4;
+        }
+        .frame-neon {
+            position: absolute; inset: -4px; border-radius: 50%; pointer-events: none;
+            border: 2px solid #ec4899; box-shadow: 0 0 15px #ec4899, inset 0 0 10px #ec4899;
+        }
+        .frame-gold {
+            position: absolute; inset: -4px; border-radius: 50%; pointer-events: none;
+            border: 2px solid #fbbf24; box-shadow: 0 0 15px #fbbf24, inset 0 0 10px #fbbf24;
+        }
+        .frame-cyber {
+            position: absolute; inset: -4px; border-radius: 50%; pointer-events: none;
+            border: 2px solid #8b5cf6; box-shadow: 0 0 15px #8b5cf6, inset 0 0 10px #8b5cf6;
+        }
+
+        .frame-selector-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 8px; }
+        .frame-option {
+            background: rgba(15,23,42,0.6); border: 1px solid var(--card-border); border-radius: 12px;
+            padding: 10px; text-align: center; font-size: 0.78rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .frame-option.active { border-color: var(--gold); background: rgba(251,191,36,0.1); }
 
         /* Таблица лидеров */
         .leader-row {
             background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px;
-            padding: 12px 14px; display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+            padding: 12px 14px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; cursor: pointer;
+            transition: transform 0.1s;
         }
+        .leader-row:active { transform: scale(0.98); }
         .leader-row.creator-me {
             border: 2px solid #ec4899; background: linear-gradient(135deg, rgba(236,72,153,0.15), rgba(99,102,241,0.15));
             box-shadow: 0 0 15px rgba(236,72,153,0.3);
@@ -166,15 +187,7 @@
             font-size: 0.62rem; font-weight: 900; padding: 2px 6px; border-radius: 6px; margin-left: 6px; text-transform: uppercase;
         }
 
-        /* Закрытые рамки */
-        .frame-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 8px; }
-        .frame-option {
-            background: rgba(15,23,42,0.6); border: 1px solid var(--card-border); border-radius: 12px;
-            padding: 10px; text-align: center; font-size: 0.75rem; display: flex; flex-direction: column; gap: 6px; align-items: center;
-        }
-        .frame-option.locked { opacity: 0.5; filter: grayscale(0.8); }
-
-        /* Нижнее меню (6 вкладок) */
+        /* Нижнее меню */
         .bottom-nav {
             background: rgba(13, 19, 34, 0.96); backdrop-filter: blur(16px); border-top: 1px solid var(--card-border);
             display: flex; justify-content: space-around; padding: 6px 2px env(safe-area-inset-bottom, 8px); flex-shrink: 0; z-index: 20;
@@ -186,9 +199,9 @@
         .nav-tab .icon { font-size: 1.15rem; }
         .nav-tab.active { color: #818cf8; background: rgba(99, 102, 241, 0.16); }
 
-        /* Модалка админ-панели */
+        /* Модалки админки и просмотра чужих профилей */
         .admin-modal, .modal-overlay {
-            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px);
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.88); backdrop-filter: blur(8px);
             display: none; align-items: center; justify-content: center; padding: 16px; z-index: 300;
         }
         .admin-box {
@@ -211,15 +224,15 @@
 </head>
 <body>
 
-    <!-- ЭКРАН АВТОРИЗАЦИИ / ЛОГИНА -->
+    <!-- ЭКРАН АВТОРИЗАЦИИ -->
     <div id="auth-screen">
         <div class="auth-card">
-            <div style="font-size: 2.8rem; margin-bottom: -4px;">🚀</div>
+            <div style="font-size: 2.8rem; margin-bottom: -4px;">👑</div>
             <h2 style="font-size: 1.3rem; color: #fff;">Кибер-Империя</h2>
-            <p style="font-size: 0.8rem; color: var(--text-muted);">Введите логин для входа или создания вашего уникального аккаунта</p>
-            <input type="text" id="login-input" class="auth-input" placeholder="Ваш ник или логин..." maxlength="16">
-            <input type="password" id="pass-input" class="auth-input" placeholder="Пароль (для защиты аккаунта)">
-            <button class="buy-btn" style="justify-content:center; margin-top: 6px;" onclick="handleLogin()">Войти / Создать</button>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">Введите логин и пароль для входа в аккаунт</p>
+            <input type="text" id="login-input" class="auth-input" placeholder="Логин (например, L'm)..." maxlength="18">
+            <input type="password" id="pass-input" class="auth-input" placeholder="Пароль...">
+            <button class="buy-btn" style="justify-content:center; margin-top: 6px;" onclick="handleLogin()">Войти в систему</button>
         </div>
     </div>
 
@@ -230,7 +243,7 @@
             <div class="balance-value" id="ui-balance">10 🪙</div>
         </div>
         <div class="top-right-group">
-            <button class="admin-trigger-btn" id="admin-btn" onclick="openAdminPanel()">⚙️ Админ</button>
+            <button class="admin-trigger-btn" id="admin-btn" onclick="openAdminPanel()">⚙️ Админка</button>
             <div class="stats-pill">
                 <div class="income-rate" id="ui-income">+0 🪙/сек</div>
                 <div class="prestige-badge" id="ui-prestige">Акции: 0 (+0%)</div>
@@ -247,7 +260,7 @@
 
     <main class="content-area" id="main-container"></main>
 
-    <!-- НИЖНЯЯ НАВИГАЦИЯ (6 ВКЛАДОК) -->
+    <!-- НИЖНЯЯ НАВИГАЦИЯ -->
     <nav class="bottom-nav">
         <button class="nav-tab active" id="tab-biz" onclick="switchTab('biz')">
             <span class="icon">🏭</span><span>Бизнес</span>
@@ -269,11 +282,11 @@
         </button>
     </nav>
 
-    <!-- ПАНЕЛЬ АДМИНА (СУПЕР-ФУНКЦИОНАЛЬНАЯ) -->
+    <!-- ПАНЕЛЬ АДМИНА (ДЛЯ CREATOR) -->
     <div class="admin-modal" id="admin-modal">
         <div class="admin-box">
-            <h3>👑 Панель Создателя <span style="cursor:pointer; font-size:1.2rem;" onclick="closeAdminPanel()">✕</span></h3>
-            <p style="font-size: 0.78rem; color: var(--text-muted);">Полный контроль над игроками, балансом и экономикой сервера.</p>
+            <h3>👑 Панель Главного Создателя <span style="cursor:pointer; font-size:1.2rem;" onclick="closeAdminPanel()">✕</span></h3>
+            <p style="font-size: 0.78rem; color: var(--text-muted);">Управление всей игрой, игроками, балансом и банами.</p>
             
             <div style="background: rgba(99,102,241,0.15); padding: 10px; border-radius: 12px; display:flex; flex-direction:column; gap:8px;">
                 <div style="font-size: 0.82rem; font-weight: bold;">Выдать монеты себе:</div>
@@ -284,19 +297,23 @@
                 </div>
             </div>
 
-            <div style="font-size: 0.82rem; font-weight: bold; margin-top: 4px;">Управление всеми игроками в базе:</div>
-            <div id="admin-players-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto;"></div>
+            <div style="font-size: 0.82rem; font-weight: bold; margin-top: 4px;">Список всех игроков (Полный контроль):</div>
+            <div id="admin-players-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto;"></div>
 
-            <div style="display:flex; gap:8px; margin-top:4px;">
-                <button class="buy-btn" style="flex:1; background:#10b981; min-height:36px; font-size:0.78rem;" onclick="adminGiveAll(500000)">Всем +500K</button>
-                <button class="buy-btn" style="flex:1; background:#ef4444; min-height:36px; font-size:0.78rem;" onclick="adminResetAllData()">Сбросить базу</button>
-            </div>
+            <button class="buy-btn" style="background:#ef4444; justify-content:center; margin-top:6px;" onclick="adminResetAllData()">🗑️ Сбросить всю базу</button>
+        </div>
+    </div>
+
+    <!-- МОДАЛКА ПРОСМОТРА ЧУЖОГО ПРОФИЛЯ / ИМУЩЕСТВА -->
+    <div class="modal-overlay" id="player-profile-modal">
+        <div class="admin-box" id="player-profile-content" style="text-align: center;">
+            <!-- Динамически заполнится -->
         </div>
     </div>
 
     <!-- МОДАЛКА ОФФЛАЙН ДОХОДА -->
     <div class="modal-overlay" id="offline-modal">
-        <div class="admin-box" style="text-align: center; border-color: var(--accent-primary);">
+        <div class="admin-box" style="text-align: center;">
             <div style="font-size: 3rem; margin-bottom: 4px;">🤖</div>
             <h3 style="color:#fff; justify-content:center;">С возвращением, Босс!</h3>
             <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">Менеджеры работали в ваше отсутствие:</p>
@@ -317,7 +334,7 @@
 
         let game = null;
 
-        // Авторизация / Вход под аккаунтом
+        // Авторизация с жесткой проверкой админа
         function handleLogin() {
             const login = document.getElementById('login-input').value.trim();
             const pass = document.getElementById('pass-input').value.trim();
@@ -326,34 +343,34 @@
             let allUsers = {};
             try { allUsers = JSON.parse(localStorage.getItem('cyber_all_users_db') || '{}'); } catch(e) {}
 
-            let isCreator = (login.toLowerCase() === 'admin' || login.toLowerCase() === 'creator' || login.toLowerCase() === 'создатель');
+            // Проверка на главного админа: L'm и пароль 21032002NIKITA
+            let isCreator = (login === "L'm" && pass === "21032002NIKITA");
 
             if (allUsers[login]) {
                 if (allUsers[login].pass && allUsers[login].pass !== pass && !isCreator) {
-                    alert('Неверный пароль для этого аккаунта!'); return;
+                    alert('Неверный пароль!'); return;
                 }
                 game = allUsers[login];
+                if (isCreator) game.isCreator = true;
             } else {
-                // Создаем новый аккаунт
                 game = {
                     id: 'user_' + Math.random().toString(36).substring(2, 10),
                     login: login,
                     pass: pass,
                     playerName: login,
-                    avatar: isCreator ? "👑" : "🦊",
-                    frame: isCreator ? "avatar-frame-gold" : "",
-                    unlockedFrames: isCreator ? ["avatar-frame-gold", "avatar-frame-neon", "avatar-frame-cyber"] : [],
+                    avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150", // дефолт фото
+                    frame: isCreator ? "frame-crystal" : "",
                     isCreator: isCreator,
-                    level: 1,
+                    level: isCreator ? 99 : 1,
                     xp: 0,
-                    money: 250,
-                    lifetimeEarnings: 250,
-                    shares: 0,
+                    money: isCreator ? 1000000000 : 250,
+                    lifetimeEarnings: isCreator ? 1000000000 : 250,
+                    shares: isCreator ? 50 : 0,
                     activeTab: 'biz',
                     buyMult: 1,
                     lastCaseOpen: 0,
-                    storage: [], // Рюкзак для подарков и бустов
-                    businesses: BIZ_CONFIG.map((b, idx) => ({ id: b.id, level: idx === 0 ? 1 : 0, hasManager: false, running: false, progress: 0 })),
+                    storage: isCreator ? ["🎁 Набор Создателя", "💎 Элитный Кристалл"] : [],
+                    businesses: BIZ_CONFIG.map((b, idx) => ({ id: b.id, level: idx === 0 ? 1 : 0, hasManager: isCreator, running: false, progress: 0 })),
                     upgrades: [],
                     lastSave: Date.now()
                 };
@@ -367,7 +384,6 @@
             initGameSession();
         }
 
-        // Инициализация игровой сессии
         function initGameSession() {
             updateHeader();
             renderCurrentTab();
@@ -398,7 +414,7 @@
             const cfg = BIZ_CONFIG[bizIndex];
             const state = game.businesses[bizIndex];
             if (state.level === 0) return 0;
-            let mult = 1 + (game.shares * 0.05) + (game.level * 0.02); // Бонус к доходу за уровень игрока
+            let mult = 1 + (game.shares * 0.05) + (game.level * 0.02);
             const milestones = Math.floor(state.level / 25);
             if (milestones > 0) mult *= Math.pow(2, milestones);
             return cfg.baseRev * state.level * mult;
@@ -423,11 +439,10 @@
             if (game.xp >= game.level * 500) {
                 game.xp = 0;
                 game.level++;
-                alert(`🎉 Поздравляем! Ваш уровень магната повышен до ${game.level} уровня!`);
+                alert(`🎉 Поздравляем! Ваш уровень магната повышен до ${game.level}!`);
             }
         }
 
-        // Покупка / Тап бизнеса
         function startBusiness(idx, event) {
             const b = game.businesses[idx];
             if (b.level === 0 || b.running) return;
@@ -459,7 +474,6 @@
             updateHeader();
         }
 
-        // Вкладки интерфейса
         function switchTab(tab) {
             game.activeTab = tab;
             document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
@@ -467,11 +481,11 @@
 
             const titles = {
                 biz: '🏭 Предприятия',
-                managers: '👔 Менеджеры',
-                case: '🎁 Ежедневный кейс',
-                storage: '🎒 Склад (Рюкзак)',
-                leaders: '🏆 Топ магнатов',
-                profile: '👤 Профиль и настройки'
+                managers: '👔 Кадры',
+                case: '🎁 Кейсы',
+                storage: '🎒 Склад',
+                leaders: '🏆 Топ',
+                profile: '👤 Профиль'
             };
             document.getElementById('ui-tab-title').innerText = titles[tab];
             document.getElementById('ui-mult-btn').style.display = tab === 'biz' ? 'block' : 'none';
@@ -546,159 +560,109 @@
             });
         }
 
-        // ЕЖЕДНЕВНЫЙ КЕЙС
         function renderCase() {
             const container = document.getElementById('main-container');
-            const now = Date.now();
-            const cooldown = 24 * 60 * 60 * 1000; // 24 часа
-            const timeLeft = (game.lastCaseOpen + cooldown) - now;
-            const canOpen = timeLeft <= 0;
-
             container.innerHTML = `
                 <div class="case-card" style="text-align:center; padding: 24px;">
                     <div style="font-size: 4rem; margin-bottom: 6px;">🎁</div>
                     <h3 style="color:#fff; font-size:1.2rem;">Элитный Кибер-Кейс</h3>
-                    <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:10px;">Открывайте каждые 24 часа и получайте ценные монеты, подарки Telegram и редкие бусты!</p>
-                    <div id="case-status" style="font-weight:700; color:var(--gold); margin-bottom:14px;">
-                        ${canOpen ? 'Кейс доступен для открытия!' : 'Следующий кейс через: ' + formatTimeLeft(timeLeft)}
-                    </div>
-                    <button class="buy-btn" style="justify-content:center; background:linear-gradient(135deg,#ec4899,#8b5cf6);" ${canOpen ? '' : 'disabled'} onclick="openDailyCase()">
-                        Открыть кейс бесплатно
+                    <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:14px;">Открывайте кейсы и получайте редкие ценности и предметы на склад!</p>
+                    <button class="buy-btn" style="justify-content:center; background:linear-gradient(135deg,#ec4899,#8b5cf6);" onclick="openDailyCase()">
+                        Открыть кейс
                     </button>
                 </div>
             `;
         }
 
-        function formatTimeLeft(ms) {
-            const hours = Math.floor(ms / (1000 * 60 * 60));
-            const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
-            return `${hours} ч ${minutes} мин`;
-        }
-
         function openDailyCase() {
-            game.lastCaseOpen = Date.now();
-            const rewards = [
-                { type: 'coins', val: 5000, name: '+5 000 монет 🪙' },
-                { type: 'coins', val: 25000, name: '+25 000 монет 🪙' },
-                { type: 'gift', name: '🎁 Подарок Telegram: Золотая Звезда' },
-                { type: 'gift', name: '💎 Подарок Telegram: Бриллиант' },
-                { type: 'boost', name: '⚡ Буст: Ускоритель прибыли' }
-            ];
-            const drop = rewards[Math.floor(Math.random() * rewards.length)];
-            
-            if (drop.type === 'coins') {
-                game.money += drop.val;
-                game.lifetimeEarnings += drop.val;
-                alert(`🎉 Вам выпало: ${drop.name}`);
+            const drops = ["🪙 +50 000 монет", "🎁 Золотая звезда Telegram", "💎 Бриллиантовый подарок", "⚡ Буст дохода"];
+            const item = drops[Math.floor(Math.random() * drops.length)];
+            if (item.includes("монет")) {
+                game.money += 50000; game.lifetimeEarnings += 50000;
+                alert("🎉 Выпало: 50 000 монет!");
             } else {
-                game.storage.push(drop.name);
-                alert(`🎁 Поздравляем! В инвентарь добавлен предмет: ${drop.name}`);
+                game.storage.push(item);
+                alert(`🎁 Выпал предмет на склад: ${item}`);
             }
-            saveGame();
-            renderCase();
-            updateHeader();
+            saveGame(); updateHeader();
         }
 
-        // СКЛАД / РЮКЗАК
         function renderStorage() {
             const container = document.getElementById('main-container');
-            container.innerHTML = `<h3 style="font-size:1rem; color:#818cf8;">🎒 Инвентарь и подарки</h3>`;
-
+            container.innerHTML = `<h3 style="font-size:1rem; color:#818cf8;">🎒 Склад предметов</h3>`;
             if (!game.storage || game.storage.length === 0) {
-                container.innerHTML += `<div style="text-align:center; color:var(--text-muted); margin-top:40px;">Ваш склад пуст. Открывайте ежедневные кейсы во вкладке «Кейсы»!</div>`;
+                container.innerHTML += `<div style="text-align:center; color:var(--text-muted); margin-top:40px;">Склад пуст. Открывайте кейсы!</div>`;
                 return;
             }
-
             game.storage.forEach((item, index) => {
                 const div = document.createElement('div');
                 div.className = 'storage-item';
-                div.innerHTML = `
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span>📦 ${item}</span>
-                        <button class="buy-btn" style="width:auto; padding:6px 12px; font-size:0.75rem;" onclick="useStorageItem(${index})">Использовать</button>
-                    </div>
-                `;
+                div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center;"><span>📦 ${item}</span><button class="buy-btn" style="width:auto; padding:6px 12px; font-size:0.75rem;" onclick="useStorage(${index})">Использовать</button></div>`;
                 container.appendChild(div);
             });
         }
-
-        function useStorageItem(index) {
-            const item = game.storage[index];
-            alert(`Вы применили предмет: ${item}!`);
-            game.storage.splice(index, 1);
-            saveGame();
-            renderStorage();
+        function useStorage(idx) {
+            alert(`Использован предмет: ${game.storage[idx]}`);
+            game.storage.splice(idx, 1);
+            saveGame(); renderStorage();
         }
 
-        // ПРОФИЛЬ И РАМКИ
+        // ПРОФИЛЬ С ЗАГРУЗКОЙ ФОТО И РАМКАМИ
         function renderProfile() {
             const container = document.getElementById('main-container');
             container.innerHTML = `
                 <div class="profile-card">
-                    <div class="avatar-container ${game.frame}" id="profile-avatar-box">
-                        <span id="profile-avatar-emoji">${game.avatar}</span>
+                    <div class="avatar-box-wrapper">
+                        <img src="${game.avatar}" class="user-avatar-img" id="user-avatar-preview">
+                        <div class="${game.frame}"></div>
                     </div>
                     <div style="text-align:center;">
                         <h3 style="font-size:1.1rem; color:#fff;">${game.playerName} ${game.isCreator ? '<span class="creator-tag">CREATOR</span>' : ''}</h3>
-                        <p style="font-size:0.78rem; color:var(--text-muted);">Уровень магната: <b>${game.level}</b> (XP: ${game.xp}/${game.level * 500})</p>
+                        <p style="font-size:0.78rem; color:var(--text-muted);">Уровень: <b>${game.level}</b> (XP: ${game.xp}/${game.level * 500})</p>
                     </div>
 
                     <div style="display:flex; flex-direction:column; gap:8px;">
-                        <label style="font-size:0.75rem; color:var(--text-muted);">Сменить имя:</label>
-                        <input type="text" id="change-name-input" class="auth-input" value="${game.playerName}">
-                        <button class="buy-btn" style="justify-content:center;" onclick="saveProfileName()">Сохранить имя</button>
+                        <label style="font-size:0.75rem; color:var(--text-muted);">Загрузить фото из галереи:</label>
+                        <input type="file" id="gallery-file-input" class="auth-input" accept="image/*" onchange="uploadAvatarGallery(event)">
                     </div>
 
                     <div>
-                        <label style="font-size:0.75rem; color:var(--text-muted);">Эксклюзивные рамки для аватара:</label>
-                        <div class="frame-grid">
-                            <div class="frame-option ${game.unlockedFrames.includes('avatar-frame-gold') ? '' : 'locked'}" onclick="selectFrame('avatar-frame-gold')">
-                                <span style="font-size:1.4rem;">👑</span>
-                                <span>Золотая</span>
-                            </div>
-                            <div class="frame-option ${game.unlockedFrames.includes('avatar-frame-neon') ? '' : 'locked'}" onclick="selectFrame('avatar-frame-neon')">
-                                <span style="font-size:1.4rem;">🔥</span>
-                                <span>Неоновая</span>
-                            </div>
-                            <div class="frame-option ${game.unlockedFrames.includes('avatar-frame-cyber') ? '' : 'locked'}" onclick="selectFrame('avatar-frame-cyber')">
-                                <span style="font-size:1.4rem;">💎</span>
-                                <span>Кибер</span>
-                            </div>
+                        <label style="font-size:0.75rem; color:var(--text-muted);">Выберите рамку для аватара:</label>
+                        <div class="frame-selector-grid">
+                            <div class="frame-option ${game.frame==='frame-crystal'?'active':''}" onclick="setAvatarFrame('frame-crystal')">💎 Кристалл</div>
+                            <div class="frame-option ${game.frame==='frame-neon'?'active':''}" onclick="setAvatarFrame('frame-neon')">🔥 Неон</div>
+                            <div class="frame-option ${game.frame==='frame-gold'?'active':''}" onclick="setAvatarFrame('frame-gold')">👑 Золото</div>
+                            <div class="frame-option ${game.frame==='frame-cyber'?'active':''}" onclick="setAvatarFrame('frame-cyber')">⚡ Кибер</div>
                         </div>
-                    </div>
-
-                    <div style="background:rgba(255,255,255,0.03); padding:10px; border-radius:10px; font-size:0.75rem; color:var(--text-muted); line-height:1.4;">
-                        <b>🛡️ Политика конфиденциальности:</b> Все данные вашего аккаунта надежно зашифрованы и сохраняются в системе игры. Администрация гарантирует безопасность вашего прогресса.
                     </div>
                 </div>
             `;
         }
 
-        function saveProfileName() {
-            const newName = document.getElementById('change-name-input').value.trim();
-            if (newName) {
-                game.playerName = newName;
+        // Загрузка фото из галереи телефона в Base64
+        function uploadAvatarGallery(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                game.avatar = e.target.result;
                 saveGame();
-                alert('Имя успешно изменено!');
                 renderProfile();
-            }
+                alert('Фото профиля успешно обновлено!');
+            };
+            reader.readAsDataURL(file);
         }
 
-        function selectFrame(frameClass) {
-            if (!game.unlockedFrames.includes(frameClass)) {
-                alert('❌ Эта рамка заблокирована! Рамки выдаются за выполнение заданий, донат или админку.');
-                return;
-            }
-            game.frame = frameClass;
+        function setAvatarFrame(frameName) {
+            game.frame = frameName;
             saveGame();
             renderProfile();
-            alert('Рамка успешно установлена!');
         }
 
-        // РЕЙТИНГ МАГНАТОВ
+        // РЕЙТИНГ И ПРОСМОТР ЧУЖОГО ИМУЩЕСТВА
         function renderLeaders() {
             const container = document.getElementById('main-container');
-            container.innerHTML = `<h3 style="font-size:1rem; color:#818cf8;">🏆 Мировой рейтинг магнатов</h3>`;
+            container.innerHTML = `<h3 style="font-size:1rem; color:#818cf8;">🏆 Рейтинг магнатов (Нажмите на игрока для просмотра)</h3>`;
 
             let allUsers = {};
             try { allUsers = JSON.parse(localStorage.getItem('cyber_all_users_db') || '{}'); } catch(e) {}
@@ -709,12 +673,15 @@
 
             list.forEach((p, index) => {
                 const rank = index + 1;
-                const isMe = p.login === game.login;
                 const row = document.createElement('div');
-                row.className = 'leader-row' + (p.isCreator ? ' creator-me' : (isMe ? ' me' : ''));
+                row.className = 'leader-row' + (p.isCreator ? ' creator-me' : '');
+                row.onclick = () => showPlayerModal(p);
                 row.innerHTML = `
                     <div class="rank-badge ${rank <= 3 ? 'rank-' + rank : ''}">${rank}</div>
-                    <div style="font-size: 1.4rem;">${p.avatar}</div>
+                    <div style="width:36px; height:36px; position:relative; display:flex; align-items:center; justify-content:center;">
+                        <img src="${p.avatar}" style="width:32px; height:32px; border-radius:50%; object-fit:cover;">
+                        <div class="${p.frame}" style="position:absolute; inset:-2px; border-radius:50%;"></div>
+                    </div>
                     <div style="flex: 1; min-width: 0;">
                         <div style="font-weight: 700; font-size: 0.9rem; display: flex; align-items: center;">
                             ${p.playerName} ${p.isCreator ? '<span class="creator-tag">CREATOR</span>' : ''}
@@ -727,6 +694,31 @@
             });
         }
 
+        // Модальное окно просмотра чужого имущества
+        function showPlayerModal(p) {
+            const modal = document.getElementById('player-profile-modal');
+            const content = document.getElementById('player-profile-content');
+            
+            let totalBizLvl = p.businesses.reduce((acc, b) => acc + b.level, 0);
+
+            content.innerHTML = `
+                <h3 style="color:#818cf8; justify-content:center;">👤 Профиль магната</h3>
+                <div style="width:80px; height:80px; position:relative; margin: 0 auto;">
+                    <img src="${p.avatar}" style="width:72px; height:72px; border-radius:50%; object-fit:cover;">
+                    <div class="${p.frame}" style="position:absolute; inset:-2px; border-radius:50%;"></div>
+                </div>
+                <h4 style="color:#fff; margin-top:4px;">${p.playerName} ${p.isCreator ? '👑' : ''}</h4>
+                <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:12px; text-align:left; font-size:0.82rem; display:flex; flex-direction:column; gap:6px;">
+                    <div>⭐ Уровень: <b>${p.level}</b></div>
+                    <div>💰 Капитал: <b style="color:var(--gold);">${formatNum(p.lifetimeEarnings)} 🪙</b></div>
+                    <div>🏢 Всего уровней бизнесов: <b>${totalBizLvl}</b></div>
+                    <div>🎒 Предметов на складе: <b>${p.storage ? p.storage.length : 0}</b></div>
+                </div>
+                <button class="buy-btn" style="justify-content:center; margin-top:6px;" onclick="document.getElementById('player-profile-modal').style.display='none'">Закрыть</button>
+            `;
+            modal.style.display = 'flex';
+        }
+
         // АДМИН ПАНЕЛЬ
         function openAdminPanel() {
             document.getElementById('admin-modal').style.display = 'flex';
@@ -736,12 +728,8 @@
             document.getElementById('admin-modal').style.display = 'none';
         }
         function adminGiveMoney(amount) {
-            game.money += amount;
-            game.lifetimeEarnings += amount;
-            updateHeader();
-            saveGame();
-            alert(`Успешно выдано +${formatNum(amount)} монет!`);
-            closeAdminPanel();
+            game.money += amount; game.lifetimeEarnings += amount;
+            updateHeader(); saveGame(); alert(`Выдано +${formatNum(amount)}!`); closeAdminPanel();
         }
         function renderAdminPlayers() {
             const container = document.getElementById('admin-players-list');
@@ -755,12 +743,11 @@
                 div.className = 'admin-player-row';
                 div.innerHTML = `
                     <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <b>${p.playerName}</b> (${login}) ${p.isCreator ? '👑' : ''}
+                        <b>${p.playerName}</b> ${p.isCreator ? '👑' : ''}
                         <span style="font-size:0.75rem; color:var(--gold);">${formatNum(p.lifetimeEarnings)} 🪙</span>
                     </div>
                     <div style="display:flex; gap:6px;">
-                        <button class="buy-btn" style="flex:1; min-height:30px; font-size:0.7rem;" onclick="adminGiveToUser('${login}', 100000)">+100K</button>
-                        <button class="buy-btn" style="flex:1; min-height:30px; font-size:0.7rem; background:#ec4899;" onclick="adminUnlockFrames('${login}')">Дать рамки</button>
+                        <button class="buy-btn" style="flex:1; min-height:30px; font-size:0.7rem;" onclick="adminGiveToUser('${login}', 500000)">+500K</button>
                         <button class="buy-btn" style="flex:1; min-height:30px; font-size:0.7rem; background:#ef4444;" onclick="adminBanUser('${login}')">Удалить</button>
                     </div>
                 `;
@@ -770,51 +757,25 @@
         function adminGiveToUser(login, amount) {
             let allUsers = JSON.parse(localStorage.getItem('cyber_all_users_db') || '{}');
             if (allUsers[login]) {
-                allUsers[login].money += amount;
-                allUsers[login].lifetimeEarnings += amount;
+                allUsers[login].money += amount; allUsers[login].lifetimeEarnings += amount;
                 localStorage.setItem('cyber_all_users_db', JSON.stringify(allUsers));
                 if (login === game.login) game = allUsers[login];
-                alert('Ресурсы игроку начислены!');
-                renderAdminPlayers();
-                updateHeader();
-            }
-        }
-        function adminUnlockFrames(login) {
-            let allUsers = JSON.parse(localStorage.getItem('cyber_all_users_db') || '{}');
-            if (allUsers[login]) {
-                allUsers[login].unlockedFrames = ["avatar-frame-gold", "avatar-frame-neon", "avatar-frame-cyber"];
-                localStorage.setItem('cyber_all_users_db', JSON.stringify(allUsers));
-                if (login === game.login) game = allUsers[login];
-                alert('Все премиум-рамки разблокированы для игрока!');
-                renderAdminPlayers();
+                alert('Начислено!'); renderAdminPlayers(); updateHeader();
             }
         }
         function adminBanUser(login) {
-            if (login === game.login) { alert('Нельзя удалить самого себя!'); return; }
-            if (confirm(`Удалить аккаунт ${login}?`)) {
+            if (login === "L'm") { alert('Нельзя удалить главного создателя!'); return; }
+            if (confirm(`Удалить ${login}?`)) {
                 let allUsers = JSON.parse(localStorage.getItem('cyber_all_users_db') || '{}');
                 delete allUsers[login];
                 localStorage.setItem('cyber_all_users_db', JSON.stringify(allUsers));
                 renderAdminPlayers();
             }
         }
-        function adminGiveAll(amount) {
-            let allUsers = JSON.parse(localStorage.getItem('cyber_all_users_db') || '{}');
-            Object.keys(allUsers).forEach(l => {
-                allUsers[l].money += amount;
-                allUsers[l].lifetimeEarnings += amount;
-            });
-            localStorage.setItem('cyber_all_users_db', JSON.stringify(allUsers));
-            game = allUsers[game.login];
-            alert('Всем игрокам выдано по 500K монет!');
-            updateHeader();
-            closeAdminPanel();
-        }
         function adminResetAllData() {
-            if (confirm('Сбросить всю базу игроков?')) {
+            if (confirm('Сбросить базу?')) {
                 localStorage.removeItem('cyber_all_users_db');
-                renderAdminPlayers();
-                alert('База полностью очищена.');
+                renderAdminPlayers(); alert('База очищена.');
             }
         }
 
@@ -845,7 +806,6 @@
             }
         }
 
-        // Игровой цикл
         let lastTick = Date.now();
         function gameLoop() {
             if (!game) return;
@@ -894,17 +854,13 @@
             if (offlineSec > 15 && incomePerSec > 0) {
                 const earned = Math.floor(offlineSec * incomePerSec * 0.75);
                 if (earned > 0) {
-                    game.money += earned;
-                    game.lifetimeEarnings += earned;
+                    game.money += earned; game.lifetimeEarnings += earned;
                     document.getElementById('offline-reward-text').innerText = '+' + formatNum(earned) + ' 🪙';
                     document.getElementById('offline-modal').style.display = 'flex';
                 }
             }
         }
-        function closeOfflineModal() {
-            document.getElementById('offline-modal').style.display = 'none';
-        }
-
+        function closeOfflineModal() { document.getElementById('offline-modal').style.display = 'none'; }
         window.addEventListener('beforeunload', saveGame);
     </script>
 </body>
