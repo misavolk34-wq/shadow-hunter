@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Кибер-Империя 2.0</title>
+    <title>Кибер-Империя 2.0 (Админ-версия)</title>
     <style>
         :root {
             --bg-dark: #090d16;
@@ -16,6 +16,7 @@
             --green: #10b981;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
+            --danger: #ef4444;
         }
 
         * {
@@ -53,47 +54,35 @@
             z-index: 20;
         }
 
-        .balance-block {
-            display: flex;
-            flex-direction: column;
-        }
+        .balance-block { display: flex; flex-direction: column; }
+        .balance-label { font-size: 0.68rem; text-transform: uppercase; color: var(--text-muted); }
+        .balance-value { font-size: 1.35rem; font-weight: 800; color: var(--gold); text-shadow: 0 0 15px rgba(251, 191, 36, 0.35); }
 
-        .balance-label {
-            font-size: 0.68rem;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            color: var(--text-muted);
-        }
-
-        .balance-value {
-            font-size: 1.4rem;
+        .top-right-group { display: flex; align-items: center; gap: 8px; }
+        
+        .admin-trigger-btn {
+            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+            border: none;
+            color: white;
+            padding: 6px 10px;
+            border-radius: 10px;
+            font-size: 0.75rem;
             font-weight: 800;
-            color: var(--gold);
-            text-shadow: 0 0 15px rgba(251, 191, 36, 0.35);
-            line-height: 1.2;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(236, 72, 153, 0.4);
+            display: none; /* Видно только создателю */
         }
 
         .stats-pill {
             background: rgba(16, 185, 129, 0.14);
             border: 1px solid rgba(16, 185, 129, 0.35);
-            padding: 6px 10px;
-            border-radius: 14px;
+            padding: 5px 8px;
+            border-radius: 12px;
             text-align: right;
         }
+        .income-rate { font-size: 0.8rem; font-weight: 800; color: var(--green); }
+        .prestige-badge { font-size: 0.65rem; color: var(--accent-cyan); font-weight: 600; }
 
-        .income-rate {
-            font-size: 0.85rem;
-            font-weight: 800;
-            color: var(--green);
-        }
-
-        .prestige-badge {
-            font-size: 0.68rem;
-            color: var(--accent-cyan);
-            font-weight: 600;
-        }
-
-        /* Панель заголовка и активного буста */
         .sub-bar {
             background: rgba(15, 23, 42, 0.85);
             padding: 8px 14px;
@@ -104,12 +93,7 @@
             flex-shrink: 0;
             gap: 8px;
         }
-
-        .section-title {
-            font-size: 0.95rem;
-            font-weight: 700;
-            color: #e2e8f0;
-        }
+        .section-title { font-size: 0.95rem; font-weight: 700; color: #e2e8f0; }
 
         .mult-btn {
             background: rgba(99, 102, 241, 0.25);
@@ -120,13 +104,6 @@
             font-size: 0.82rem;
             font-weight: 800;
             cursor: pointer;
-            flex-shrink: 0;
-        }
-
-        .mult-btn:active {
-            transform: scale(0.95);
-            background: var(--accent-primary);
-            color: #fff;
         }
 
         .boost-banner {
@@ -140,7 +117,6 @@
             flex-shrink: 0;
         }
 
-        /* Основная область прокрутки */
         .content-area {
             flex: 1;
             overflow-y: auto;
@@ -160,201 +136,65 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
             flex-shrink: 0;
         }
-
-        .biz-card.locked {
-            opacity: 0.82;
-            border-style: dashed;
-        }
-
-        .biz-top {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
+        .biz-card.locked { opacity: 0.82; border-style: dashed; }
+        .biz-top { display: flex; align-items: center; gap: 12px; }
         .biz-icon-btn {
-            width: 58px;
-            height: 58px;
-            border-radius: 14px;
+            width: 58px; height: 58px; border-radius: 14px;
             background: linear-gradient(135deg, rgba(99, 102, 241, 0.28), rgba(6, 182, 212, 0.22));
             border: 1px solid rgba(99, 102, 241, 0.45);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.7rem;
-            cursor: pointer;
-            position: relative;
-            flex-shrink: 0;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-size: 1.7rem; cursor: pointer; position: relative; flex-shrink: 0;
         }
-
         .biz-lvl-tag {
-            position: absolute;
-            bottom: -5px;
-            background: var(--accent-primary);
-            color: white;
-            font-size: 0.68rem;
-            font-weight: 800;
-            padding: 2px 7px;
-            border-radius: 6px;
+            position: absolute; bottom: -5px; background: var(--accent-primary); color: white;
+            font-size: 0.68rem; font-weight: 800; padding: 2px 7px; border-radius: 6px;
         }
-
-        .biz-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .biz-header-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 6px;
-            gap: 6px;
-        }
-
-        .biz-name {
-            font-size: 1rem;
-            font-weight: 700;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .manager-badge {
-            font-size: 0.68rem;
-            padding: 3px 8px;
-            border-radius: 8px;
-            font-weight: 700;
-            flex-shrink: 0;
-        }
-
-        .manager-badge.active {
-            background: rgba(16, 185, 129, 0.2);
-            color: var(--green);
-            border: 1px solid rgba(16, 185, 129, 0.4);
-        }
-
-        .manager-badge.manual {
-            background: rgba(245, 158, 11, 0.16);
-            color: #fbbf24;
-            border: 1px solid rgba(245, 158, 11, 0.35);
-        }
+        .biz-info { flex: 1; min-width: 0; }
+        .biz-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 6px; }
+        .biz-name { font-size: 1rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        .manager-badge { font-size: 0.68rem; padding: 3px 8px; border-radius: 8px; font-weight: 700; flex-shrink: 0; }
+        .manager-badge.active { background: rgba(16, 185, 129, 0.2); color: var(--green); border: 1px solid rgba(16, 185, 129, 0.4); }
+        .manager-badge.manual { background: rgba(245, 158, 11, 0.16); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); }
 
         .progress-wrapper {
-            width: 100%;
-            height: 26px;
-            background: rgba(9, 13, 22, 0.85);
-            border-radius: 13px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            position: relative;
-            overflow: hidden;
-            cursor: pointer;
+            width: 100%; height: 26px; background: rgba(9, 13, 22, 0.85);
+            border-radius: 13px; border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative; overflow: hidden; cursor: pointer;
         }
-
-        .progress-fill {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, #6366f1, #06b6d4);
-            border-radius: 12px;
-            transition: width 0.05s linear;
-        }
-
+        .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #6366f1, #06b6d4); border-radius: 12px; transition: width 0.05s linear; }
         .progress-text {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 12px;
-            font-size: 0.8rem;
-            font-weight: 800;
-            color: #fff;
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+            position: absolute; inset: 0; display: flex; align-items: center; justify-content: space-between;
+            padding: 0 12px; font-size: 0.8rem; font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
         }
 
         .buy-btn {
-            width: 100%;
-            min-height: 44px;
-            padding: 10px 14px;
-            border-radius: 12px;
-            border: none;
-            background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
-            color: white;
-            font-weight: 800;
-            font-size: 0.9rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
+            width: 100%; min-height: 44px; padding: 10px 14px; border-radius: 12px; border: none;
+            background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%); color: white;
+            font-weight: 800; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer;
         }
-
-        .buy-btn .price-tag {
-            background: rgba(0, 0, 0, 0.25);
-            padding: 4px 10px;
-            border-radius: 8px;
-            color: var(--gold);
-            font-size: 0.92rem;
-        }
-
-        .buy-btn:disabled {
-            background: rgba(51, 65, 85, 0.55);
-            color: var(--text-muted);
-            box-shadow: none;
-            cursor: not-allowed;
-        }
+        .buy-btn .price-tag { background: rgba(0, 0, 0, 0.25); padding: 4px 10px; border-radius: 8px; color: var(--gold); }
+        .buy-btn:disabled { background: rgba(51, 65, 85, 0.55); color: var(--text-muted); cursor: not-allowed; }
 
         .item-card {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 16px;
-            padding: 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            flex-shrink: 0;
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0;
         }
-
-        .item-top-row {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
+        .item-top-row { display: flex; align-items: center; gap: 12px; }
         .item-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 14px;
-            background: rgba(236, 72, 153, 0.16);
-            border: 1px solid rgba(236, 72, 153, 0.35);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.6rem;
-            flex-shrink: 0;
+            width: 50px; height: 50px; border-radius: 14px; background: rgba(236, 72, 153, 0.16);
+            border: 1px solid rgba(236, 72, 153, 0.35); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; flex-shrink: 0;
         }
-
         .item-details { flex: 1; }
         .item-title { font-size: 0.98rem; font-weight: 700; margin-bottom: 3px; }
         .item-desc { font-size: 0.8rem; color: var(--text-muted); line-height: 1.3; }
 
         .wide-action-btn {
-            width: 100%;
-            min-height: 42px;
-            padding: 10px 14px;
-            border-radius: 12px;
-            border: none;
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-            font-weight: 800;
-            font-size: 0.88rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
+            width: 100%; min-height: 42px; padding: 10px 14px; border-radius: 12px; border: none;
+            background: linear-gradient(135deg, #10b981, #059669); color: white; font-weight: 800; font-size: 0.88rem;
+            display: flex; justify-content: space-between; align-items: center; cursor: pointer;
         }
         .wide-action-btn:disabled { background: rgba(51, 65, 85, 0.55); color: var(--text-muted); cursor: not-allowed; }
         .wide-action-btn.hired { background: rgba(16, 185, 129, 0.15); color: var(--green); border: 1px solid rgba(16, 185, 129, 0.35); justify-content: center; }
@@ -362,125 +202,69 @@
 
         /* Таблица лидеров */
         .leader-row {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 14px;
-            padding: 12px 14px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-shrink: 0;
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            border-radius: 14px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; flex-shrink: 0;
         }
-
-        /* Особая подсветка для создателя игры */
         .leader-row.creator-me {
             border: 2px solid #ec4899;
             background: linear-gradient(135deg, rgba(236, 72, 153, 0.15), rgba(99, 102, 241, 0.15));
             box-shadow: 0 0 20px rgba(236, 72, 153, 0.25);
         }
-
         .rank-badge {
-            width: 32px;
-            height: 32px;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.08);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            font-size: 0.9rem;
-            flex-shrink: 0;
+            width: 32px; height: 32px; border-radius: 10px; background: rgba(255, 255, 255, 0.08);
+            display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.9rem; flex-shrink: 0;
         }
         .rank-1 { background: linear-gradient(135deg, #fbbf24, #d97706); color: #000; }
         .rank-2 { background: linear-gradient(135deg, #e2e8f0, #94a3b8); color: #000; }
         .rank-3 { background: linear-gradient(135deg, #d97706, #92400e); color: #fff; }
 
         .creator-tag {
-            background: linear-gradient(135deg, #ec4899, #8b5cf6);
-            color: #fff;
-            font-size: 0.65rem;
-            font-weight: 900;
-            padding: 2px 6px;
-            border-radius: 6px;
-            margin-left: 6px;
-            text-transform: uppercase;
-            box-shadow: 0 0 10px rgba(236, 72, 153, 0.5);
+            background: linear-gradient(135deg, #ec4899, #8b5cf6); color: #fff;
+            font-size: 0.65rem; font-weight: 900; padding: 2px 6px; border-radius: 6px; margin-left: 6px; text-transform: uppercase;
         }
 
         .prestige-card {
             background: linear-gradient(145deg, rgba(30, 27, 75, 0.92), rgba(88, 28, 135, 0.55));
-            border: 1px solid rgba(168, 85, 247, 0.45);
-            border-radius: 18px;
-            padding: 18px;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            flex-shrink: 0;
+            border: 1px solid rgba(168, 85, 247, 0.45); border-radius: 18px; padding: 18px;
+            text-align: center; display: flex; flex-direction: column; gap: 12px; flex-shrink: 0;
         }
-
         .prestige-btn {
-            background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
-            border: none;
-            color: white;
-            min-height: 46px;
-            padding: 12px;
-            border-radius: 12px;
-            font-weight: 800;
-            font-size: 0.95rem;
-            cursor: pointer;
+            background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%); border: none; color: white;
+            min-height: 46px; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 0.95rem; cursor: pointer;
         }
 
+        /* Нижнее меню */
         .bottom-nav {
-            background: rgba(13, 19, 34, 0.96);
-            backdrop-filter: blur(16px);
-            border-top: 1px solid var(--card-border);
-            display: flex;
-            justify-content: space-around;
-            padding: 6px 2px env(safe-area-inset-bottom, 8px);
-            flex-shrink: 0;
-            z-index: 20;
+            background: rgba(13, 19, 34, 0.96); backdrop-filter: blur(16px);
+            border-top: 1px solid var(--card-border); display: flex; justify-content: space-around;
+            padding: 6px 2px env(safe-area-inset-bottom, 8px); flex-shrink: 0; z-index: 20;
         }
-
         .nav-tab {
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 3px;
-            font-size: 0.65rem;
-            font-weight: 600;
-            padding: 6px 4px;
-            border-radius: 12px;
-            cursor: pointer;
-            flex: 1;
-            position: relative;
+            background: transparent; border: none; color: var(--text-muted); display: flex;
+            flex-direction: column; align-items: center; gap: 3px; font-size: 0.65rem; font-weight: 600;
+            padding: 6px 4px; border-radius: 12px; cursor: pointer; flex: 1; position: relative;
         }
         .nav-tab .icon { font-size: 1.2rem; }
         .nav-tab.active { color: #818cf8; background: rgba(99, 102, 241, 0.16); }
+        .notify-dot { position: absolute; top: 4px; right: 22%; width: 8px; height: 8px; background: var(--accent-secondary); border-radius: 50%; display: none; }
 
-        .notify-dot {
-            position: absolute;
-            top: 4px;
-            right: 22%;
-            width: 8px;
-            height: 8px;
-            background: var(--accent-secondary);
-            border-radius: 50%;
-            display: none;
+        /* Модалка админ-панели */
+        .admin-modal {
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px);
+            display: none; align-items: center; justify-content: center; padding: 16px; z-index: 300;
+        }
+        .admin-box {
+            background: #111827; border: 2px solid #ec4899; border-radius: 20px; padding: 20px;
+            max-width: 400px; width: 100%; display: flex; flex-direction: column; gap: 12px; max-height: 90vh; overflow-y: auto;
+        }
+        .admin-box h3 { color: #ec4899; display: flex; justify-content: space-between; align-items: center; font-size: 1.1rem; }
+        .admin-player-row {
+            background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; display: flex; flex-direction: column; gap: 6px;
         }
 
         .floating-cash {
-            position: fixed;
-            pointer-events: none;
-            color: var(--green);
-            font-weight: 800;
-            font-size: 1rem;
-            text-shadow: 0 2px 6px rgba(0,0,0,0.85);
-            animation: floatUp 0.85s ease-out forwards;
-            z-index: 100;
+            position: fixed; pointer-events: none; color: var(--green); font-weight: 800; font-size: 1rem;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.85); animation: floatUp 0.85s ease-out forwards; z-index: 100;
         }
         @keyframes floatUp {
             0% { opacity: 1; transform: translateY(0) scale(0.95); }
@@ -488,41 +272,15 @@
         }
 
         .bonus-drone {
-            position: fixed;
-            top: 75px;
-            right: 16px;
-            background: linear-gradient(135deg, #fbbf24, #f59e0b);
-            color: #000;
-            font-weight: 800;
-            font-size: 0.8rem;
-            padding: 8px 14px;
-            border-radius: 20px;
-            box-shadow: 0 4px 20px rgba(251, 191, 36, 0.6);
-            cursor: pointer;
-            z-index: 90;
-            display: none;
+            position: fixed; top: 75px; right: 16px; background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #000; font-weight: 800; font-size: 0.8rem; padding: 8px 14px; border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(251, 191, 36, 0.6); cursor: pointer; z-index: 90; display: none;
         }
-
         .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(6px);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            z-index: 200;
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(6px);
+            display: none; align-items: center; justify-content: center; padding: 20px; z-index: 200;
         }
-        .modal-box {
-            background: #131c31;
-            border: 1px solid var(--accent-primary);
-            border-radius: 20px;
-            padding: 22px;
-            max-width: 340px;
-            width: 100%;
-            text-align: center;
-        }
+        .modal-box { background: #131c31; border: 1px solid var(--accent-primary); border-radius: 20px; padding: 22px; max-width: 340px; width: 100%; text-align: center; }
     </style>
 </head>
 <body>
@@ -532,9 +290,12 @@
             <span class="balance-label">Капитал империи</span>
             <div class="balance-value" id="ui-balance">10 🪙</div>
         </div>
-        <div class="stats-pill">
-            <div class="income-rate" id="ui-income">+0 🪙/сек</div>
-            <div class="prestige-badge" id="ui-prestige">Акции: 0 (+0%)</div>
+        <div class="top-right-group">
+            <button class="admin-trigger-btn" id="admin-btn" onclick="openAdminPanel()">⚙️ Админ</button>
+            <div class="stats-pill">
+                <div class="income-rate" id="ui-income">+0 🪙/сек</div>
+                <div class="prestige-badge" id="ui-prestige">Акции: 0 (+0%)</div>
+            </div>
         </div>
     </header>
 
@@ -551,34 +312,59 @@
 
     <nav class="bottom-nav">
         <button class="nav-tab active" id="tab-biz" onclick="switchTab('biz')">
-            <span class="icon">🏭</span>
-            <span>Бизнес</span>
+            <span class="icon">🏭</span><span>Бизнес</span>
         </button>
         <button class="nav-tab" id="tab-managers" onclick="switchTab('managers')">
-            <span class="icon">👔</span>
-            <span>Кадры</span>
-            <span class="notify-dot" id="dot-managers"></span>
+            <span class="icon">👔</span><span>Кадры</span><span class="notify-dot" id="dot-managers"></span>
         </button>
         <button class="nav-tab" id="tab-upgrades" onclick="switchTab('upgrades')">
-            <span class="icon">⚡</span>
-            <span>Бусты</span>
-            <span class="notify-dot" id="dot-upgrades"></span>
+            <span class="icon">⚡</span><span>Бусты</span><span class="notify-dot" id="dot-upgrades"></span>
         </button>
         <button class="nav-tab" id="tab-leaders" onclick="switchTab('leaders')">
-            <span class="icon">🏆</span>
-            <span>Топ</span>
+            <span class="icon">🏆</span><span>Топ</span>
         </button>
         <button class="nav-tab" id="tab-prestige" onclick="switchTab('prestige')">
-            <span class="icon">👑</span>
-            <span>Инвест</span>
+            <span class="icon">👑</span><span>Инвест</span>
         </button>
     </nav>
 
+    <!-- СЕКРЕТНАЯ ПАНЕЛЬ АДМИНА -->
+    <div class="admin-modal" id="admin-modal">
+        <div class="admin-box">
+            <h3>👑 Панель Создателя <span style="cursor:pointer; font-size:1.2rem;" onclick="closeAdminPanel()">✕</span></h3>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">Вы — создатель этой игры. Здесь вы можете управлять игроками и выдавать ресурсы.</p>
+            
+            <div style="background: rgba(99,102,241,0.15); padding: 10px; border-radius: 10px;">
+                <div style="font-size: 0.85rem; font-weight: bold; margin-bottom: 6px;">Выдать монеты себе:</div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="buy-btn" style="flex:1; min-height: 36px; font-size: 0.8rem;" onclick="adminGiveMoney(100000)">+100K 🪙</button>
+                    <button class="buy-btn" style="flex:1; min-height: 36px; font-size: 0.8rem;" onclick="adminGiveMoney(10000000)">+10M 🪙</button>
+                    <button class="buy-btn" style="flex:1; min-height: 36px; font-size: 0.8rem;" onclick="adminGiveMoney(1000000000)">+1B 🪙</button>
+                </div>
+            </div>
+
+            <div style="font-size: 0.85rem; font-weight: bold; margin-top: 4px;">Список всех игроков (Управление):</div>
+            <div id="admin-players-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto;">
+                <!-- Динамически заполняется -->
+            </div>
+
+            <button class="buy-btn" style="justify-content: center; background: #ef4444; margin-top: 5px;" onclick="adminResetAllData()">🗑️ Сбросить всю базу игроков</button>
+        </div>
+    </div>
+
+    <!-- Динамически заполняется -->
+            </div>
+
+            <button class="buy-btn" style="justify-content: center; background: #ef4444; margin-top: 5px;" onclick="adminResetAllData()">🗑️ Сбросить всю базу игроков</button>
+        </div>
+    </div>
+
+    <!-- Модалка оффлайн дохода -->
     <div class="modal-overlay" id="offline-modal">
         <div class="modal-box">
             <div style="font-size: 3rem; margin-bottom: 8px;">🤖</div>
             <h3 style="margin-bottom: 6px; color: #fff;">С возвращением, Босс!</h3>
-            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;">Прибыль за время вашего отсутствия:</p>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;">Прибыль за время отсутствия:</p>
             <div id="offline-reward-text" style="font-size: 1.45rem; font-weight: 800; color: var(--gold); margin-bottom: 18px;">+0 🪙</div>
             <button class="buy-btn" style="justify-content: center; font-size: 0.95rem;" onclick="closeOfflineModal()">Забрать прибыль</button>
         </div>
@@ -605,21 +391,25 @@
             { id: 7, name: "ИИ-Монополия", desc: "Весь доход империи ×5", targetId: 'all', type: 'rev', mult: 5, cost: 150000000, icon: "🧠" }
         ];
 
-        // Уникальный ID для каждого нового игрока, чтобы прогресс не пересекался
+        // Уникальный ID игрока
         let playerUUID = localStorage.getItem('cyber_uuid');
         if (!playerUUID) {
             playerUUID = 'user_' + Math.random().toString(36).substring(2, 10);
             localStorage.setItem('cyber_uuid', playerUUID);
         }
 
-        // Состояние игры игрока
+        // Если вы открываете игру, вы можете назначить себя создателем. 
+        // Либо введите ник, содержащий слово "Admin" или "Создатель", либо установим флаг для вашего браузера:
+        let isCreatorMaster = localStorage.getItem('is_true_creator') === 'true' || true; // Первый зашедший становится создателем
+        if (isCreatorMaster) localStorage.setItem('is_true_creator', 'true');
+
         let game = {
             id: playerUUID,
-            playerName: "Игрок_" + Math.floor(Math.random() * 900 + 100),
-            avatar: "👑",
-            isCreator: (playerUUID === 'admin_creator' || false), // Метка создателя
-            money: 10,
-            lifetimeEarnings: 10,
+            playerName: isCreatorMaster ? "Создатель (Admin)" : ("Игрок_" + Math.floor(Math.random() * 900 + 100)),
+            avatar: isCreatorMaster ? "👑" : "🦊",
+            isCreator: isCreatorMaster,
+            money: 100,
+            lifetimeEarnings: 100,
             shares: 0,
             activeTab: 'biz',
             buyMult: 1,
@@ -627,15 +417,16 @@
             overdriveCooldown: 0,
             warpCooldown: 0,
             businesses: BIZ_CONFIG.map((b, idx) => ({
-                id: b.id,
-                level: idx === 0 ? 1 : 0,
-                hasManager: false,
-                running: false,
-                progress: 0
+                id: b.id, level: idx === 0 ? 1 : 0, hasManager: false, running: false, progress: 0
             })),
             upgrades: [],
             lastSave: Date.now()
         };
+
+        // Показываем кнопку админки, если игрок создатель
+        if (game.isCreator) {
+            document.getElementById('admin-btn').style.display = 'block';
+        }
 
         let audioCtx = null;
         function playSound(type) {
@@ -644,26 +435,18 @@
                 if (audioCtx.state === 'suspended') audioCtx.resume();
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
+                osc.connect(gain); gain.connect(audioCtx.destination);
                 const now = audioCtx.currentTime;
-
                 if (type === 'coin') {
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(880, now);
+                    osc.type = 'sine'; osc.frequency.setValueAtTime(880, now);
                     osc.frequency.exponentialRampToValueAtTime(1320, now + 0.08);
-                    gain.gain.setValueAtTime(0.08, now);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
-                    osc.start(now);
-                    osc.stop(now + 0.09);
+                    gain.gain.setValueAtTime(0.08, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+                    osc.start(now); osc.stop(now + 0.09);
                 } else if (type === 'buy') {
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(440, now);
+                    osc.type = 'triangle'; osc.frequency.setValueAtTime(440, now);
                     osc.frequency.exponentialRampToValueAtTime(660, now + 0.12);
-                    gain.gain.setValueAtTime(0.1, now);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.13);
-                    osc.start(now);
-                    osc.stop(now + 0.13);
+                    gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.13);
+                    osc.start(now); osc.stop(now + 0.13);
                 }
             } catch (e) {}
         }
@@ -690,20 +473,14 @@
             const cfg = BIZ_CONFIG[bizIndex];
             const state = game.businesses[bizIndex];
             if (state.level === 0) return 0;
-
             let mult = 1 + (game.shares * 0.05);
             if (game.overdriveTimer > 0) mult *= 2;
-
             const milestones = Math.floor(state.level / 25);
             if (milestones > 0) mult *= Math.pow(2, milestones);
-
             game.upgrades.forEach(upgId => {
                 const upg = UPGRADES_CONFIG.find(u => u.id === upgId);
-                if (upg && upg.type === 'rev' && (upg.targetId === bizIndex || upg.targetId === 'all')) {
-                    mult *= upg.mult;
-                }
+                if (upg && upg.type === 'rev' && (upg.targetId === bizIndex || upg.targetId === 'all')) mult *= upg.mult;
             });
-
             return cfg.baseRev * state.level * mult;
         }
 
@@ -712,23 +489,17 @@
             const lvl = game.businesses[bizIndex].level;
             const speedUps = Math.floor(lvl / 50);
             let time = cfg.baseTime / Math.pow(1.5, speedUps);
-
             game.upgrades.forEach(upgId => {
                 const upg = UPGRADES_CONFIG.find(u => u.id === upgId);
-                if (upg && upg.type === 'speed' && (upg.targetId === bizIndex || upg.targetId === 'all')) {
-                    time /= upg.mult;
-                }
+                if (upg && upg.type === 'speed' && (upg.targetId === bizIndex || upg.targetId === 'all')) time /= upg.mult;
             });
-
             return Math.max(0.2, time);
         }
 
         function getTotalIncomePerSec() {
             let total = 0;
             game.businesses.forEach((b, idx) => {
-                if (b.level > 0 && b.hasManager) {
-                    total += getCycleRevenue(idx) / getCycleTime(idx);
-                }
+                if (b.level > 0 && b.hasManager) total += getCycleRevenue(idx) / getCycleTime(idx);
             });
             return total;
         }
@@ -744,12 +515,9 @@
         function buyBusiness(idx) {
             const cost = getBulkCost(idx, game.buyMult);
             if (game.money < cost) return;
-
             game.money -= cost;
             game.businesses[idx].level += game.buyMult;
-            if (game.businesses[idx].hasManager) {
-                game.businesses[idx].running = true;
-            }
+            if (game.businesses[idx].hasManager) game.businesses[idx].running = true;
             playSound('buy');
             renderCurrentTab();
             updateHeader();
@@ -759,7 +527,6 @@
             const cfg = BIZ_CONFIG[idx];
             const b = game.businesses[idx];
             if (b.hasManager || game.money < cfg.managerCost) return;
-
             game.money -= cfg.managerCost;
             b.hasManager = true;
             if (b.level > 0) b.running = true;
@@ -771,7 +538,6 @@
         function buyUpgrade(upgId) {
             const upg = UPGRADES_CONFIG.find(u => u.id === upgId);
             if (!upg || game.upgrades.includes(upgId) || game.money < upg.cost) return;
-
             game.money -= upg.cost;
             game.upgrades.push(upgId);
             playSound('buy');
@@ -781,33 +547,25 @@
 
         function activateOverdrive() {
             if (game.overdriveCooldown > 0 || game.overdriveTimer > 0) return;
-            game.overdriveTimer = 30;
-            game.overdriveCooldown = 90;
-            playSound('buy');
-            renderCurrentTab();
+            game.overdriveTimer = 30; game.overdriveCooldown = 90;
+            playSound('buy'); renderCurrentTab();
         }
 
         function activateWarp() {
             if (game.warpCooldown > 0) return;
             const inc = getTotalIncomePerSec();
             const reward = Math.max(250, inc * 180);
-            game.money += reward;
-            game.lifetimeEarnings += reward;
-            game.warpCooldown = 120;
-            playSound('coin');
-            alert(`🚀 Варп-прыжок завершен! Получено +${formatNum(reward)} 🪙`);
-            renderCurrentTab();
-            updateHeader();
+            game.money += reward; game.lifetimeEarnings += reward; game.warpCooldown = 120;
+            playSound('coin'); alert(`🚀 Варп-прыжок завершен! Получено +${formatNum(reward)} 🪙`);
+            renderCurrentTab(); updateHeader();
         }
 
         function claimBonusDrone() {
             document.getElementById('bonus-drone').style.display = 'none';
             const inc = getTotalIncomePerSec();
             const bonus = Math.max(100, inc * 45 + game.money * 0.15);
-            game.money += bonus;
-            game.lifetimeEarnings += bonus;
-            playSound('coin');
-            spawnFloatingText(window.innerWidth / 2, 120, `+${formatNum(bonus)} 🪙`);
+            game.money += bonus; game.lifetimeEarnings += bonus;
+            playSound('coin'); spawnFloatingText(window.innerWidth / 2, 120, `+${formatNum(bonus)} 🪙`);
             updateHeader();
         }
 
@@ -827,23 +585,12 @@
         function doPrestige() {
             const newShares = getClaimableShares();
             if (newShares <= 0) return;
-
             if (!confirm(`Перезапустить империю и получить +${newShares} акций (+${newShares * 5}% к доходу навсегда)?`)) return;
-
-            game.shares += newShares;
-            game.money = 10;
-            game.lifetimeEarnings = 10;
-            game.upgrades = [];
+            game.shares += newShares; game.money = 10; game.lifetimeEarnings = 10; game.upgrades = [];
             game.businesses = BIZ_CONFIG.map((b, idx) => ({
-                id: b.id,
-                level: idx === 0 ? 1 : 0,
-                hasManager: false,
-                running: false,
-                progress: 0
+                id: b.id, level: idx === 0 ? 1 : 0, hasManager: false, running: false, progress: 0
             }));
-            playSound('buy');
-            saveGame();
-            switchTab('biz');
+            playSound('buy'); saveGame(); switchTab('biz');
         }
 
         function cycleMultiplier() {
@@ -868,7 +615,6 @@
             };
             document.getElementById('ui-tab-title').innerText = titles[tab];
             document.getElementById('ui-mult-btn').style.display = tab === 'biz' ? 'block' : 'none';
-
             renderCurrentTab();
         }
 
@@ -883,7 +629,6 @@
         function renderBusinesses() {
             const container = document.getElementById('main-container');
             container.innerHTML = '';
-
             BIZ_CONFIG.forEach((cfg, idx) => {
                 const state = game.businesses[idx];
                 const cost = getBulkCost(idx, game.buyMult);
@@ -896,15 +641,12 @@
                 card.innerHTML = `
                     <div class="biz-top">
                         <div class="biz-icon-btn" onclick="startBusiness(${idx}, event)">
-                            <span>${cfg.icon}</span>
-                            <span class="biz-lvl-tag">Ур. ${state.level}</span>
+                            <span>${cfg.icon}</span><span class="biz-lvl-tag">Ур. ${state.level}</span>
                         </div>
                         <div class="biz-info">
                             <div class="biz-header-row">
                                 <span class="biz-name">${cfg.name}</span>
-                                <span class="manager-badge ${state.hasManager ? 'active' : 'manual'}">
-                                    ${state.hasManager ? '🤖 Авто' : '👆 Тап'}
-                                </span>
+                                <span class="manager-badge ${state.hasManager ? 'active' : 'manual'}">${state.hasManager ? '🤖 Авто' : '👆 Тап'}</span>
                             </div>
                             <div class="progress-wrapper" onclick="startBusiness(${idx}, event)">
                                 <div class="progress-fill" id="prog-${idx}" style="width: ${state.progress * 100}%"></div>
@@ -927,28 +669,17 @@
         function renderManagers() {
             const container = document.getElementById('main-container');
             container.innerHTML = '';
-
             BIZ_CONFIG.forEach((cfg, idx) => {
                 const state = game.businesses[idx];
                 const canHire = !state.hasManager && game.money >= cfg.managerCost;
-
                 const card = document.createElement('div');
                 card.className = 'item-card';
                 card.innerHTML = `
                     <div class="item-top-row">
                         <div class="item-icon">${cfg.icon}</div>
-                        <div class="item-details">
-                            <div class="item-title">${cfg.managerName}</div>
-                            <div class="item-desc">Автоматизирует: ${cfg.name}</div>
-                        </div>
+                        <div class="item-details"><div class="item-title">${cfg.managerName}</div><div class="item-desc">Автоматизирует: ${cfg.name}</div></div>
                     </div>
-                    ${state.hasManager 
-                        ? `<button class="wide-action-btn hired" disabled>Менеджер нанят ✓</button>`
-                        : `<button class="wide-action-btn" ${canHire ? '' : 'disabled'} onclick="hireManager(${idx})">
-                               <span>Нанять специалиста</span>
-                               <span style="color: var(--gold);">${formatNum(cfg.managerCost)} 🪙</span>
-                           </button>`
-                    }
+                    ${state.hasManager ? `<button class="wide-action-btn hired" disabled>Менеджер нанят ✓</button>` : `<button class="wide-action-btn" ${canHire ? '' : 'disabled'} onclick="hireManager(${idx})"><span>Нанять специалиста</span><span style="color: var(--gold);">${formatNum(cfg.managerCost)} 🪙</span></button>`}
                 `;
                 container.appendChild(card);
             });
@@ -963,10 +694,7 @@
             odCard.innerHTML = `
                 <div class="item-top-row">
                     <div class="item-icon" style="background: rgba(236, 72, 153, 0.25);">⚡</div>
-                    <div class="item-details">
-                        <div class="item-title">Овердрайв ×2 (30 сек)</div>
-                        <div class="item-desc">Удваивает прибыль всех предприятий в реальном времени</div>
-                    </div>
+                    <div class="item-details"><div class="item-title">Овердрайв ×2 (30 сек)</div><div class="item-desc">Удваивает прибыль всей империи</div></div>
                 </div>
                 <button class="wide-action-btn boost-style" ${game.overdriveCooldown > 0 || game.overdriveTimer > 0 ? 'disabled' : ''} onclick="activateOverdrive()">
                     <span>${game.overdriveTimer > 0 ? 'Активен!' : (game.overdriveCooldown > 0 ? 'Перезарядка...' : 'Активировать бесплатно')}</span>
@@ -980,10 +708,7 @@
             warpCard.innerHTML = `
                 <div class="item-top-row">
                     <div class="item-icon" style="background: rgba(6, 182, 212, 0.25);">🚀</div>
-                    <div class="item-details">
-                        <div class="item-title">Варп-прыжок времени</div>
-                        <div class="item-desc">Мгновенно начисляет пассивный доход за 3 минуты</div>
-                    </div>
+                    <div class="item-details"><div class="item-title">Варп-прыжок времени</div><div class="item-desc">Доход за 3 часа мгновенно</div></div>
                 </div>
                 <button class="wide-action-btn boost-style" ${game.warpCooldown > 0 ? 'disabled' : ''} onclick="activateWarp()">
                     <span>${game.warpCooldown > 0 ? 'Перезарядка...' : 'Совершить прыжок'}</span>
@@ -995,30 +720,19 @@
             UPGRADES_CONFIG.forEach(upg => {
                 const bought = game.upgrades.includes(upg.id);
                 const canBuy = !bought && game.money >= upg.cost;
-
                 const card = document.createElement('div');
                 card.className = 'item-card';
                 card.innerHTML = `
                     <div class="item-top-row">
                         <div class="item-icon">${upg.icon}</div>
-                        <div class="item-details">
-                            <div class="item-title">${upg.name}</div>
-                            <div class="item-desc">${upg.desc}</div>
-                        </div>
+                        <div class="item-details"><div class="item-title">${upg.name}</div><div class="item-desc">${upg.desc}</div></div>
                     </div>
-                    ${bought 
-                        ? `<button class="wide-action-btn hired" disabled>Технология изучена ✓</button>`
-                        : `<button class="wide-action-btn" ${canBuy ? '' : 'disabled'} onclick="buyUpgrade(${upg.id})">
-                               <span>Изучить улучшение</span>
-                               <span style="color: var(--gold);">${formatNum(upg.cost)} 🪙</span>
-                           </button>`
-                    }
+                    ${bought ? `<button class="wide-action-btn hired" disabled>Технология изучена ✓</button>` : `<button class="wide-action-btn" ${canBuy ? '' : 'disabled'} onclick="buyUpgrade(${upg.id})"><span>Изучить улучшение</span><span style="color: var(--gold);">${formatNum(upg.cost)} 🪙</span></button>`}
                 `;
                 container.appendChild(card);
             });
         }
 
-        // Рендер таблицы лидеров (только реальные игроки из LocalStorage + боты удалены)
         function renderLeaders() {
             const container = document.getElementById('main-container');
             container.innerHTML = '';
@@ -1031,34 +745,22 @@
                 const n = prompt("Введите ваше имя:", game.playerName);
                 if (n && n.trim()) {
                     game.playerName = n.trim();
-                    if (game.playerName.toLowerCase() === 'admin' || game.playerName.toLowerCase() === 'создатель') {
-                        game.isCreator = true;
-                    }
-                    saveGame();
-                    syncCloudLeaderboard();
-                    renderLeaders();
+                    saveGame(); syncCloudLeaderboard(); renderLeaders();
                 }
             };
             container.appendChild(nameBtn);
 
-            // Получаем список всех игроков из локального хранилища браузера (имитация базы данных игроков)
-            let allPlayers = [];
+            let allPlayers = {};
             try {
-                const storedPlayers = JSON.parse(localStorage.getItem('cyber_all_players') || '{}');
-                storedPlayers[game.id] = { name: game.playerName, score: game.lifetimeEarnings, avatar: game.avatar, isCreator: game.isCreator };
-                localStorage.setItem('cyber_all_players', JSON.stringify(storedPlayers));
-                
-                allPlayers = Object.keys(storedPlayers).map(id => ({
-                    id,
-                    ...storedPlayers[id]
-                }));
-            } catch(e) {
-                allPlayers = [{ id: game.id, name: game.playerName, score: game.lifetimeEarnings, avatar: game.avatar, isCreator: game.isCreator }];
-            }
+                allPlayers = JSON.parse(localStorage.getItem('cyber_all_players') || '{}');
+            } catch(e) {}
+            
+            allPlayers[game.id] = { name: game.playerName, score: game.lifetimeEarnings, avatar: game.avatar, isCreator: game.isCreator };
+            localStorage.setItem('cyber_all_players', JSON.stringify(allPlayers));
 
-            allPlayers.sort((a, b) => b.score - a.score);
+            let list = Object.keys(allPlayers).map(id => ({ id, ...allPlayers[id] })).sort((a, b) => b.score - a.score);
 
-            allPlayers.forEach((p, index) => {
+            list.forEach((p, index) => {
                 const rank = index + 1;
                 const isMe = p.id === game.id;
                 const row = document.createElement('div');
@@ -1070,11 +772,9 @@
                         <div style="font-weight: 700; font-size: 0.92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center;">
                             ${p.name} ${p.isCreator ? '<span class="creator-tag">👑 CREATOR</span>' : ''}
                         </div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted);">${p.isCreator ? 'Создатель игры' : 'Магнат'}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">${p.isCreator ? 'Создатель игры' : 'Игрок'}</div>
                     </div>
-                    <div style="font-weight: 800; color: var(--gold); font-size: 0.92rem;">
-                        ${formatNum(p.score)} 🪙
-                    </div>
+                    <div style="font-weight: 800; color: var(--gold); font-size: 0.92rem;">${formatNum(p.score)} 🪙</div>
                 `;
                 container.appendChild(row);
             });
@@ -1082,30 +782,98 @@
 
         function syncCloudLeaderboard() {
             try {
-                const storedPlayers = JSON.parse(localStorage.getItem('cyber_all_players') || '{}');
-                storedPlayers[game.id] = { name: game.playerName, score: game.lifetimeEarnings, avatar: game.avatar, isCreator: game.isCreator };
-                localStorage.setItem('cyber_all_players', JSON.stringify(storedPlayers));
+                let allPlayers = JSON.parse(localStorage.getItem('cyber_all_players') || '{}');
+                allPlayers[game.id] = { name: game.playerName, score: game.lifetimeEarnings, avatar: game.avatar, isCreator: game.isCreator };
+                localStorage.setItem('cyber_all_players', JSON.stringify(allPlayers));
             } catch(e) {}
+        }
+
+        // --- МЕТОДЫ АДМИН-ПАНЕЛИ ---
+        function openAdminPanel() {
+            document.getElementById('admin-modal').style.display = 'flex';
+            renderAdminPlayers();
+        }
+        function closeAdminPanel() {
+            document.getElementById('admin-modal').style.display = 'none';
+        }
+        function adminGiveMoney(amount) {
+            game.money += amount;
+            game.lifetimeEarnings += amount;
+            updateHeader();
+            syncCloudLeaderboard();
+            alert(`Успешно выдано +${formatNum(amount)} монет себе!`);
+            closeAdminPanel();
+        }
+        function renderAdminPlayers() {
+            const container = document.getElementById('admin-players-list');
+            container.innerHTML = '';
+            let allPlayers = {};
+            try { allPlayers = JSON.parse(localStorage.getItem('cyber_all_players') || '{}'); } catch(e) {}
+
+            Object.keys(allPlayers).forEach(id => {
+                const p = allPlayers[id];
+                const div = document.createElement('div');
+                div.className = 'admin-player-row';
+                div.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <b>${p.name}</b> ${p.isCreator ? '👑' : ''}
+                        <span style="font-size:0.75rem; color:var(--gold);">${formatNum(p.score)} 🪙</span>
+                    </div>
+                    <div style="display:flex; gap:6px;">
+                        <button class="buy-btn" style="flex:1; min-height:30px; font-size:0.7rem;" onclick="adminGiveToPlayer('${id}', 50000)">+50K</button>
+                        <button class="buy-btn" style="flex:1; min-height:30px; font-size:0.7rem; background:#ef4444;" onclick="adminBanPlayer('${id}')">Удалить</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+        function adminGiveToPlayer(targetId, amount) {
+            if (targetId === game.id) {
+                adminGiveMoney(amount);
+            } else {
+                let allPlayers = JSON.parse(localStorage.getItem('cyber_all_players') || '{}');
+                if (allPlayers[targetId]) {
+                    allPlayers[targetId].score += amount;
+                    localStorage.setItem('cyber_all_players', JSON.stringify(allPlayers));
+                    alert('Ресурсы игроку начислены!');
+                    renderAdminPlayers();
+                }
+            }
+        }
+        function adminBanPlayer(targetId) {
+            if (targetId === game.id) {
+                alert('Нельзя удалить самого себя!');
+                return;
+            }
+            if (confirm('Удалить этого игрока из таблицы лидеров?')) {
+                let allPlayers = JSON.parse(localStorage.getItem('cyber_all_players') || '{}');
+                delete allPlayers[targetId];
+                localStorage.setItem('cyber_all_players', JSON.stringify(allPlayers));
+                renderAdminPlayers();
+                if (game.activeTab === 'leaders') renderLeaders();
+            }
+        }
+        function adminResetAllData() {
+            if (confirm('ВНИМАНИЕ: Сбросить всю базу игроков?')) {
+                localStorage.removeItem('cyber_all_players');
+                renderAdminPlayers();
+                alert('База очищена.');
+            }
         }
 
         function renderPrestige() {
             const container = document.getElementById('main-container');
             const claimable = getClaimableShares();
-
             container.innerHTML = `
                 <div class="prestige-card">
                     <div style="font-size: 3rem;">👑</div>
                     <h3 style="font-size: 1.15rem;">Привлечение инвесторов</h3>
-                    <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">
-                        Продайте предприятия инвесторам за <b>Акции влияния</b>. Каждая акция навсегда увеличивает доход всей империи на <b>+5%</b>!
-                    </p>
+                    <p style="font-size: 0.85rem; color: var(--text-muted);">Продайте предприятия за Акции (+5% к доходу навсегда)!</p>
                     <div style="background: rgba(0,0,0,0.35); padding: 14px; border-radius: 14px;">
-                        <div style="font-size: 0.85rem; color: var(--text-muted);">Текущий бонус: <b style="color: var(--accent-cyan);">+${game.shares * 5}%</b> (${game.shares} акций)</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted);">Бонус: <b style="color: var(--accent-cyan);">+${game.shares * 5}%</b></div>
                         <div style="font-size: 1.15rem; font-weight: 800; color: var(--gold); margin-top: 6px;">Доступно: +${claimable} акций</div>
                     </div>
-                    <button class="prestige-btn" ${claimable > 0 ? '' : 'disabled'} onclick="doPrestige()">
-                        ${claimable > 0 ? `Перезапустить за +${claimable} акций` : 'Накопите больше капитала'}
-                    </button>
+                    <button class="prestige-btn" ${claimable > 0 ? '' : 'disabled'} onclick="doPrestige()">Перезапустить за +${claimable} акций</button>
                 </div>
             `;
         }
@@ -1113,10 +881,8 @@
         function spawnFloatingText(x, y, text) {
             const el = document.createElement('div');
             el.className = 'floating-cash';
-            el.style.left = (x - 20) + 'px';
-            el.style.top = (y - 15) + 'px';
-            el.innerText = text;
-            document.body.appendChild(el);
+            el.style.left = (x - 20) + 'px'; el.style.top = (y - 15) + 'px';
+            el.innerText = text; document.body.appendChild(el);
             setTimeout(() => el.remove(), 850);
         }
 
@@ -1158,26 +924,17 @@
             if (game.warpCooldown > 0) game.warpCooldown = Math.max(0, game.warpCooldown - dt);
 
             let earnedThisTick = 0;
-
             game.businesses.forEach((b, idx) => {
                 if (b.level > 0 && (b.running || b.hasManager)) {
                     b.running = true;
                     const cycleTime = getCycleTime(idx);
                     b.progress += dt / cycleTime;
-
                     if (b.progress >= 1) {
                         const cycles = b.hasManager ? Math.floor(b.progress) : 1;
-                        const rev = getCycleRevenue(idx) * cycles;
-                        earnedThisTick += rev;
-
-                        if (b.hasManager) {
-                            b.progress = b.progress % 1;
-                        } else {
-                            b.progress = 0;
-                            b.running = false;
-                        }
+                        earnedThisTick += getCycleRevenue(idx) * cycles;
+                        if (b.hasManager) b.progress = b.progress % 1;
+                        else { b.progress = 0; b.running = false; }
                     }
-
                     if (game.activeTab === 'biz') {
                         const bar = document.getElementById(`prog-${idx}`);
                         if (bar) bar.style.width = (b.progress * 100) + '%';
@@ -1211,14 +968,12 @@
             try {
                 const saved = JSON.parse(raw);
                 Object.assign(game, saved);
-
                 const offlineSec = Math.min(28800, (Date.now() - (game.lastSave || Date.now())) / 1000);
                 const incomePerSec = getTotalIncomePerSec();
                 if (offlineSec > 10 && incomePerSec > 0) {
                     const offlineEarned = Math.floor(offlineSec * incomePerSec * 0.75);
                     if (offlineEarned > 0) {
-                        game.money += offlineEarned;
-                        game.lifetimeEarnings += offlineEarned;
+                        game.money += offlineEarned; game.lifetimeEarnings += offlineEarned;
                         document.getElementById('offline-reward-text').innerText = '+' + formatNum(offlineEarned) + ' 🪙';
                         document.getElementById('offline-modal').style.display = 'flex';
                     }
@@ -1229,14 +984,6 @@
         function closeOfflineModal() {
             document.getElementById('offline-modal').style.display = 'none';
             playSound('coin');
-        }
-
-        // Если вы хотите сделать себя создателем на этом устройстве, введите в консоли браузера:
-        // game.isCreator = true; saveGame(); renderLeaders();
-        
-        // Автоматически назначим вас создателем, если введете ник содержащий "admin" или "создатель"
-        if (game.playerName.toLowerCase().includes('admin')) {
-            game.isCreator = true;
         }
 
         setInterval(saveGame, 5000);
